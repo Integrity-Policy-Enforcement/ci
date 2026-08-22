@@ -18,6 +18,10 @@ def read_node(node, policy, values):
     values.append(ipe.node_path(node, policy).read_text().strip())
 
 
+def read_binary_node(node, policy, values):
+    values.append(ipe.node_path(node, policy).read_bytes().hex())
+
+
 def unshare_user_namespace():
     # IPE asks for CAP_MAC_ADMIN in init_user_ns.  A capability held in a
     # child user namespace does not apply to its parent; ID maps do not alter it.

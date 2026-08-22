@@ -25,6 +25,14 @@ def read_node(node, policy, values):
         return Observation(failure.errno)
 
 
+def read_binary_node(node, policy, values):
+    try:
+        values.append(ipe.node_path(node, policy).read_bytes().hex())
+        return Observation(0, values)
+    except OSError as failure:
+        return Observation(failure.errno)
+
+
 def write_opened_file(data, descriptor):
     try:
         os.write(descriptor[0], data)
