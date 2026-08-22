@@ -592,4 +592,17 @@ def build():
             expect=errno.EINVAL,
             check=checks.two_values_match,
         ),
+        Case(
+            id="badvalue_audit_einval",
+            setup=(partial(steps.read_node, "success_audit", None, read_values),),
+            trigger=partial(
+                triggers.write_node_and_read,
+                "success_audit",
+                None,
+                b"maybe",
+                read_values,
+            ),
+            expect=errno.EINVAL,
+            check=checks.two_values_match,
+        ),
     )
