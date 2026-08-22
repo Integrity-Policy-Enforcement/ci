@@ -61,4 +61,16 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.policy_active_is, CAPABILITY_POLICY_NAME, False),
         ),
+        Case(
+            id="cap_active_withcap_ok",
+            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
+            trigger=partial(
+                triggers.write_node,
+                "active",
+                CAPABILITY_POLICY_NAME,
+                b"1",
+            ),
+            expect=0,
+            check=partial(checks.policy_active_is, CAPABILITY_POLICY_NAME, True),
+        ),
     )
