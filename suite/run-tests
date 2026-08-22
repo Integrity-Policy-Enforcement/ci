@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-only
+
+import sys
+
+import runner
+
+
+def main():
+    if len(sys.argv) != 2:
+        print("usage: run-tests <result-channel>", file=sys.stderr)
+        return 2
+    with open(sys.argv[1], "a", encoding="utf-8") as output:
+        return runner.run(output)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

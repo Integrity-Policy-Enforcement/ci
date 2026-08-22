@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-only
+
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+REQUESTED = ROOT / "config" / "ipe-tests.config"
+PRODUCED = ROOT / "build" / "kernel" / ".config"
+SETTING = re.compile(r"^(CONFIG_[A-Z0-9_]+)=(.*)$")
+UNSET = re.compile(r"^# (CONFIG_[A-Z0-9_]+) is not set$")
+
+
+def read_config(path):
+    values = {}
+    for line in path.read_text().splitlines():
+        if match := SETTING.match(line):
+            values[match.group(1)] = match.group(2)
+        elif match := UNSET.match(line):
+            values[match.group(1)] = None
+    return values
+
+
+def main():
+    requested = read_config(REQUESTED)
+    produced = read_config(PRODUCED)
+    drifted = [
+        f"{name}: requested {want or 'unset'}, produced {produced.get(name) or 'unset'}"
+        for name, want in requested.items()
+        if produced.get(name) != want
+    ]
+    if drifted:
+        for line in drifted:
+            print(f"    {line}")
+        raise SystemExit(
+            f"{len(drifted)} of {len(requested)} options did not survive the build"
+        )
+    print(f"    Verified {len(requested)} kernel options")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

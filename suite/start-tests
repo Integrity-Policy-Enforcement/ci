@@ -1,0 +1,67 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: GPL-2.0-only
+
+import os
+import subprocess
+import sys
+
+RESULT = "/dev/virtio-ports/ipe-tests-result"
+IPEFS = "/sys/kernel/security/ipe"
+RUNNER = "/run/ipe-tests/run-tests"
+
+def emit(line, result):
+    data = (line.replace("\n", " ").replace("\r", " ") + "\n").encode()
+    fd = os.open(result, os.O_WRONLY)
+    try:
+        offset = 0
+        while offset < len(data):
+            written = os.write(fd, data[offset:])
+            if not written:
+                raise OSError("result channel write returned zero")
+            offset += written
+    finally:
+        os.close(fd)
+
+def log(message):
+    print("[ipe-tests] %s" % message, flush=True)
+
+def read_node(name):
+    try:
+        with open(os.path.join(IPEFS, name)) as stream:
+            return stream.read().rstrip("\n")
+    except OSError:
+        return "?"
+
+def service_main():
+    if not os.path.exists(RESULT):
+        sys.stderr.write(f"result channel does not exist: {RESULT}\n")
+        return 1
+    result = RESULT
+    emit(f"boot {os.uname().release}", result)
+
+    if not os.path.isdir(IPEFS):
+        emit("noipe", result)
+        log(f"{IPEFS} does not exist")
+        return 0
+
+    emit(f"ipe enforce: {read_node('enforce')}", result)
+
+    try:
+        runner_rc = subprocess.run([sys.executable, RUNNER, result], check=False).returncode
+    except PermissionError:
+        runner_rc = 126
+    except OSError:
+        runner_rc = 127
+    emit(f"done rc={runner_rc}", result)
+    log("test run complete")
+    return 0
+
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv:
+        print("usage: start-tests", file=sys.stderr)
+        return 2
+    return service_main()
+
+if __name__ == "__main__":
+    sys.exit(main())

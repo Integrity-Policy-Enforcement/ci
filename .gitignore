@@ -1,0 +1,10 @@
+# Generated output and ephemeral signing keys.
+/build/
+/out/
+/image/output/
+/ipe-tests-out/
+/kernel/certs/
+/kernel-source/
+
+__pycache__/
+*.py[cod]

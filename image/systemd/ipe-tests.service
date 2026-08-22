@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0-only
+[Unit]
+Description=Run IPE tests against the booted kernel
+RequiresMountsFor=/run/ipe-tests
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /run/ipe-tests/start-tests
+ExecStopPost=/usr/bin/systemctl --force poweroff
+StandardOutput=journal+console
+StandardError=journal+console
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=multi-user.target

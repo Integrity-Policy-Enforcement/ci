@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+name: tests
+
+on:
+  schedule:
+    # Test the latest upstream and IPE trees once a day (UTC).
+    - cron: '23 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare kernel tree
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --single-branch --branch master \
+              https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
+              kernel-source
+          git -C kernel-source remote add ipe \
+              https://git.kernel.org/pub/scm/linux/kernel/git/wufan/ipe.git
+          git -C kernel-source fetch --filter=blob:none ipe next
+          git -C kernel-source switch --create ipe-next-tested FETCH_HEAD
+
+          upstream_sha=$(git -C kernel-source rev-parse origin/master)
+          ipe_sha=$(git -C kernel-source rev-parse HEAD)
+          git -C kernel-source rebase origin/master
+
+          printf 'upstream master: %s\nipe next:        %s\n' \
+              "$upstream_sha" "$ipe_sha"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          xargs sudo apt-get install -y --no-install-recommends \
+              < config/host-packages.txt
+          sudo python3 -m pip install --break-system-packages \
+              "git+https://github.com/systemd/mkosi@$(cat config/mkosi.version)"
+
+      - name: Run tests
+        run: ./run.py kernel-source out
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-evidence
+          path: |
+            out/console.log
+            out/result.log
+            out/host.json
+            out/verdict.json
+            build/kernel/.config
+            build/kernel/build.log
+            build/kernel/install.log
+            build/kernel/merge.log
+          retention-days: ${{ job.status == 'success' && 7 || 30 }}
+          if-no-files-found: error
