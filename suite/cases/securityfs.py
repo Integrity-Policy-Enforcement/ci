@@ -382,4 +382,24 @@ def build():
             expect=0,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
         ),
+        Case(
+            id="cap_newpol_fcred_nocap_eperm",
+            setup=(
+                steps.clear_mac_admin,
+                partial(
+                    steps.open_node,
+                    "new_policy",
+                    None,
+                    opened_file,
+                ),
+                steps.raise_mac_admin,
+            ),
+            trigger=partial(
+                triggers.write_opened_file,
+                ipe.signed_policy(CAPABILITY_POLICY_V1),
+                opened_file,
+            ),
+            expect=errno.EPERM,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
+        ),
     )
