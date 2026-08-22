@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+name: sync-linux
+
+on:
+  schedule:
+    - cron: '41 4 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/sync-linux.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-linux
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Clone GitHub mirror
+        run: |
+          git clone --bare --filter=blob:none \
+              https://github.com/Integrity-Policy-Enforcement/linux.git linux.git
+          git -C linux.git remote rename origin github
+
+      - name: Fetch Linus master
+        run: |
+          git -C linux.git remote add linus \
+              https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+          git -C linux.git fetch --filter=blob:none --no-tags linus \
+              '+refs/heads/master:refs/heads/master'
+
+      - name: Fetch IPE branches
+        run: |
+          git -C linux.git remote add ipe \
+              https://git.kernel.org/pub/scm/linux/kernel/git/wufan/ipe.git
+          git -C linux.git fetch --filter=blob:none --no-tags ipe \
+              '+refs/heads/*:refs/heads/ipe/*'
+
+      - name: Push GitHub mirror
+        env:
+          LINUXSYNC: ${{ secrets.LINUXSYNC }}
+        run: |
+          set -euo pipefail
+          : "${LINUXSYNC:?LINUXSYNC secret is not configured}"
+          git -C linux.git remote set-url --push github \
+              "https://x-access-token:${LINUXSYNC}@github.com/Integrity-Policy-Enforcement/linux.git"
+          git -C linux.git push --atomic --prune github \
+              '+refs/heads/master:refs/heads/master' \
+              '+refs/heads/ipe/*:refs/heads/ipe/*'
