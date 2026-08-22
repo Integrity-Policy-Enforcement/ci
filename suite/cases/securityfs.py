@@ -504,4 +504,14 @@ def build():
             expect=0,
             check=checks.two_values_match,
         ),
+        Case(
+            id="read_audit_nocap_ok",
+            setup=(
+                partial(steps.read_node, "success_audit", None, read_values),
+                steps.drop_mac_admin,
+            ),
+            trigger=partial(triggers.read_node, "success_audit", None, read_values),
+            expect=0,
+            check=checks.two_values_match,
+        ),
     )
