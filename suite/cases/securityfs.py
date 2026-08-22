@@ -114,4 +114,11 @@ def build():
             expect=0,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
         ),
+        Case(
+            id="cap_enforce_nocap_eperm",
+            setup=(steps.drop_mac_admin,),
+            trigger=partial(triggers.write_node, "enforce", None, b"1"),
+            expect=errno.EPERM,
+            check=partial(checks.node_value_is, "enforce", "0"),
+        ),
     )
