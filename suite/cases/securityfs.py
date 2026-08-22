@@ -283,4 +283,24 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.node_value_is, "success_audit", "0"),
         ),
+        Case(
+            id="cap_delete_fcred_withcap_ok",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(
+                    steps.open_node,
+                    "delete",
+                    CAPABILITY_POLICY_NAME,
+                    opened_file,
+                ),
+                steps.drop_mac_admin,
+            ),
+            trigger=partial(
+                triggers.write_opened_file,
+                b"1",
+                opened_file,
+            ),
+            expect=0,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
+        ),
     )
