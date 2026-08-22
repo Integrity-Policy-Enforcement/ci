@@ -121,4 +121,11 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.node_value_is, "enforce", "0"),
         ),
+        Case(
+            id="cap_enforce_withcap_ok",
+            setup=(),
+            trigger=partial(triggers.write_node, "enforce", None, b"1"),
+            expect=0,
+            check=partial(checks.node_value_is, "enforce", "1"),
+        ),
     )
