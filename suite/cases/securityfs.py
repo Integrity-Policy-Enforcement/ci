@@ -73,4 +73,11 @@ def build():
             expect=0,
             check=partial(checks.policy_active_is, CAPABILITY_POLICY_NAME, True),
         ),
+        Case(
+            id="cap_audit_nocap_eperm",
+            setup=(steps.drop_mac_admin,),
+            trigger=partial(triggers.write_node, "success_audit", None, b"1"),
+            expect=errno.EPERM,
+            check=partial(checks.node_value_is, "success_audit", "0"),
+        ),
     )
