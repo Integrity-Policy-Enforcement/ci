@@ -621,4 +621,16 @@ def build():
             expect=errno.EINVAL,
             check=checks.two_values_match,
         ),
+        Case(
+            id="badvalue_delete_einval",
+            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
+            trigger=partial(
+                triggers.write_node,
+                "delete",
+                CAPABILITY_POLICY_NAME,
+                b"maybe",
+            ),
+            expect=errno.EINVAL,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
+        ),
     )
