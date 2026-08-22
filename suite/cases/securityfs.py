@@ -579,4 +579,17 @@ def build():
             expect=0,
             check=checks.two_values_match,
         ),
+        Case(
+            id="badvalue_enforce_einval",
+            setup=(partial(steps.read_node, "enforce", None, read_values),),
+            trigger=partial(
+                triggers.write_node_and_read,
+                "enforce",
+                None,
+                b"maybe",
+                read_values,
+            ),
+            expect=errno.EINVAL,
+            check=checks.two_values_match,
+        ),
     )
