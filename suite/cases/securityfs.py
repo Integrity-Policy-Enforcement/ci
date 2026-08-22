@@ -20,6 +20,8 @@ from model import Case
 def build():
     opened_file = [None]
     read_values = []
+    truncated_policy = ipe.signed_policy(CAPABILITY_POLICY_V1)
+    truncated_policy = truncated_policy[: len(truncated_policy) // 2]
 
     return (
         Case(
@@ -632,5 +634,12 @@ def build():
             ),
             expect=errno.EINVAL,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
+        ),
+        Case(
+            id="newpol_truncated_ebadmsg",
+            setup=(),
+            trigger=partial(triggers.write_node, "new_policy", None, truncated_policy),
+            expect=errno.EBADMSG,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
         ),
     )
