@@ -479,4 +479,18 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.node_value_is, "enforce", "0"),
         ),
+        Case(
+            id="userns_newpol_eperm",
+            setup=(
+                steps.unshare_user_namespace,
+            ),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy(CAPABILITY_POLICY_V1),
+            ),
+            expect=errno.EPERM,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
+        ),
     )
