@@ -203,4 +203,24 @@ def build():
                 CAPABILITY_POLICY_V1_VERSION,
             ),
         ),
+        Case(
+            id="cap_active_fcred_withcap_ok",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(
+                    steps.open_node,
+                    "active",
+                    CAPABILITY_POLICY_NAME,
+                    opened_file,
+                ),
+                steps.drop_mac_admin,
+            ),
+            trigger=partial(
+                triggers.write_opened_file,
+                b"1",
+                opened_file,
+            ),
+            expect=0,
+            check=partial(checks.policy_active_is, CAPABILITY_POLICY_NAME, True),
+        ),
     )
