@@ -140,4 +140,16 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
         ),
+        Case(
+            id="cap_newpol_withcap_ok",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy(CAPABILITY_POLICY_V1),
+            ),
+            expect=0,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
+        ),
     )
