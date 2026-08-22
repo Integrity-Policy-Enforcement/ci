@@ -670,4 +670,11 @@ def build():
             expect=0,
             check=checks.two_values_differ,
         ),
+        Case(
+            id="toggle_enforce_ok",
+            setup=(partial(steps.read_node, "enforce", None, read_values),),
+            trigger=partial(triggers.toggle_node, "enforce", None, read_values),
+            expect=0,
+            check=checks.two_values_differ,
+        ),
     )
