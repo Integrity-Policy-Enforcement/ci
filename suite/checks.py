@@ -19,3 +19,9 @@ def node_value_is(node, expected, detail):
     actual = ipe.node_path(node).read_text().strip()
     if actual != expected:
         return f"{node} is {actual!r}, expected {expected!r}"
+
+
+def policy_present_is(policy, expected, detail):
+    actual = ipe.policy_present(policy)
+    if actual != expected:
+        return f"policy {policy} present={actual}, expected {expected}"
