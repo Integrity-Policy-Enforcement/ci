@@ -605,4 +605,20 @@ def build():
             expect=errno.EINVAL,
             check=checks.two_values_match,
         ),
+        Case(
+            id="badvalue_active_einval",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.read_node, "active", CAPABILITY_POLICY_NAME, read_values),
+            ),
+            trigger=partial(
+                triggers.write_node_and_read,
+                "active",
+                CAPABILITY_POLICY_NAME,
+                b"maybe",
+                read_values,
+            ),
+            expect=errno.EINVAL,
+            check=checks.two_values_match,
+        ),
     )
