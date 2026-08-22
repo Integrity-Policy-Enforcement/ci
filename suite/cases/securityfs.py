@@ -363,4 +363,23 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.node_value_is, "enforce", "0"),
         ),
+        Case(
+            id="cap_newpol_fcred_withcap_ok",
+            setup=(
+                partial(
+                    steps.open_node,
+                    "new_policy",
+                    None,
+                    opened_file,
+                ),
+                steps.drop_mac_admin,
+            ),
+            trigger=partial(
+                triggers.write_opened_file,
+                ipe.signed_policy(CAPABILITY_POLICY_V1),
+                opened_file,
+            ),
+            expect=0,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
+        ),
     )
