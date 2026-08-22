@@ -9,9 +9,9 @@ import steps
 import triggers
 from assets import (
     CAPABILITY_POLICY_NAME,
-    CAPABILITY_POLICY_V1,
+    CAPABILITY_POLICY_V1_ASSET,
     CAPABILITY_POLICY_V1_VERSION,
-    CAPABILITY_POLICY_V2,
+    CAPABILITY_POLICY_V2_ASSET,
     CAPABILITY_POLICY_V2_VERSION,
 )
 from model import Case
@@ -20,35 +20,35 @@ from model import Case
 def build():
     opened_file = [None]
     read_values = []
-    truncated_policy = ipe.signed_policy(CAPABILITY_POLICY_V1)
+    truncated_policy = ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET)
     truncated_policy = truncated_policy[: len(truncated_policy) // 2]
-    trailing_fragment = ipe.signed_policy(CAPABILITY_POLICY_V1)
+    trailing_fragment = ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET)
     trailing_fragment = trailing_fragment[len(trailing_fragment) // 2 :]
 
     return (
         Case(
             id="cap_update_nocap_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.drop_mac_admin,
             ),
             trigger=partial(
                 triggers.write_node,
                 "update",
                 CAPABILITY_POLICY_NAME,
-                ipe.signed_policy(CAPABILITY_POLICY_V2),
+                ipe.signed_policy(CAPABILITY_POLICY_V2_ASSET),
             ),
             expect=errno.EPERM,
             check=partial(checks.policy_version_is, CAPABILITY_POLICY_NAME, CAPABILITY_POLICY_V1_VERSION),
         ),
         Case(
             id="cap_update_withcap_ok",
-            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
+            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),),
             trigger=partial(
                 triggers.write_node,
                 "update",
                 CAPABILITY_POLICY_NAME,
-                ipe.signed_policy(CAPABILITY_POLICY_V2),
+                ipe.signed_policy(CAPABILITY_POLICY_V2_ASSET),
             ),
             expect=0,
             check=partial(checks.policy_version_is, CAPABILITY_POLICY_NAME, CAPABILITY_POLICY_V2_VERSION),
@@ -56,7 +56,7 @@ def build():
         Case(
             id="cap_active_nocap_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.drop_mac_admin,
             ),
             trigger=partial(
@@ -70,7 +70,7 @@ def build():
         ),
         Case(
             id="cap_active_withcap_ok",
-            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
+            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),),
             trigger=partial(
                 triggers.write_node,
                 "active",
@@ -97,7 +97,7 @@ def build():
         Case(
             id="cap_delete_nocap_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.drop_mac_admin,
             ),
             trigger=partial(
@@ -111,7 +111,7 @@ def build():
         ),
         Case(
             id="cap_delete_withcap_ok",
-            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
+            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),),
             trigger=partial(
                 triggers.write_node,
                 "delete",
@@ -142,7 +142,7 @@ def build():
                 triggers.write_node,
                 "new_policy",
                 None,
-                ipe.signed_policy(CAPABILITY_POLICY_V1),
+                ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET),
             ),
             expect=errno.EPERM,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
@@ -154,7 +154,7 @@ def build():
                 triggers.write_node,
                 "new_policy",
                 None,
-                ipe.signed_policy(CAPABILITY_POLICY_V1),
+                ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET),
             ),
             expect=0,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
@@ -162,7 +162,7 @@ def build():
         Case(
             id="cap_update_fcred_withcap_ok",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(
                     steps.open_node,
                     "update",
@@ -173,7 +173,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_opened_file,
-                ipe.signed_policy(CAPABILITY_POLICY_V2),
+                ipe.signed_policy(CAPABILITY_POLICY_V2_ASSET),
                 opened_file,
             ),
             expect=0,
@@ -186,7 +186,7 @@ def build():
         Case(
             id="cap_update_fcred_nocap_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
@@ -198,7 +198,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_opened_file,
-                ipe.signed_policy(CAPABILITY_POLICY_V2),
+                ipe.signed_policy(CAPABILITY_POLICY_V2_ASSET),
                 opened_file,
             ),
             expect=errno.EPERM,
@@ -211,7 +211,7 @@ def build():
         Case(
             id="cap_active_fcred_withcap_ok",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(
                     steps.open_node,
                     "active",
@@ -231,7 +231,7 @@ def build():
         Case(
             id="cap_active_fcred_nocap_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
@@ -291,7 +291,7 @@ def build():
         Case(
             id="cap_delete_fcred_withcap_ok",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(
                     steps.open_node,
                     "delete",
@@ -311,7 +311,7 @@ def build():
         Case(
             id="cap_delete_fcred_nocap_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
@@ -381,7 +381,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_opened_file,
-                ipe.signed_policy(CAPABILITY_POLICY_V1),
+                ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET),
                 opened_file,
             ),
             expect=0,
@@ -401,7 +401,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_opened_file,
-                ipe.signed_policy(CAPABILITY_POLICY_V1),
+                ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET),
                 opened_file,
             ),
             expect=errno.EPERM,
@@ -410,14 +410,14 @@ def build():
         Case(
             id="userns_update_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.unshare_user_namespace,
             ),
             trigger=partial(
                 triggers.write_node,
                 "update",
                 CAPABILITY_POLICY_NAME,
-                ipe.signed_policy(CAPABILITY_POLICY_V2),
+                ipe.signed_policy(CAPABILITY_POLICY_V2_ASSET),
             ),
             expect=errno.EPERM,
             check=partial(
@@ -429,7 +429,7 @@ def build():
         Case(
             id="userns_active_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.unshare_user_namespace,
             ),
             trigger=partial(
@@ -458,7 +458,7 @@ def build():
         Case(
             id="userns_delete_eperm",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 steps.unshare_user_namespace,
             ),
             trigger=partial(
@@ -493,7 +493,7 @@ def build():
                 triggers.write_node,
                 "new_policy",
                 None,
-                ipe.signed_policy(CAPABILITY_POLICY_V1),
+                ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET),
             ),
             expect=errno.EPERM,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
@@ -521,7 +521,7 @@ def build():
         Case(
             id="read_active_nocap_ok",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(steps.read_node, "active", CAPABILITY_POLICY_NAME, read_values),
                 steps.drop_mac_admin,
             ),
@@ -532,7 +532,7 @@ def build():
         Case(
             id="read_name_nocap_ok",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(steps.read_node, "name", CAPABILITY_POLICY_NAME, read_values),
                 steps.drop_mac_admin,
             ),
@@ -543,7 +543,7 @@ def build():
         Case(
             id="read_policy_nocap_ok",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(steps.read_node, "policy", CAPABILITY_POLICY_NAME, read_values),
                 steps.drop_mac_admin,
             ),
@@ -554,7 +554,7 @@ def build():
         Case(
             id="read_version_nocap_ok",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(steps.read_node, "version", CAPABILITY_POLICY_NAME, read_values),
                 steps.drop_mac_admin,
             ),
@@ -565,7 +565,7 @@ def build():
         Case(
             id="read_pkcs7_nocap_ok",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(
                     steps.read_binary_node,
                     "pkcs7",
@@ -612,7 +612,7 @@ def build():
         Case(
             id="badvalue_active_einval",
             setup=(
-                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),
                 partial(steps.read_node, "active", CAPABILITY_POLICY_NAME, read_values),
             ),
             trigger=partial(
@@ -627,7 +627,7 @@ def build():
         ),
         Case(
             id="badvalue_delete_einval",
-            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
+            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),),
             trigger=partial(
                 triggers.write_node,
                 "delete",
@@ -653,12 +653,12 @@ def build():
         ),
         Case(
             id="newpol_duplicate_eexist",
-            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
+            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1_ASSET),),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
                 None,
-                ipe.signed_policy(CAPABILITY_POLICY_V1),
+                ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET),
             ),
             expect=errno.EEXIST,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),

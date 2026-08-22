@@ -1,12 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-BASELINE_POLICY = "ipe_test_baseline-0.0.1"
+# Session activates this policy before the run and restores it after every case.
+BASELINE_POLICY_ASSET = "ipe_test_baseline-0.0.1"
 BASELINE_POLICY_NAME = "ipe_test_baseline"
-CAPABILITY_POLICY_V1 = "capability/ipe_test_capability-0.0.1"
+
+# securityfs capability cases update one policy name between these two versions.
+CAPABILITY_POLICY_V1_ASSET = "capability/ipe_test_capability-0.0.1"
 CAPABILITY_POLICY_V1_VERSION = "0.0.1"
-CAPABILITY_POLICY_V2 = "capability/ipe_test_capability-0.0.2"
+CAPABILITY_POLICY_V2_ASSET = "capability/ipe_test_capability-0.0.2"
 CAPABILITY_POLICY_V2_VERSION = "0.0.2"
 CAPABILITY_POLICY_NAME = "ipe_test_capability"
-POLICY_V1 = "policy/ipe_test_policy-0.0.1"
-POLICY_V1_VERSION = "0.0.1"
-POLICY_NAME = "ipe_test_policy"
+
+# policy cases use an independent fixture so they do not alter capability cases.
+POLICY_FIXTURE_V1_ASSET = "policy/ipe_test_policy-0.0.1"
+POLICY_FIXTURE_V1_VERSION = "0.0.1"
+POLICY_FIXTURE_NAME = "ipe_test_policy"
