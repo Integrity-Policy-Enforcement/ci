@@ -46,4 +46,19 @@ def build():
             expect=0,
             check=partial(checks.policy_version_is, CAPABILITY_POLICY_NAME, CAPABILITY_POLICY_V2_VERSION),
         ),
+        Case(
+            id="cap_active_nocap_eperm",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                steps.drop_mac_admin,
+            ),
+            trigger=partial(
+                triggers.write_node,
+                "active",
+                CAPABILITY_POLICY_NAME,
+                b"1",
+            ),
+            expect=errno.EPERM,
+            check=partial(checks.policy_active_is, CAPABILITY_POLICY_NAME, False),
+        ),
     )

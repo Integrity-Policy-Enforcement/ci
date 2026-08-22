@@ -49,6 +49,10 @@ def policy_version(name):
         return None
 
 
+def policy_active(name):
+    return node_path("active", name).read_text().strip() == "1"
+
+
 def deploy_policy(asset):
     write(node_path("new_policy"), signed_policy(asset))
 
