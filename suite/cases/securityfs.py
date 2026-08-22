@@ -450,4 +450,19 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.node_value_is, "success_audit", "0"),
         ),
+        Case(
+            id="userns_delete_eperm",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                steps.unshare_user_namespace,
+            ),
+            trigger=partial(
+                triggers.write_node,
+                "delete",
+                CAPABILITY_POLICY_NAME,
+                b"1",
+            ),
+            expect=errno.EPERM,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
+        ),
     )
