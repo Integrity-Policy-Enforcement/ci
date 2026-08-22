@@ -22,6 +22,8 @@ def build():
     read_values = []
     truncated_policy = ipe.signed_policy(CAPABILITY_POLICY_V1)
     truncated_policy = truncated_policy[: len(truncated_policy) // 2]
+    trailing_fragment = ipe.signed_policy(CAPABILITY_POLICY_V1)
+    trailing_fragment = trailing_fragment[len(trailing_fragment) // 2 :]
 
     return (
         Case(
@@ -639,6 +641,13 @@ def build():
             id="newpol_truncated_ebadmsg",
             setup=(),
             trigger=partial(triggers.write_node, "new_policy", None, truncated_policy),
+            expect=errno.EBADMSG,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
+        ),
+        Case(
+            id="newpol_trailing_fragment_ebadmsg",
+            setup=(),
+            trigger=partial(triggers.write_node, "new_policy", None, trailing_fragment),
             expect=errno.EBADMSG,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
         ),
