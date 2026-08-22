@@ -651,4 +651,16 @@ def build():
             expect=errno.EBADMSG,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
         ),
+        Case(
+            id="newpol_duplicate_eexist",
+            setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy(CAPABILITY_POLICY_V1),
+            ),
+            expect=errno.EEXIST,
+            check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
+        ),
     )
