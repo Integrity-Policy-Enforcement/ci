@@ -42,6 +42,19 @@ def write(header, values):
         raise OSError(ctypes.get_errno(), "capset failed")
 
 
+def set_mac_admin_effective(enabled):
+    header, values = read()
+    if enabled:
+        values[MAC_ADMIN_WORD].effective |= MAC_ADMIN_MASK
+    else:
+        values[MAC_ADMIN_WORD].effective &= ~MAC_ADMIN_MASK
+    write(header, values)
+    _, current = read()
+    actual = bool(current[MAC_ADMIN_WORD].effective & MAC_ADMIN_MASK)
+    if actual != enabled:
+        raise RuntimeError(f"CAP_MAC_ADMIN effective={actual}, expected {enabled}")
+
+
 def drop_mac_admin():
     header, values = read()
     values[MAC_ADMIN_WORD].effective &= ~MAC_ADMIN_MASK
