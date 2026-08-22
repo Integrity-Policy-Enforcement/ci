@@ -525,4 +525,15 @@ def build():
             expect=0,
             check=checks.two_values_match,
         ),
+        Case(
+            id="read_name_nocap_ok",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(steps.read_node, "name", CAPABILITY_POLICY_NAME, read_values),
+                steps.drop_mac_admin,
+            ),
+            trigger=partial(triggers.read_node, "name", CAPABILITY_POLICY_NAME, read_values),
+            expect=0,
+            check=checks.two_values_match,
+        ),
     )
