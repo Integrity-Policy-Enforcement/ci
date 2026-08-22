@@ -23,6 +23,17 @@ def write_node_and_read(node, policy, data, values):
     return Observation(observation.errno, values)
 
 
+def toggle_node(node, policy, values):
+    if len(values) != 1:
+        raise RuntimeError(f"expected one read, got {len(values)}")
+    (current,) = values
+    if current not in ("0", "1"):
+        raise RuntimeError(f"cannot toggle {current!r}")
+    observation = write_node(node, policy, b"0" if current == "1" else b"1")
+    values.append(ipe.node_path(node, policy).read_text().strip())
+    return Observation(observation.errno, values)
+
+
 def read_node(node, policy, values):
     try:
         values.append(ipe.node_path(node, policy).read_text().strip())

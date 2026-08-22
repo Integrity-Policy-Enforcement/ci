@@ -11,6 +11,14 @@ def two_values_match(values):
         return f"read values differ: {first!r} != {second!r}"
 
 
+def two_values_differ(values):
+    if len(values) != 2:
+        return f"expected two reads, got {len(values)}"
+    first, second = values
+    if first == second:
+        return f"read values did not change: {first!r}"
+
+
 def policy_version_is(policy, expected, detail):
     actual = ipe.policy_version(policy)
     if actual != expected:

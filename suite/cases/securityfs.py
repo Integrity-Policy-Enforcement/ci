@@ -663,4 +663,11 @@ def build():
             expect=errno.EEXIST,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
         ),
+        Case(
+            id="toggle_audit_ok",
+            setup=(partial(steps.read_node, "success_audit", None, read_values),),
+            trigger=partial(triggers.toggle_node, "success_audit", None, read_values),
+            expect=0,
+            check=checks.two_values_differ,
+        ),
     )
