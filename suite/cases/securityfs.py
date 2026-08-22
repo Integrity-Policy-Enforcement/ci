@@ -421,4 +421,19 @@ def build():
                 CAPABILITY_POLICY_V1_VERSION,
             ),
         ),
+        Case(
+            id="userns_active_eperm",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                steps.unshare_user_namespace,
+            ),
+            trigger=partial(
+                triggers.write_node,
+                "active",
+                CAPABILITY_POLICY_NAME,
+                b"1",
+            ),
+            expect=errno.EPERM,
+            check=partial(checks.policy_active_is, CAPABILITY_POLICY_NAME, False),
+        ),
     )
