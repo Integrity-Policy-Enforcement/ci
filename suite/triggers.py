@@ -17,6 +17,14 @@ def write_node(node, policy, data):
         os.close(descriptor)
 
 
+def read_node(node, policy, values):
+    try:
+        values.append(ipe.node_path(node, policy).read_text().strip())
+        return Observation(0, values)
+    except OSError as failure:
+        return Observation(failure.errno)
+
+
 def write_opened_file(data, descriptor):
     try:
         os.write(descriptor[0], data)

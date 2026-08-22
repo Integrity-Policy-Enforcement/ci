@@ -7,7 +7,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Observation:
     errno: int
-    detail: str = ""
+    detail: str | list[str] = ""
 
 
 @dataclass(frozen=True)

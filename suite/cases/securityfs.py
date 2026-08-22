@@ -19,6 +19,7 @@ from model import Case
 
 def build():
     opened_file = [None]
+    read_values = []
 
     return (
         Case(
@@ -492,5 +493,15 @@ def build():
             ),
             expect=errno.EPERM,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
+        ),
+        Case(
+            id="read_enforce_nocap_ok",
+            setup=(
+                partial(steps.read_node, "enforce", None, read_values),
+                steps.drop_mac_admin,
+            ),
+            trigger=partial(triggers.read_node, "enforce", None, read_values),
+            expect=0,
+            check=checks.two_values_match,
         ),
     )

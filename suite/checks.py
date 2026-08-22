@@ -3,6 +3,14 @@
 import ipe
 
 
+def two_values_match(values):
+    if len(values) != 2:
+        return f"expected two reads, got {len(values)}"
+    first, second = values
+    if first != second:
+        return f"read values differ: {first!r} != {second!r}"
+
+
 def policy_version_is(policy, expected, detail):
     actual = ipe.policy_version(policy)
     if actual != expected:
