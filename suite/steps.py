@@ -14,6 +14,12 @@ def open_node(node, policy, descriptor):
     descriptor[0] = os.open(ipe.node_path(node, policy), os.O_WRONLY)
 
 
+def unshare_user_namespace():
+    # IPE asks for CAP_MAC_ADMIN in init_user_ns.  A capability held in a
+    # child user namespace does not apply to its parent; ID maps do not alter it.
+    os.unshare(os.CLONE_NEWUSER)
+
+
 def clear_mac_admin():
     capabilities.set_mac_admin_effective(False)
 

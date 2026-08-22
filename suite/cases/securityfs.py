@@ -402,4 +402,23 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, False),
         ),
+        Case(
+            id="userns_update_eperm",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                steps.unshare_user_namespace,
+            ),
+            trigger=partial(
+                triggers.write_node,
+                "update",
+                CAPABILITY_POLICY_NAME,
+                ipe.signed_policy(CAPABILITY_POLICY_V2),
+            ),
+            expect=errno.EPERM,
+            check=partial(
+                checks.policy_version_is,
+                CAPABILITY_POLICY_NAME,
+                CAPABILITY_POLICY_V1_VERSION,
+            ),
+        ),
     )
