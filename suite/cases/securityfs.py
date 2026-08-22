@@ -80,4 +80,11 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.node_value_is, "success_audit", "0"),
         ),
+        Case(
+            id="cap_audit_withcap_ok",
+            setup=(),
+            trigger=partial(triggers.write_node, "success_audit", None, b"1"),
+            expect=0,
+            check=partial(checks.node_value_is, "success_audit", "1"),
+        ),
     )
