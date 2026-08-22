@@ -223,4 +223,25 @@ def build():
             expect=0,
             check=partial(checks.policy_active_is, CAPABILITY_POLICY_NAME, True),
         ),
+        Case(
+            id="cap_active_fcred_nocap_eperm",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                steps.clear_mac_admin,
+                partial(
+                    steps.open_node,
+                    "active",
+                    CAPABILITY_POLICY_NAME,
+                    opened_file,
+                ),
+                steps.raise_mac_admin,
+            ),
+            trigger=partial(
+                triggers.write_opened_file,
+                b"1",
+                opened_file,
+            ),
+            expect=errno.EPERM,
+            check=partial(checks.policy_active_is, CAPABILITY_POLICY_NAME, False),
+        ),
     )
