@@ -343,4 +343,24 @@ def build():
             expect=0,
             check=partial(checks.node_value_is, "enforce", "1"),
         ),
+        Case(
+            id="cap_enforce_fcred_nocap_eperm",
+            setup=(
+                steps.clear_mac_admin,
+                partial(
+                    steps.open_node,
+                    "enforce",
+                    None,
+                    opened_file,
+                ),
+                steps.raise_mac_admin,
+            ),
+            trigger=partial(
+                triggers.write_opened_file,
+                b"1",
+                opened_file,
+            ),
+            expect=errno.EPERM,
+            check=partial(checks.node_value_is, "enforce", "0"),
+        ),
     )
