@@ -18,6 +18,8 @@ from model import Case
 
 
 def build():
+    opened_file = [None]
+
     return (
         Case(
             id="cap_update_nocap_eperm",
@@ -151,5 +153,29 @@ def build():
             ),
             expect=0,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_NAME, True),
+        ),
+        Case(
+            id="cap_update_fcred_withcap_ok",
+            setup=(
+                partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
+                partial(
+                    steps.open_node,
+                    "update",
+                    CAPABILITY_POLICY_NAME,
+                    opened_file,
+                ),
+                steps.drop_mac_admin,
+            ),
+            trigger=partial(
+                triggers.write_opened_file,
+                ipe.signed_policy(CAPABILITY_POLICY_V2),
+                opened_file,
+            ),
+            expect=0,
+            check=partial(
+                checks.policy_version_is,
+                CAPABILITY_POLICY_NAME,
+                CAPABILITY_POLICY_V2_VERSION,
+            ),
         ),
     )

@@ -15,3 +15,11 @@ def write_node(node, policy, data):
         return Observation(failure.errno)
     finally:
         os.close(descriptor)
+
+
+def write_opened_file(data, descriptor):
+    try:
+        os.write(descriptor[0], data)
+        return Observation(0)
+    except OSError as failure:
+        return Observation(failure.errno)
