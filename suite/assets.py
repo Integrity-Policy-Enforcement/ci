@@ -25,3 +25,7 @@ POLICY_FIXTURE_MALFORMED_ASSET = "policy/ipe_test_policy-malformed"
 # policy signature cases sign this policy with a key no keyring trusts.
 UNTRUSTED_POLICY_ASSET = "policy_signature/untrusted"
 UNTRUSTED_POLICY_NAME = "ipe_test_signature_untrusted"
+
+# and replace this one's text after signing with a copy claiming a higher version.
+TAMPERED_POLICY_ASSET = "policy_signature/tampered"
+TAMPERED_POLICY_NAME = "ipe_test_signature_tampered"
