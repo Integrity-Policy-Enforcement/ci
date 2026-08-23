@@ -9,7 +9,8 @@ import urllib.request
 from pathlib import Path
 
 ARM64_FIRMWARE_URL = (
-    "https://deb.debian.org/debian/pool/main/e/edk2/qemu-efi-aarch64_2026.05-2_all.deb"
+    "https://snapshot.debian.org/archive/debian/20260806T202652Z"
+    "/pool/main/e/edk2/qemu-efi-aarch64_2026.05-2_all.deb"
 )
 ARM64_FIRMWARE_SHA256 = "ec0a922bc758fcf4b57b00b81870475d97e07ef166d4160d4651931958bbbdc3"
 

@@ -3,6 +3,8 @@
 name: tests
 
 on:
+  push:
+    branches: [main]
   schedule:
     # Test the latest upstream and IPE trees once a day (UTC).
     - cron: '23 5 * * *'
