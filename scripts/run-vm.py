@@ -5,6 +5,7 @@ import argparse
 import atexit
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,7 @@ ROOT = SCRIPT_DIR.parent
 IMAGE_DIR = ROOT / "image"
 SUITE = ROOT / "suite"
 POLICIES = ROOT / "build" / "policies"
+EMULATED_ARM64_CPU = "cortex-a72"
 
 
 def restore_owner(path):
@@ -90,6 +92,8 @@ def main(argv=None):
         "-drive",
         f"file={payload},format=raw,if=virtio,readonly=on",
     ]
+    if not kvm and platform.machine() == "aarch64":
+        command += ["-cpu", EMULATED_ARM64_CPU]
     try:
         with console.open("w", encoding="utf-8") as stream:
             returncode = subprocess.run(
