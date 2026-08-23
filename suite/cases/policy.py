@@ -109,4 +109,11 @@ def build():
             expect=errno.EPERM,
             check=partial(checks.policy_active_is, BASELINE_POLICY_NAME, True),
         ),
+        Case(
+            id="policy_activate_older_einval",
+            setup=(partial(steps.deploy_policy, POLICY_FIXTURE_V0_ASSET),),
+            trigger=partial(triggers.write_node, "active", POLICY_FIXTURE_NAME, b"1"),
+            expect=errno.EINVAL,
+            check=partial(checks.policy_active_is, BASELINE_POLICY_NAME, True),
+        ),
     )

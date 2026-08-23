@@ -15,6 +15,7 @@ CAPABILITY_POLICY_NAME = "ipe_test_capability"
 POLICY_FIXTURE_V1_ASSET = "policy/ipe_test_policy-0.0.1"
 POLICY_FIXTURE_V1_VERSION = "0.0.1"
 POLICY_FIXTURE_NAME = "ipe_test_policy"
+# Below the baseline version, so activating it must be rejected.
 POLICY_FIXTURE_V0_ASSET = "policy/ipe_test_policy-0.0.0"
 POLICY_FIXTURE_V2_ASSET = "policy/ipe_test_policy-0.0.2"
 POLICY_FIXTURE_V2_VERSION = "0.0.2"
