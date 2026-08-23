@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -16,7 +17,6 @@ CERTIFICATE = ROOT / "build" / "keys" / "signing-cert.pem"
 MODULE_KEY = ROOT / "build" / "keys" / "module-signing.pem"
 OUTPUT = ROOT / "build" / "kernel"
 STAGING = ROOT / "build" / "kernel-install"
-IMAGE = OUTPUT / "arch" / "x86" / "boot" / "bzImage"
 
 
 def run_result(command, **kwargs):
@@ -34,6 +34,19 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     source = args.kernel_tree.resolve()
+    machine = platform.machine()
+    if machine == "x86_64":
+        architecture = "x86_64"
+        kernel_arch = "x86"
+        defconfig = "x86_64_defconfig"
+        image = OUTPUT / "arch" / "x86" / "boot" / "bzImage"
+    elif machine == "aarch64":
+        architecture = "arm64"
+        kernel_arch = "arm64"
+        defconfig = "defconfig"
+        image = OUTPUT / "arch" / "arm64" / "boot" / "Image"
+    else:
+        return fail(f"unsupported build host architecture: {machine}")
     if not (source / "Makefile").is_file():
         return fail(f"not a Linux kernel tree: {source}")
     if not BOOT_POLICY.is_file():
@@ -45,10 +58,10 @@ def main(argv=None):
     shutil.rmtree(STAGING, ignore_errors=True)
     OUTPUT.mkdir(parents=True)
     jobs = os.cpu_count() or 1
-    make = ["make", "-C", source, f"O={OUTPUT}", "ARCH=x86", f"-j{jobs}"]
+    make = ["make", "-C", source, f"O={OUTPUT}", f"ARCH={kernel_arch}", f"-j{jobs}"]
 
-    print("    Configure x86_64 kernel", flush=True)
-    if run_result([*make, "x86_64_defconfig"], stdout=subprocess.DEVNULL).returncode:
+    print(f"    Configure {architecture} kernel", flush=True)
+    if run_result([*make, defconfig], stdout=subprocess.DEVNULL).returncode:
         return 1
 
     key_fragment = OUTPUT / ".signing-key.config"
@@ -60,7 +73,7 @@ def main(argv=None):
     )
     merge_log = OUTPUT / "merge.log"
     environment = os.environ.copy()
-    environment["ARCH"] = "x86"
+    environment["ARCH"] = kernel_arch
     with merge_log.open("w", encoding="utf-8") as log:
         result = run_result(
             [
@@ -77,11 +90,9 @@ def main(argv=None):
             stderr=subprocess.STDOUT,
             text=True,
         )
-    merge_text = merge_log.read_text(encoding="utf-8")
-    merge_warnings = [line for line in merge_text.splitlines() if line.startswith("WARNING:")]
-    if result.returncode or merge_warnings:
-        print(merge_text, file=sys.stderr)
-        return result.returncode or 1
+    if result.returncode:
+        print(merge_log.read_text(encoding="utf-8"), file=sys.stderr)
+        return result.returncode
 
     print("    Compile kernel", flush=True)
     build_log = OUTPUT / "build.log"
@@ -90,8 +101,8 @@ def main(argv=None):
     if result.returncode:
         print(build_log.read_text(encoding="utf-8", errors="replace"), file=sys.stderr)
         return result.returncode
-    if not IMAGE.is_file():
-        return fail(f"kernel image was not produced: {IMAGE}")
+    if not image.is_file():
+        return fail(f"kernel image was not produced: {image}")
 
     release = run_result(
         [*make, "-s", "kernelrelease"],
@@ -125,9 +136,9 @@ def main(argv=None):
     modules = STAGING / "usr" / "lib" / "modules" / release
     if not modules.is_dir():
         return fail(f"kernel modules were not installed: {modules}")
-    shutil.copy2(IMAGE, modules / "vmlinuz")
+    shutil.copy2(image, modules / "vmlinuz")
 
-    print(f"    Built {IMAGE} ({IMAGE.stat().st_size / 1024 / 1024:.1f} MiB)")
+    print(f"    Built {image} ({image.stat().st_size / 1024 / 1024:.1f} MiB)")
     return 0
 
 

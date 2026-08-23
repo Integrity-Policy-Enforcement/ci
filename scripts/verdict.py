@@ -13,7 +13,7 @@ FAIL = "FAIL"
 HEALTH_PATTERNS = (
     (re.compile(r"Kernel panic"), "kernel panic"),
     (re.compile(r"\bOops\b"), "Oops"),
-    (re.compile(r"^\[?[^\]]*\]?\s*BUG:"), "BUG"),
+    (re.compile(r"^(\[[^\]]*\]\s*)?BUG:"), "BUG"),
     (re.compile(r"WARNING: CPU:"), "WARN()"),
     (re.compile(r"WARNING: possible circular locking dependency"), "lock inversion"),
     (re.compile(r"\bkernel BUG at\b"), "kernel BUG"),

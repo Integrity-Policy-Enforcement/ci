@@ -1,0 +1,3 @@
+ipxe-qemu
+qemu-efi-aarch64
+qemu-system-arm
