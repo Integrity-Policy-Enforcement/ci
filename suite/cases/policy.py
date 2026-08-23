@@ -94,4 +94,11 @@ def build():
             expect=errno.EBADMSG,
             check=partial(checks.policy_version_is, POLICY_FIXTURE_NAME, POLICY_FIXTURE_V1_VERSION),
         ),
+        Case(
+            id="policy_delete_inactive_ok",
+            setup=(partial(steps.deploy_policy, POLICY_FIXTURE_V1_ASSET),),
+            trigger=partial(triggers.write_node, "delete", POLICY_FIXTURE_NAME, b"1"),
+            expect=0,
+            check=partial(checks.policy_present_is, POLICY_FIXTURE_NAME, False),
+        ),
     )
