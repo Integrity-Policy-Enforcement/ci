@@ -8,6 +8,7 @@ import ipe
 import steps
 import triggers
 from assets import (
+    POLICY_FIXTURE_MALFORMED_ASSET,
     POLICY_FIXTURE_OTHER_NAME_ASSET,
     POLICY_FIXTURE_V2_VERSION,
     POLICY_FIXTURE_V2_ASSET,
@@ -79,6 +80,18 @@ def build():
                 ipe.signed_policy(POLICY_FIXTURE_OTHER_NAME_ASSET),
             ),
             expect=errno.EINVAL,
+            check=partial(checks.policy_version_is, POLICY_FIXTURE_NAME, POLICY_FIXTURE_V1_VERSION),
+        ),
+        Case(
+            id="policy_update_malformed_ebadmsg",
+            setup=(partial(steps.deploy_policy, POLICY_FIXTURE_V1_ASSET),),
+            trigger=partial(
+                triggers.write_node,
+                "update",
+                POLICY_FIXTURE_NAME,
+                ipe.signed_policy(POLICY_FIXTURE_MALFORMED_ASSET),
+            ),
+            expect=errno.EBADMSG,
             check=partial(checks.policy_version_is, POLICY_FIXTURE_NAME, POLICY_FIXTURE_V1_VERSION),
         ),
     )
