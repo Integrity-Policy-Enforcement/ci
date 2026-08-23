@@ -15,6 +15,7 @@ IPE_TEST_CONFIG = ROOT / "config" / "ipe-tests.config"
 BOOT_POLICY = ROOT / "config" / "boot-policy.pol"
 CERTIFICATE = ROOT / "build" / "keys" / "signing-cert.pem"
 MODULE_KEY = ROOT / "build" / "keys" / "module-signing.pem"
+REVOKED_CERTIFICATE = ROOT / "build" / "keys" / "revoked-cert.pem"
 OUTPUT = ROOT / "build" / "kernel"
 STAGING = ROOT / "build" / "kernel-install"
 
@@ -68,7 +69,8 @@ def main(argv=None):
     key_fragment.write_text(
         f'CONFIG_SYSTEM_TRUSTED_KEYS="{CERTIFICATE}"\n'
         f'CONFIG_MODULE_SIG_KEY="{MODULE_KEY}"\n'
-        f'CONFIG_IPE_BOOT_POLICY="{BOOT_POLICY}"\n',
+        f'CONFIG_IPE_BOOT_POLICY="{BOOT_POLICY}"\n'
+        f'CONFIG_SYSTEM_REVOCATION_KEYS="{REVOKED_CERTIFICATE}"\n',
         encoding="utf-8",
     )
     merge_log = OUTPUT / "merge.log"

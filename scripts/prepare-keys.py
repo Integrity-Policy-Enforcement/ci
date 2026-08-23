@@ -12,6 +12,8 @@ KEY = KEYS / "signing-key.pem"
 CERTIFICATE = KEYS / "signing-cert.pem"
 CERTIFICATE_DER = KEYS / "signing-cert.der"
 MODULE_KEY = KEYS / "module-signing.pem"
+REVOKED_KEY = KEYS / "revoked-key.pem"
+REVOKED_CERTIFICATE = KEYS / "revoked-cert.pem"
 UNTRUSTED_KEY = KEYS / "untrusted-key.pem"
 UNTRUSTED_CERTIFICATE = KEYS / "untrusted-cert.pem"
 SECURE_BOOT_KEY = KEYS / "secureboot-key.pem"
@@ -75,6 +77,11 @@ def main():
         UNTRUSTED_KEY,
         UNTRUSTED_CERTIFICATE,
         "Untrusted IPE policy signing key",
+    )
+    generate_certificate(
+        REVOKED_KEY,
+        REVOKED_CERTIFICATE,
+        "Revoked IPE policy signing key",
     )
     generate_certificate(
         SECURE_BOOT_KEY,

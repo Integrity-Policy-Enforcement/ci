@@ -14,6 +14,9 @@ KEY = KEYS / "signing-key.pem"
 CERTIFICATE = KEYS / "signing-cert.pem"
 UNTRUSTED_KEY = KEYS / "untrusted-key.pem"
 UNTRUSTED_CERTIFICATE = KEYS / "untrusted-cert.pem"
+REVOKED_KEY = KEYS / "revoked-key.pem"
+REVOKED_CERTIFICATE = KEYS / "revoked-cert.pem"
+REVOKED_POLICY = "policy_signature/revoked.pol"
 UNTRUSTED_POLICY = "policy_signature/untrusted.pol"
 TAMPERED_POLICY = "policy_signature/tampered.pol"
 
@@ -88,6 +91,9 @@ def main():
 
     untrusted = POLICIES / UNTRUSTED_POLICY
     sign(untrusted, untrusted.with_suffix(".p7s"), UNTRUSTED_KEY, UNTRUSTED_CERTIFICATE)
+
+    revoked = POLICIES / REVOKED_POLICY
+    sign(revoked, revoked.with_suffix(".p7s"), REVOKED_KEY, REVOKED_CERTIFICATE)
 
     tampered = POLICIES / TAMPERED_POLICY
     substitute_signed_content(
