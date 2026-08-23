@@ -8,6 +8,7 @@ import ipe
 import steps
 import triggers
 from assets import (
+    BASELINE_POLICY_NAME,
     POLICY_FIXTURE_MALFORMED_ASSET,
     POLICY_FIXTURE_OTHER_NAME_ASSET,
     POLICY_FIXTURE_V2_VERSION,
@@ -100,5 +101,12 @@ def build():
             trigger=partial(triggers.write_node, "delete", POLICY_FIXTURE_NAME, b"1"),
             expect=0,
             check=partial(checks.policy_present_is, POLICY_FIXTURE_NAME, False),
+        ),
+        Case(
+            id="policy_delete_active_eperm",
+            setup=(),
+            trigger=partial(triggers.write_node, "delete", BASELINE_POLICY_NAME, b"1"),
+            expect=errno.EPERM,
+            check=partial(checks.policy_active_is, BASELINE_POLICY_NAME, True),
         ),
     )
