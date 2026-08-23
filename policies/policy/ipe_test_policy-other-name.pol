@@ -1,0 +1,2 @@
+policy_name=ipe_test_policy_other policy_version=0.0.9
+DEFAULT action=ALLOW
