@@ -21,3 +21,7 @@ POLICY_FIXTURE_V2_ASSET = "policy/ipe_test_policy-0.0.2"
 POLICY_FIXTURE_V2_VERSION = "0.0.2"
 POLICY_FIXTURE_OTHER_NAME_ASSET = "policy/ipe_test_policy-other-name"
 POLICY_FIXTURE_MALFORMED_ASSET = "policy/ipe_test_policy-malformed"
+
+# policy signature cases sign this policy with a key no keyring trusts.
+UNTRUSTED_POLICY_ASSET = "policy_signature/untrusted"
+UNTRUSTED_POLICY_NAME = "ipe_test_signature_untrusted"

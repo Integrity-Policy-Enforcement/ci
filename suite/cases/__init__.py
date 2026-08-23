@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 from . import policy
+from . import policy_signature
 from . import securityfs
 
 
 def build():
     cases = []
-    for module in (securityfs, policy):
+    for module in (securityfs, policy, policy_signature):
         cases.extend(module.build())
     ids = [case.id for case in cases]
     if len(ids) != len(set(ids)):

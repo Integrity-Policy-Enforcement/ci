@@ -12,6 +12,9 @@ SOURCE_POLICIES = ROOT / "policies"
 POLICIES = ROOT / "build" / "policies"
 KEY = KEYS / "signing-key.pem"
 CERTIFICATE = KEYS / "signing-cert.pem"
+UNTRUSTED_KEY = KEYS / "untrusted-key.pem"
+UNTRUSTED_CERTIFICATE = KEYS / "untrusted-cert.pem"
+UNTRUSTED_POLICY = "policy_signature/untrusted.pol"
 
 
 def openssl(*args, **kwargs):
@@ -23,16 +26,16 @@ def openssl(*args, **kwargs):
     )
 
 
-def sign(policy, output):
+def sign(policy, output, key=KEY, certificate=CERTIFICATE):
     openssl(
         "cms",
         "-sign",
         "-in",
         policy,
         "-signer",
-        CERTIFICATE,
+        certificate,
         "-inkey",
-        KEY,
+        key,
         "-binary",
         "-nodetach",
         "-noattr",
@@ -52,7 +55,7 @@ def sign(policy, output):
             "-inform",
             "DER",
             "-CAfile",
-            str(CERTIFICATE),
+            str(certificate),
             "-purpose",
             "any",
             "-out",
@@ -73,6 +76,9 @@ def main():
 
     for policy in POLICIES.rglob("*.pol"):
         sign(policy, policy.with_suffix(".p7s"))
+
+    untrusted = POLICIES / UNTRUSTED_POLICY
+    sign(untrusted, untrusted.with_suffix(".p7s"), UNTRUSTED_KEY, UNTRUSTED_CERTIFICATE)
     print(f"    Prepared {len(tuple(POLICIES.rglob('*.pol')))} signed policies")
     return 0
 
