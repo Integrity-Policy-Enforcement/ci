@@ -8,6 +8,7 @@ dosfstools
 e2fsprogs
 flex
 git
+libcryptsetup12
 libelf-dev
 libssl-dev
 mtools
@@ -22,5 +23,6 @@ rpm
 sbsigntool
 systemd
 systemd-boot-efi
+systemd-repart
 systemd-ukify
 zstd

@@ -72,7 +72,7 @@ def main(argv=None):
 
     kvm = os.access("/dev/kvm", os.R_OK | os.W_OK)
     acceleration = "kvm" if kvm else "tcg"
-    timeout = os.environ.get("IPE_TEST_TIMEOUT", "180" if kvm else "1200")
+    timeout = os.environ.get("IPE_TEST_TIMEOUT", "180" if kvm else "3600")
     command = [
         "timeout",
         timeout,
