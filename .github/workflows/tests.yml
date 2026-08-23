@@ -53,6 +53,10 @@ jobs:
           sudo python3 -m pip install --break-system-packages \
               "git+https://github.com/systemd/mkosi@$(cat config/mkosi.version)"
 
+      - name: Install arm64 firmware
+        if: matrix.architecture == 'arm64'
+        run: sudo python3 scripts/install-firmware.py
+
       - name: Run tests
         run: ./run.py kernel-source out
 
