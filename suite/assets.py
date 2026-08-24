@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-# Session activates this policy before the run and restores it after every case.
+# The run activates this permissive policy so a case starts from a known floor.
 BASELINE_POLICY_ASSET = "ipe_test_baseline-0.0.1"
 BASELINE_POLICY_NAME = "ipe_test_baseline"
 
@@ -46,3 +46,4 @@ PLATFORM_POLICY_NAME = "ipe_test_signature_platform"
 # policy text corpus: one fixture per parser decision point.
 TEXT_POLICY_NAME = "ipe_test_text"
 TEXT_SPECIAL_POLICY_NAME = "ipe_test_text$-.+"
+

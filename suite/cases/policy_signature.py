@@ -29,7 +29,6 @@ def build():
         (
         Case(
             id="policy_signature_untrusted_enokey",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -55,7 +54,6 @@ def build():
         ),
         Case(
             id="policy_signature_secondary_absent_enokey",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -67,7 +65,6 @@ def build():
         ),
         Case(
             id="policy_signature_platform_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -79,7 +76,6 @@ def build():
         ),
         Case(
             id="policy_signature_revoked_ekeyrejected",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -91,7 +87,6 @@ def build():
         ),
         Case(
             id="policy_signature_tampered_ekeyrejected",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",

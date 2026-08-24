@@ -16,7 +16,6 @@ def build():
         (
         Case(
             id="text_header_missing_version_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -28,7 +27,6 @@ def build():
         ),
         Case(
             id="text_header_missing_name_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -40,7 +38,6 @@ def build():
         ),
         Case(
             id="text_header_swapped_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -52,7 +49,6 @@ def build():
         ),
         Case(
             id="text_header_extra_field_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -64,7 +60,6 @@ def build():
         ),
         Case(
             id="text_header_unknown_key_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -76,7 +71,6 @@ def build():
         ),
         Case(
             id="text_header_absent_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -88,7 +82,6 @@ def build():
         ),
         Case(
             id="text_version_one_part_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -100,7 +93,6 @@ def build():
         ),
         Case(
             id="text_version_two_parts_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -112,7 +104,6 @@ def build():
         ),
         Case(
             id="text_version_four_parts_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -124,7 +115,6 @@ def build():
         ),
         Case(
             id="text_version_empty_part_einval",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -136,7 +126,6 @@ def build():
         ),
         Case(
             id="text_version_non_numeric_einval",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -148,7 +137,6 @@ def build():
         ),
         Case(
             id="text_version_overflow_erange",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -160,7 +148,6 @@ def build():
         ),
         Case(
             id="text_rule_unknown_op_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -172,7 +159,6 @@ def build():
         ),
         Case(
             id="text_rule_unknown_property_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -184,7 +170,6 @@ def build():
         ),
         Case(
             id="text_rule_unknown_action_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -196,7 +181,6 @@ def build():
         ),
         Case(
             id="text_rule_missing_action_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -208,7 +192,6 @@ def build():
         ),
         Case(
             id="text_rule_default_with_property_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -220,7 +203,6 @@ def build():
         ),
         Case(
             id="text_rule_duplicate_global_default_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -232,7 +214,6 @@ def build():
         ),
         Case(
             id="text_rule_duplicate_op_default_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -244,7 +225,6 @@ def build():
         ),
         Case(
             id="text_missing_op_default_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -256,7 +236,6 @@ def build():
         ),
         Case(
             id="text_empty_ebadmsg",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -268,7 +247,6 @@ def build():
         ),
         Case(
             id="text_comment_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -280,7 +258,6 @@ def build():
         ),
         Case(
             id="text_extra_spaces_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -292,7 +269,6 @@ def build():
         ),
         Case(
             id="text_blank_lines_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -304,7 +280,6 @@ def build():
         ),
         Case(
             id="text_op_default_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -316,7 +291,6 @@ def build():
         ),
         Case(
             id="text_multiple_rules_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -328,7 +302,6 @@ def build():
         ),
         Case(
             id="text_special_name_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -340,7 +313,6 @@ def build():
         ),
         Case(
             id="text_property_digest_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -352,7 +324,6 @@ def build():
         ),
         Case(
             id="text_property_boolean_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",

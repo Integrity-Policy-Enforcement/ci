@@ -27,7 +27,6 @@ def build():
         (
         Case(
             id="policy_load_ok",
-            setup=(),
             trigger=partial(
                 triggers.write_node,
                 "new_policy",
@@ -106,7 +105,6 @@ def build():
         ),
         Case(
             id="policy_delete_active_eperm",
-            setup=(),
             trigger=partial(triggers.write_node, "delete", BASELINE_POLICY_NAME, b"1"),
             expect=errno.EPERM,
             check=partial(checks.policy_active_is, BASELINE_POLICY_NAME, True),

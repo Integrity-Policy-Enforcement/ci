@@ -78,6 +78,21 @@ def delete_policy(name):
         raise RuntimeError(f"policy {name} was not deleted")
 
 
+def enforcement():
+    return node_path("enforce").read_text().strip() == "1"
+
+
+def success_audit():
+    return node_path("success_audit").read_text().strip() == "1"
+
+
+def active_policy():
+    for name in policy_names():
+        if policy_active(name):
+            return name
+    return None
+
+
 def set_enforcement(enabled):
     write(node_path("enforce"), "1" if enabled else "0")
 

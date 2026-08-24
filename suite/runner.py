@@ -6,7 +6,9 @@ import signal
 import traceback
 
 import cases
-from session import Session
+from assets import BASELINE_POLICY_ASSET, BASELINE_POLICY_NAME
+import ipe
+import runtime
 
 CASE_TIMEOUT_SECONDS = 60
 
@@ -22,6 +24,8 @@ def run_in_child(case):
         os.close(read_fd)
         signal.alarm(CASE_TIMEOUT_SECONDS)
         try:
+            for step in case.collect:
+                step()
             for step in case.setup:
                 step()
             observation = case.trigger()
@@ -44,18 +48,22 @@ def run_in_child(case):
     return json.loads(payload)
 
 
-def evaluate(case):
-    result = run_in_child(case)
-    if "error" in result:
-        return "error", result["error"]
-    if result["errno"] != case.expect:
-        detail = f": {result['detail']}" if result["detail"] else ""
-        return "failure", f"expected errno {case.expect}, got {result['errno']}{detail}"
-    if case.check:
-        problem = case.check(result["detail"])
-        if problem:
-            return "failure", problem
-    return None
+def test(case):
+    try:
+        result = run_in_child(case)
+        if "error" in result:
+            return "error", result["error"]
+        if result["errno"] != case.expect:
+            detail = f": {result['detail']}" if result["detail"] else ""
+            return "failure", f"expected errno {case.expect}, got {result['errno']}{detail}"
+        if case.check:
+            problem = case.check(result["detail"])
+            if problem:
+                return "failure", problem
+        return None
+    except Exception as failure:
+        traceback.print_exc()
+        return "error", f"{type(failure).__name__}: {clean(failure)}"
 
 
 def run(output):
@@ -68,42 +76,27 @@ def run(output):
     emit("TAP version 13")
     emit(f"1..{len(planned)}")
 
-    try:
-        session = Session()
-    except Exception as failure:
-        traceback.print_exc()
-        emit(f"Bail out! setup failed: {type(failure).__name__}: {clean(failure)}")
-        return 1
-
     failures = 0
     number = 0
-    for batch in batches:
-        try:
-            for case in batch.cases:
-                number += 1
-                try:
-                    outcome = evaluate(case)
-                except Exception as failure:
-                    traceback.print_exc()
-                    outcome = "error", f"{type(failure).__name__}: {clean(failure)}"
+    with runtime.run.scope():
+        ipe.load_baseline(BASELINE_POLICY_ASSET, BASELINE_POLICY_NAME)
+        for batch in batches:
+            try:
+                for case in batch.cases:
+                    number += 1
+                    with case.scope():
+                        outcome = test(case)
 
-                try:
-                    session.reset()
-                except Exception as failure:
-                    traceback.print_exc()
-                    emit(f"Bail out! reset after {case.id} failed: {clean(failure)}")
-                    return 1
-
-                if outcome is None:
-                    emit(f"ok {number} {case.id}")
-                else:
-                    kind, message = outcome
-                    failures += 1
-                    prefix = "error " if kind == "error" else ""
-                    emit(f"not ok {number} {case.id} # {prefix}{clean(message)}")
-        except Exception as failure:
-            traceback.print_exc()
-            emit(f"Bail out! batch {batch.id} failed: {clean(failure)}")
-            return 1
+                    if outcome is None:
+                        emit(f"ok {number} {case.id}")
+                    else:
+                        kind, message = outcome
+                        failures += 1
+                        prefix = "error " if kind == "error" else ""
+                        emit(f"not ok {number} {case.id} # {prefix}{clean(message)}")
+            except Exception as failure:
+                traceback.print_exc()
+                emit(f"Bail out! batch {batch.id} failed: {clean(failure)}")
+                return 1
 
     return 1 if failures else 0

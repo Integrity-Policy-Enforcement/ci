@@ -7,10 +7,10 @@ from . import securityfs
 
 
 def build():
-    cases = []
+    batches = []
     for module in (securityfs, policy, policy_signature, policy_text):
-        cases.extend(module.build())
-    ids = [case.id for case in cases]
+        batches.extend(module.build())
+    ids = [case.id for batch in batches for case in batch.cases]
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate case id")
-    return tuple(cases)
+    return tuple(batches)

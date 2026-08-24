@@ -50,9 +50,16 @@ def read_binary_node(node, policy, values):
         return Observation(failure.errno)
 
 
+def write_opened_file_and_read(node, policy, data, descriptor, values):
+    observation = write_opened_file(data, descriptor)
+    values.append(ipe.node_path(node, policy).read_text().strip())
+    return Observation(observation.errno, values)
+
+
 def write_opened_file(data, descriptor):
     try:
         os.write(descriptor[0], data)
         return Observation(0)
     except OSError as failure:
         return Observation(failure.errno)
+

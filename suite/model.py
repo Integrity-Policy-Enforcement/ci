@@ -3,6 +3,8 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
+import runtime
+
 
 @dataclass(frozen=True)
 class Observation:
@@ -13,10 +15,12 @@ class Observation:
 @dataclass(frozen=True)
 class Case:
     id: str
-    setup: tuple[Callable, ...]
     trigger: Callable
     expect: int
+    collect: tuple[Callable, ...] = ()
+    setup: tuple[Callable, ...] = ()
     check: Callable | None = None
+    scope: Callable = runtime.case.scope
 
 
 @dataclass(frozen=True)
