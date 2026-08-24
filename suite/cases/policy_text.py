@@ -60,4 +60,16 @@ def build():
             expect=errno.EBADMSG,
             check=partial(checks.policy_present_is, TEXT_POLICY_NAME, False),
         ),
+        Case(
+            id="text_header_unknown_key_ebadmsg",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy("policy_text/header_unknown_key"),
+            ),
+            expect=errno.EBADMSG,
+            check=None,
+        ),
     )
