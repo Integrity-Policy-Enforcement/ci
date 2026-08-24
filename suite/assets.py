@@ -45,3 +45,4 @@ PLATFORM_POLICY_NAME = "ipe_test_signature_platform"
 
 # policy text corpus: one fixture per parser decision point.
 TEXT_POLICY_NAME = "ipe_test_text"
+TEXT_SPECIAL_POLICY_NAME = "ipe_test_text$-.+"

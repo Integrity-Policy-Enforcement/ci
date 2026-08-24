@@ -6,7 +6,7 @@ from functools import partial
 import checks
 import ipe
 import triggers
-from assets import TEXT_POLICY_NAME
+from assets import TEXT_POLICY_NAME, TEXT_SPECIAL_POLICY_NAME
 from model import Case
 
 
@@ -323,5 +323,17 @@ def build():
             ),
             expect=0,
             check=partial(checks.policy_present_is, TEXT_POLICY_NAME, True),
+        ),
+        Case(
+            id="text_special_name_ok",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy("policy_text/special_name_ok"),
+            ),
+            expect=0,
+            check=partial(checks.policy_present_is, TEXT_SPECIAL_POLICY_NAME, True),
         ),
     )
