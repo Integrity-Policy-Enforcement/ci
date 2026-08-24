@@ -84,4 +84,16 @@ def build():
             expect=errno.EBADMSG,
             check=None,
         ),
+        Case(
+            id="text_version_one_part_ebadmsg",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy("policy_text/version_one_part"),
+            ),
+            expect=errno.EBADMSG,
+            check=partial(checks.policy_present_is, TEXT_POLICY_NAME, False),
+        ),
     )
