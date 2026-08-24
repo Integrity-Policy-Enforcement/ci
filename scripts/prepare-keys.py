@@ -8,9 +8,9 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 KEYS = ROOT / "build" / "keys"
-KEY = KEYS / "signing-key.pem"
-CERTIFICATE = KEYS / "signing-cert.pem"
-CERTIFICATE_DER = KEYS / "signing-cert.der"
+BUILTIN_KEY = KEYS / "builtin-key.pem"
+BUILTIN_CERTIFICATE = KEYS / "builtin-cert.pem"
+BUILTIN_CERTIFICATE_DER = KEYS / "builtin-cert.der"
 MODULE_KEY = KEYS / "module-signing.pem"
 INTERMEDIATE_KEY = KEYS / "intermediate-key.pem"
 INTERMEDIATE_CERTIFICATE = KEYS / "intermediate-cert.pem"
@@ -75,7 +75,7 @@ def main():
     shutil.rmtree(KEYS, ignore_errors=True)
     KEYS.mkdir(parents=True)
     generate_certificate(
-        KEY, CERTIFICATE, "Ephemeral IPE policy signing key", AUTHORITY_EXTENSIONS
+        BUILTIN_KEY, BUILTIN_CERTIFICATE, "Builtin IPE policy signing key", AUTHORITY_EXTENSIONS
     )
     generate_certificate(
         UNTRUSTED_KEY,
@@ -88,8 +88,8 @@ def main():
         INTERMEDIATE_CERTIFICATE,
         "Intermediate IPE policy authority",
         AUTHORITY_EXTENSIONS,
-        CERTIFICATE,
-        KEY,
+        BUILTIN_CERTIFICATE,
+        BUILTIN_KEY,
     )
     generate_certificate(
         SECONDARY_KEY,
@@ -114,13 +114,13 @@ def main():
     openssl(
         "x509",
         "-in",
-        CERTIFICATE,
+        BUILTIN_CERTIFICATE,
         "-outform",
         "DER",
         "-out",
-        CERTIFICATE_DER,
+        BUILTIN_CERTIFICATE_DER,
     )
-    MODULE_KEY.write_bytes(KEY.read_bytes() + CERTIFICATE.read_bytes())
+    MODULE_KEY.write_bytes(BUILTIN_KEY.read_bytes() + BUILTIN_CERTIFICATE.read_bytes())
     MODULE_KEY.chmod(0o600)
     print("    Prepared signing identities")
     return 0

@@ -10,8 +10,8 @@ ROOT = SCRIPT_DIR.parent
 KEYS = ROOT / "build" / "keys"
 SOURCE_POLICIES = ROOT / "policies"
 POLICIES = ROOT / "build" / "policies"
-KEY = KEYS / "signing-key.pem"
-CERTIFICATE = KEYS / "signing-cert.pem"
+BUILTIN_KEY = KEYS / "builtin-key.pem"
+BUILTIN_CERTIFICATE = KEYS / "builtin-cert.pem"
 UNTRUSTED_KEY = KEYS / "untrusted-key.pem"
 UNTRUSTED_CERTIFICATE = KEYS / "untrusted-cert.pem"
 INTERMEDIATE_CERTIFICATE = KEYS / "intermediate-cert.pem"
@@ -37,7 +37,7 @@ def openssl(*args, **kwargs):
     )
 
 
-def sign(policy, output, key=KEY, certificate=CERTIFICATE, anchor=CERTIFICATE):
+def sign(policy, output, key=BUILTIN_KEY, certificate=BUILTIN_CERTIFICATE, anchor=BUILTIN_CERTIFICATE):
     openssl(
         "cms",
         "-sign",
@@ -89,7 +89,7 @@ def substitute_signed_content(policy, replacement, signature):
 
 
 def main():
-    if not KEY.is_file() or not CERTIFICATE.is_file():
+    if not BUILTIN_KEY.is_file() or not BUILTIN_CERTIFICATE.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
     shutil.rmtree(POLICIES, ignore_errors=True)
     shutil.copytree(SOURCE_POLICIES, POLICIES)

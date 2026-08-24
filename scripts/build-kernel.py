@@ -13,7 +13,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 IPE_TEST_CONFIG = ROOT / "config" / "ipe-tests.config"
 BOOT_POLICY = ROOT / "config" / "boot-policy.pol"
-CERTIFICATE = ROOT / "build" / "keys" / "signing-cert.pem"
+BUILTIN_CERTIFICATE = ROOT / "build" / "keys" / "builtin-cert.pem"
 MODULE_KEY = ROOT / "build" / "keys" / "module-signing.pem"
 REVOKED_CERTIFICATE = ROOT / "build" / "keys" / "revoked-cert.pem"
 OUTPUT = ROOT / "build" / "kernel"
@@ -52,7 +52,7 @@ def main(argv=None):
         return fail(f"not a Linux kernel tree: {source}")
     if not BOOT_POLICY.is_file():
         return fail(f"boot policy is missing: {BOOT_POLICY}")
-    if not CERTIFICATE.is_file() or not MODULE_KEY.is_file():
+    if not BUILTIN_CERTIFICATE.is_file() or not MODULE_KEY.is_file():
         return fail("signing keys are missing; run prepare-policies.py")
 
     shutil.rmtree(OUTPUT, ignore_errors=True)
@@ -67,7 +67,7 @@ def main(argv=None):
 
     key_fragment = OUTPUT / ".signing-key.config"
     key_fragment.write_text(
-        f'CONFIG_SYSTEM_TRUSTED_KEYS="{CERTIFICATE}"\n'
+        f'CONFIG_SYSTEM_TRUSTED_KEYS="{BUILTIN_CERTIFICATE}"\n'
         f'CONFIG_MODULE_SIG_KEY="{MODULE_KEY}"\n'
         f'CONFIG_IPE_BOOT_POLICY="{BOOT_POLICY}"\n'
         f'CONFIG_SYSTEM_REVOCATION_KEYS="{REVOKED_CERTIFICATE}"\n',
