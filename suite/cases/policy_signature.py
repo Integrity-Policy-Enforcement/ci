@@ -8,6 +8,8 @@ import ipe
 import steps
 import triggers
 from assets import (
+    PLATFORM_POLICY_ASSET,
+    PLATFORM_POLICY_NAME,
     SECONDARY_KEYRING,
     SECONDARY_POLICY_ASSET,
     SECONDARY_POLICY_NAME,
@@ -60,6 +62,18 @@ def build():
             ),
             expect=errno.ENOKEY,
             check=partial(checks.policy_present_is, SECONDARY_POLICY_NAME, False),
+        ),
+        Case(
+            id="policy_signature_platform_ok",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy(PLATFORM_POLICY_ASSET),
+            ),
+            expect=0,
+            check=partial(checks.policy_present_is, PLATFORM_POLICY_NAME, True),
         ),
         Case(
             id="policy_signature_revoked_ekeyrejected",

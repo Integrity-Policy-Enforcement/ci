@@ -38,3 +38,7 @@ TAMPERED_POLICY_NAME = "ipe_test_signature_tampered"
 SECONDARY_POLICY_ASSET = "policy_signature/secondary"
 SECONDARY_POLICY_NAME = "ipe_test_signature_secondary"
 SECONDARY_KEYRING = "%:.secondary_trusted_keys"
+
+# and this one with the Secure Boot key the firmware already trusts.
+PLATFORM_POLICY_ASSET = "policy_signature/platform"
+PLATFORM_POLICY_NAME = "ipe_test_signature_platform"

@@ -18,6 +18,9 @@ INTERMEDIATE_CERTIFICATE = KEYS / "intermediate-cert.pem"
 SECONDARY_KEY = KEYS / "secondary-key.pem"
 SECONDARY_CERTIFICATE = KEYS / "secondary-cert.pem"
 SECONDARY_POLICY = "policy_signature/secondary.pol"
+PLATFORM_KEY = KEYS / "secureboot-key.pem"
+PLATFORM_CERTIFICATE = KEYS / "secureboot-cert.pem"
+PLATFORM_POLICY = "policy_signature/platform.pol"
 REVOKED_KEY = KEYS / "revoked-key.pem"
 REVOKED_CERTIFICATE = KEYS / "revoked-cert.pem"
 REVOKED_POLICY = "policy_signature/revoked.pol"
@@ -114,6 +117,15 @@ def main():
     openssl(
         "x509", "-in", INTERMEDIATE_CERTIFICATE, "-outform", "DER",
         "-out", secondary.with_suffix(".der"),
+    )
+
+    platform = POLICIES / PLATFORM_POLICY
+    sign(
+        platform,
+        platform.with_suffix(".p7s"),
+        PLATFORM_KEY,
+        PLATFORM_CERTIFICATE,
+        PLATFORM_CERTIFICATE,
     )
 
     revoked = POLICIES / REVOKED_POLICY
