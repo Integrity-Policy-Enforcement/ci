@@ -7,11 +7,13 @@ import checks
 import ipe
 import triggers
 from assets import TEXT_POLICY_NAME, TEXT_SPECIAL_POLICY_NAME
-from model import Case
+from model import Batch, Case
 
 
 def build():
-    return (
+    return (Batch(
+        "policy_text",
+        (
         Case(
             id="text_header_missing_version_ebadmsg",
             setup=(),
@@ -360,4 +362,5 @@ def build():
             expect=0,
             check=partial(checks.policy_present_is, TEXT_POLICY_NAME, True),
         ),
-    )
+        ),
+    ),)

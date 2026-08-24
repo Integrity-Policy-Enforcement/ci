@@ -63,7 +63,8 @@ def run(output):
         output.write(line.replace("\n", " ").replace("\r", " ") + "\n")
         output.flush()
 
-    planned = cases.build()
+    batches = cases.build()
+    planned = [case for batch in batches for case in batch.cases]
     emit("TAP version 13")
     emit(f"1..{len(planned)}")
 
@@ -75,26 +76,34 @@ def run(output):
         return 1
 
     failures = 0
-    for number, case in enumerate(planned, 1):
+    number = 0
+    for batch in batches:
         try:
-            outcome = evaluate(case)
-        except Exception as failure:
-            traceback.print_exc()
-            outcome = "error", f"{type(failure).__name__}: {clean(failure)}"
+            for case in batch.cases:
+                number += 1
+                try:
+                    outcome = evaluate(case)
+                except Exception as failure:
+                    traceback.print_exc()
+                    outcome = "error", f"{type(failure).__name__}: {clean(failure)}"
 
-        try:
-            session.reset()
+                try:
+                    session.reset()
+                except Exception as failure:
+                    traceback.print_exc()
+                    emit(f"Bail out! reset after {case.id} failed: {clean(failure)}")
+                    return 1
+
+                if outcome is None:
+                    emit(f"ok {number} {case.id}")
+                else:
+                    kind, message = outcome
+                    failures += 1
+                    prefix = "error " if kind == "error" else ""
+                    emit(f"not ok {number} {case.id} # {prefix}{clean(message)}")
         except Exception as failure:
             traceback.print_exc()
-            emit(f"Bail out! reset after {case.id} failed: {clean(failure)}")
+            emit(f"Bail out! batch {batch.id} failed: {clean(failure)}")
             return 1
-
-        if outcome is None:
-            emit(f"ok {number} {case.id}")
-        else:
-            kind, message = outcome
-            failures += 1
-            prefix = "error " if kind == "error" else ""
-            emit(f"not ok {number} {case.id} # {prefix}{clean(message)}")
 
     return 1 if failures else 0

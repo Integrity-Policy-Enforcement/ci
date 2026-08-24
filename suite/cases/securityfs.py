@@ -14,7 +14,7 @@ from assets import (
     CAPABILITY_POLICY_V2_ASSET,
     CAPABILITY_POLICY_V2_VERSION,
 )
-from model import Case
+from model import Batch, Case
 
 
 def build():
@@ -25,7 +25,9 @@ def build():
     trailing_fragment = ipe.signed_policy(CAPABILITY_POLICY_V1_ASSET)
     trailing_fragment = trailing_fragment[len(trailing_fragment) // 2 :]
 
-    return (
+    return (Batch(
+        "securityfs",
+        (
         Case(
             id="cap_update_nocap_eperm",
             setup=(
@@ -677,4 +679,5 @@ def build():
             expect=0,
             check=checks.two_values_differ,
         ),
-    )
+        ),
+    ),)

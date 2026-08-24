@@ -17,3 +17,9 @@ class Case:
     trigger: Callable
     expect: int
     check: Callable | None = None
+
+
+@dataclass(frozen=True)
+class Batch:
+    id: str
+    cases: tuple[Case, ...]

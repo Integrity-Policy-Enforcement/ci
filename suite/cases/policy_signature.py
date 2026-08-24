@@ -20,11 +20,13 @@ from assets import (
     UNTRUSTED_POLICY_ASSET,
     UNTRUSTED_POLICY_NAME,
 )
-from model import Case
+from model import Batch, Case
 
 
 def build():
-    return (
+    return (Batch(
+        "policy_signature",
+        (
         Case(
             id="policy_signature_untrusted_enokey",
             setup=(),
@@ -99,4 +101,5 @@ def build():
             expect=errno.EKEYREJECTED,
             check=partial(checks.policy_present_is, TAMPERED_POLICY_NAME, False),
         ),
-    )
+        ),
+    ),)

@@ -18,11 +18,13 @@ from assets import (
     POLICY_FIXTURE_V1_ASSET,
     POLICY_FIXTURE_V1_VERSION,
 )
-from model import Case
+from model import Batch, Case
 
 
 def build():
-    return (
+    return (Batch(
+        "policy",
+        (
         Case(
             id="policy_load_ok",
             setup=(),
@@ -116,4 +118,5 @@ def build():
             expect=errno.EINVAL,
             check=partial(checks.policy_active_is, BASELINE_POLICY_NAME, True),
         ),
-    )
+        ),
+    ),)
