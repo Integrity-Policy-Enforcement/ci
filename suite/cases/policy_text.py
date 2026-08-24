@@ -144,4 +144,16 @@ def build():
             expect=errno.EINVAL,
             check=partial(checks.policy_present_is, TEXT_POLICY_NAME, False),
         ),
+        Case(
+            id="text_version_overflow_erange",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy("policy_text/version_overflow"),
+            ),
+            expect=errno.ERANGE,
+            check=partial(checks.policy_present_is, TEXT_POLICY_NAME, False),
+        ),
     )
