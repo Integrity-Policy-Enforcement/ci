@@ -168,4 +168,16 @@ def build():
             expect=errno.EBADMSG,
             check=partial(checks.policy_present_is, TEXT_POLICY_NAME, False),
         ),
+        Case(
+            id="text_rule_unknown_property_ebadmsg",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy("policy_text/rule_unknown_property"),
+            ),
+            expect=errno.EBADMSG,
+            check=partial(checks.policy_present_is, TEXT_POLICY_NAME, False),
+        ),
     )
