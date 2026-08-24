@@ -33,3 +33,8 @@ UNTRUSTED_POLICY_NAME = "ipe_test_signature_untrusted"
 # and replace this one's text after signing with a copy claiming a higher version.
 TAMPERED_POLICY_ASSET = "policy_signature/tampered"
 TAMPERED_POLICY_NAME = "ipe_test_signature_tampered"
+
+# and this one with a leaf whose issuer must first be linked into a keyring.
+SECONDARY_POLICY_ASSET = "policy_signature/secondary"
+SECONDARY_POLICY_NAME = "ipe_test_signature_secondary"
+SECONDARY_KEYRING = "%:.secondary_trusted_keys"

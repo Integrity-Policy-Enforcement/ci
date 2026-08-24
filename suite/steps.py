@@ -4,6 +4,7 @@ import os
 
 import capabilities
 import ipe
+import keyring
 
 
 def deploy_policy(asset):
@@ -38,3 +39,7 @@ def raise_mac_admin():
 
 def drop_mac_admin():
     capabilities.drop_mac_admin()
+
+
+def link_certificate(keyring_name, asset):
+    keyring.add_certificate(keyring_name, ipe.policy_asset(asset, ".der"))

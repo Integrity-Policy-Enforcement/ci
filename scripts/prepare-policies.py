@@ -14,6 +14,10 @@ KEY = KEYS / "signing-key.pem"
 CERTIFICATE = KEYS / "signing-cert.pem"
 UNTRUSTED_KEY = KEYS / "untrusted-key.pem"
 UNTRUSTED_CERTIFICATE = KEYS / "untrusted-cert.pem"
+INTERMEDIATE_CERTIFICATE = KEYS / "intermediate-cert.pem"
+SECONDARY_KEY = KEYS / "secondary-key.pem"
+SECONDARY_CERTIFICATE = KEYS / "secondary-cert.pem"
+SECONDARY_POLICY = "policy_signature/secondary.pol"
 REVOKED_KEY = KEYS / "revoked-key.pem"
 REVOKED_CERTIFICATE = KEYS / "revoked-cert.pem"
 REVOKED_POLICY = "policy_signature/revoked.pol"
@@ -30,7 +34,7 @@ def openssl(*args, **kwargs):
     )
 
 
-def sign(policy, output, key=KEY, certificate=CERTIFICATE):
+def sign(policy, output, key=KEY, certificate=CERTIFICATE, anchor=CERTIFICATE):
     openssl(
         "cms",
         "-sign",
@@ -59,7 +63,8 @@ def sign(policy, output, key=KEY, certificate=CERTIFICATE):
             "-inform",
             "DER",
             "-CAfile",
-            str(certificate),
+            str(anchor),
+            "-partial_chain",
             "-purpose",
             "any",
             "-out",
@@ -90,10 +95,35 @@ def main():
         sign(policy, policy.with_suffix(".p7s"))
 
     untrusted = POLICIES / UNTRUSTED_POLICY
-    sign(untrusted, untrusted.with_suffix(".p7s"), UNTRUSTED_KEY, UNTRUSTED_CERTIFICATE)
+    sign(
+        untrusted,
+        untrusted.with_suffix(".p7s"),
+        UNTRUSTED_KEY,
+        UNTRUSTED_CERTIFICATE,
+        UNTRUSTED_CERTIFICATE,
+    )
+
+    secondary = POLICIES / SECONDARY_POLICY
+    sign(
+        secondary,
+        secondary.with_suffix(".p7s"),
+        SECONDARY_KEY,
+        SECONDARY_CERTIFICATE,
+        INTERMEDIATE_CERTIFICATE,
+    )
+    openssl(
+        "x509", "-in", INTERMEDIATE_CERTIFICATE, "-outform", "DER",
+        "-out", secondary.with_suffix(".der"),
+    )
 
     revoked = POLICIES / REVOKED_POLICY
-    sign(revoked, revoked.with_suffix(".p7s"), REVOKED_KEY, REVOKED_CERTIFICATE)
+    sign(
+        revoked,
+        revoked.with_suffix(".p7s"),
+        REVOKED_KEY,
+        REVOKED_CERTIFICATE,
+        REVOKED_CERTIFICATE,
+    )
 
     tampered = POLICIES / TAMPERED_POLICY
     substitute_signed_content(
