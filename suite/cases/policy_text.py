@@ -336,4 +336,16 @@ def build():
             expect=0,
             check=partial(checks.policy_present_is, TEXT_SPECIAL_POLICY_NAME, True),
         ),
+        Case(
+            id="text_property_digest_ok",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy("policy_text/property_digest_ok"),
+            ),
+            expect=0,
+            check=partial(checks.policy_present_is, TEXT_POLICY_NAME, True),
+        ),
     )
