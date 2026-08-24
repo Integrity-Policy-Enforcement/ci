@@ -72,4 +72,16 @@ def build():
             expect=errno.EBADMSG,
             check=None,
         ),
+        Case(
+            id="text_header_absent_ebadmsg",
+            setup=(),
+            trigger=partial(
+                triggers.write_node,
+                "new_policy",
+                None,
+                ipe.signed_policy("policy_text/header_absent"),
+            ),
+            expect=errno.EBADMSG,
+            check=None,
+        ),
     )
