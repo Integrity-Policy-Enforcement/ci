@@ -1,0 +1,3 @@
+policy_name=ipe_test_text policy_version=0.0.0
+DEFAULT action=ALLOW
+DEFAULT action=DENY
