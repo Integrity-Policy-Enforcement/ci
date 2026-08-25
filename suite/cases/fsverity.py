@@ -40,6 +40,12 @@ def build():
                     layout.FSVERITY_SIGNED_MODULE,
                     allowed=True,
                 ),
+                kmodule.case(
+                    "kmodule_fsverity_signature_false_unsigned_denied",
+                    FSVERITY_SIGNATURE_FALSE_POLICY,
+                    layout.FSVERITY_UNSIGNED_MODULE,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
