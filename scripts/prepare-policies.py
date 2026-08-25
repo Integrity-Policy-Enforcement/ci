@@ -24,6 +24,8 @@ KEYS = ROOT / "build" / "keys"
 SOURCE_POLICIES = ROOT / "policies"
 DMVERITY = ROOT / "build" / layout.DMVERITY_ASSETS.name
 ROOT_HASH_PLACEHOLDER = "@DMVERITY_ROOTHASH@"
+OTHER_ROOT_HASH_PLACEHOLDER = "@DMVERITY_OTHER_ROOTHASH@"
+HEX_DIGITS = "0123456789abcdef"
 DMVERITY_ALGORITHM = "sha256"  # what veritysetup format defaults to
 POLICIES = ROOT / "build" / "policies"
 BUILTIN_KEY = KEYS / "builtin-key.pem"
@@ -104,11 +106,19 @@ def substitute_signed_content(policy, replacement, signature):
     signature.write_bytes(signature.read_bytes().replace(signed_text, replacement_text))
 
 
+def shift(hexadecimal):
+    """A well formed value of the same length that nothing here carries."""
+    return "".join(
+        HEX_DIGITS[(HEX_DIGITS.index(digit) + 1) % len(HEX_DIGITS)] for digit in hexadecimal
+    )
+
+
 def measurements():
     """Every placeholder and the <algorithm>:<hex> a policy should name."""
     root_hash = (DMVERITY / layout.ROOT_HASH).read_text().strip()
     return {
         ROOT_HASH_PLACEHOLDER: f"{DMVERITY_ALGORITHM}:{root_hash}",
+        OTHER_ROOT_HASH_PLACEHOLDER: f"{DMVERITY_ALGORITHM}:{shift(root_hash)}",
     }
 
 

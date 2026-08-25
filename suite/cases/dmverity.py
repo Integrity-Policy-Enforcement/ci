@@ -8,6 +8,7 @@ import layout
 import mounts
 import steps
 from assets import (
+    KMODULE_ROOTHASH_MISMATCH_POLICY,
     KMODULE_ROOTHASH_POLICY,
     KMODULE_SIGNATURE_FALSE_POLICY,
     KMODULE_SIGNATURE_TRUE_POLICY,
@@ -90,6 +91,12 @@ def build():
                     "kmodule_roothash_plain_denied",
                     KMODULE_ROOTHASH_POLICY,
                     PLAIN,
+                    allowed=False,
+                ),
+                kmodule_case(
+                    "kmodule_roothash_mismatch_denied",
+                    KMODULE_ROOTHASH_MISMATCH_POLICY,
+                    SIGNED,
                     allowed=False,
                 ),
             ),
