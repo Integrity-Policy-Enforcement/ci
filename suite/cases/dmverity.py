@@ -58,6 +58,12 @@ def build():
                     SIGNED,
                     allowed=True,
                 ),
+                kmodule_case(
+                    "kmodule_signature_false_unsigned_denied",
+                    KMODULE_SIGNATURE_FALSE_POLICY,
+                    UNSIGNED,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
