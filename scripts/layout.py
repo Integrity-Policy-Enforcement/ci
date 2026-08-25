@@ -17,7 +17,12 @@ Guest layout after boot:
             dmverity.hash                      its Merkle tree
             dmverity.roothash                  the root hash (ASCII hex)
             dmverity.p7s                       the root hash signed
+        fsverity/                          fs-verity digest and signature
+            ipe_test.digest                    <algorithm>:<hex>
+            ipe_test.p7s                       the digest signed
         ipe_test.ko                        the module the copies are made from
+        fsverity-modules/                  copies with different fs-verity states
+            signed-ipe_test.ko                 fsverity enable --signature
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
         dmverity-signed/                   squashfs via veritysetup --root-hash-signature
@@ -44,9 +49,15 @@ HASH_TREE = "dmverity.hash"
 ROOT_HASH = "dmverity.roothash"
 SIGNATURE = "dmverity.p7s"
 
+FSVERITY_ASSETS = PAYLOAD / "fsverity"
+FSVERITY_SIGNATURE = "ipe_test.p7s"
+FSVERITY_DIGEST = "ipe_test.digest"
+
 TEST_MODULE = "ipe_test"
 TEST_MODULE_FILE = f"{TEST_MODULE}.ko"
 
+FSVERITY_MODULES = PAYLOAD / "fsverity-modules"
+FSVERITY_SIGNED_MODULE = FSVERITY_MODULES / f"signed-{TEST_MODULE_FILE}"
 MEDIA = Path("/run/ipe-media")
 
 DMVERITY_SIGNED_DEVICE = "ipe-dmverity-signed"

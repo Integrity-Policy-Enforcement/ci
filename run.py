@@ -56,6 +56,9 @@ def main(argv=None):
     step("Prepare the dm-verity image")
     run_checked([PYTHON, ROOT / "scripts" / "build-dmverity-image.py"])
 
+    step("Sign the fs-verity digest")
+    run_checked([PYTHON, ROOT / "scripts" / "build-fsverity-signature.py"])
+
     step("Prepare signed policies")
     run_checked([PYTHON, ROOT / "scripts" / "prepare-policies.py"])
 

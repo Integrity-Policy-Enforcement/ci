@@ -21,6 +21,7 @@ LAYOUT = SCRIPT_DIR / "layout.py"
 
 POLICIES = ROOT / "build" / "policies"
 DMVERITY = ROOT / "build" / layout.DMVERITY_ASSETS.name
+FSVERITY = ROOT / "build" / layout.FSVERITY_ASSETS.name
 KERNEL_MODULE = ROOT / "build" / "kernel-module" / layout.TEST_MODULE_FILE
 
 
@@ -44,10 +45,11 @@ def make_payload(output):
         shutil.copytree(POLICIES, staging / layout.POLICIES.name)
         shutil.copytree(DMVERITY, staging / layout.DMVERITY_ASSETS.name)
         shutil.copy(KERNEL_MODULE, staging / layout.TEST_MODULE_FILE)
+        shutil.copytree(FSVERITY, staging / layout.FSVERITY_ASSETS.name)
         with output.open("wb") as stream:
             stream.truncate(48 * 1024 * 1024)
         subprocess.run(
-            ["mkfs.ext4", "-q", "-F", "-L", "ipe-payload", "-d", staging, output],
+            ["mkfs.ext4", "-q", "-F", "-O", "verity", "-L", "ipe-payload", "-d", staging, output],
             check=True,
         )
 
@@ -98,7 +100,7 @@ def main(argv=None):
         "-chardev",
         f"file,id=results,path={result}",
         "-drive",
-        f"file={payload},format=raw,if=virtio,readonly=on",
+        f"file={payload},format=raw,if=virtio",
     ]
     try:
         with console.open("w", encoding="utf-8") as stream:

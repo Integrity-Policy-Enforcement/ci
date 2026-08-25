@@ -8,6 +8,7 @@ dnf
 dosfstools
 e2fsprogs
 flex
+fsverity
 git
 libcryptsetup12
 libelf-dev

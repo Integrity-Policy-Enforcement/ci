@@ -2,36 +2,23 @@
 
 from functools import partial
 
-import checks
 import ipe
 import layout
 import mounts
-import steps
 from assets import (
     KMODULE_ROOTHASH_MISMATCH_POLICY,
     KMODULE_ROOTHASH_POLICY,
     KMODULE_SIGNATURE_FALSE_POLICY,
     KMODULE_SIGNATURE_TRUE_POLICY,
 )
-from model import Batch, Case
-from operations import KMODULE
+from model import Batch
+
+from . import kmodule
 
 SIGNED = layout.DMVERITY_SIGNED_MOUNT
 UNSIGNED = layout.DMVERITY_UNSIGNED_MOUNT
 PLAIN = layout.PLAIN_MOUNT
-
-
-def kmodule_case(id, policy, mount, allowed):
-    return Case(
-        id=id,
-        setup=(
-            partial(steps.activate_policy, policy),
-            partial(ipe.set_enforcement, True),
-        ),
-        trigger=partial(KMODULE.attempt, mount / layout.TEST_MODULE_FILE),
-        expect=0 if allowed else KMODULE.refused,
-        check=partial(checks.operation_completed_is, KMODULE, allowed),
-    )
+MODULE = layout.TEST_MODULE_FILE
 
 
 def build():
@@ -39,64 +26,64 @@ def build():
         Batch(
             "dmverity",
             (
-                kmodule_case(
+                kmodule.case(
                     "kmodule_signature_true_signed_ok",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    SIGNED,
+                    SIGNED / MODULE,
                     allowed=True,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_signature_true_unsigned_denied",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    UNSIGNED,
+                    UNSIGNED / MODULE,
                     allowed=False,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_signature_true_plain_denied",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    PLAIN,
+                    PLAIN / MODULE,
                     allowed=False,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_signature_false_signed_ok",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    SIGNED,
+                    SIGNED / MODULE,
                     allowed=True,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_signature_false_unsigned_denied",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    UNSIGNED,
+                    UNSIGNED / MODULE,
                     allowed=False,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_signature_false_plain_denied",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    PLAIN,
+                    PLAIN / MODULE,
                     allowed=False,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_roothash_signed_ok",
                     KMODULE_ROOTHASH_POLICY,
-                    SIGNED,
+                    SIGNED / MODULE,
                     allowed=True,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_roothash_unsigned_ok",
                     KMODULE_ROOTHASH_POLICY,
-                    UNSIGNED,
+                    UNSIGNED / MODULE,
                     allowed=True,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_roothash_plain_denied",
                     KMODULE_ROOTHASH_POLICY,
-                    PLAIN,
+                    PLAIN / MODULE,
                     allowed=False,
                 ),
-                kmodule_case(
+                kmodule.case(
                     "kmodule_roothash_mismatch_denied",
                     KMODULE_ROOTHASH_MISMATCH_POLICY,
-                    SIGNED,
+                    SIGNED / MODULE,
                     allowed=False,
                 ),
             ),
@@ -106,7 +93,7 @@ def build():
                 partial(
                     mounts.dmverity, layout.DMVERITY_UNSIGNED_DEVICE, UNSIGNED, False
                 ),
-                partial(mounts.tmpfs, PLAIN, layout.PAYLOAD / layout.TEST_MODULE_FILE),
+                partial(mounts.tmpfs, PLAIN, layout.PAYLOAD / MODULE),
             ),
         ),
     )

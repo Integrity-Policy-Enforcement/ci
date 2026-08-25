@@ -69,3 +69,8 @@ KMODULE_ROOTHASH_MISMATCH_POLICY = signed_policy(
     "dmverity/kmodule_roothash_mismatch_allow",
     "ipe_test_dmverity_kmodule_roothash_mismatch",
 )
+
+# fs-verity: one module file with a built-in signature, one without.
+FSVERITY_SIGNATURE_TRUE_POLICY = signed_policy(
+    "fsverity/kmodule_signature_true_allow", "ipe_test_fsverity_kmodule_signature_true"
+)
