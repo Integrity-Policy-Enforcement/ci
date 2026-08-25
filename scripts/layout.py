@@ -23,6 +23,7 @@ Guest layout after boot:
         ipe_test.ko                        the module the copies are made from
         fsverity-modules/                  copies with different fs-verity states
             signed-ipe_test.ko                 fsverity enable --signature
+            unsigned-ipe_test.ko               fsverity enable (no signature)
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
         dmverity-signed/                   squashfs via veritysetup --root-hash-signature
@@ -58,6 +59,7 @@ TEST_MODULE_FILE = f"{TEST_MODULE}.ko"
 
 FSVERITY_MODULES = PAYLOAD / "fsverity-modules"
 FSVERITY_SIGNED_MODULE = FSVERITY_MODULES / f"signed-{TEST_MODULE_FILE}"
+FSVERITY_UNSIGNED_MODULE = FSVERITY_MODULES / f"unsigned-{TEST_MODULE_FILE}"
 MEDIA = Path("/run/ipe-media")
 
 DMVERITY_SIGNED_DEVICE = "ipe-dmverity-signed"

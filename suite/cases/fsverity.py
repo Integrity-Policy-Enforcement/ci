@@ -21,6 +21,12 @@ def build():
                     layout.FSVERITY_SIGNED_MODULE,
                     allowed=True,
                 ),
+                kmodule.case(
+                    "kmodule_fsverity_signature_true_unsigned_denied",
+                    FSVERITY_SIGNATURE_TRUE_POLICY,
+                    layout.FSVERITY_UNSIGNED_MODULE,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
@@ -29,6 +35,7 @@ def build():
                     layout.FSVERITY_SIGNED_MODULE,
                     layout.FSVERITY_ASSETS / layout.FSVERITY_SIGNATURE,
                 ),
+                partial(files.verity_module, layout.FSVERITY_UNSIGNED_MODULE),
             ),
         ),
     )
