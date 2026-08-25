@@ -1,22 +1,30 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Sign the policy fixtures.
+"""Sign the policy fixtures, and fill in what only the build knows.
 
     build/policies/
         ipe_test_baseline-0.0.1.pol   the permissive floor a run starts from
-        <group>/<name>.pol            a fixture
+        <group>/<name>.pol            a fixture, placeholders replaced
         <group>/<name>.p7s            it signed, by the builtin key unless
                                       the group needs another identity
+
+A fixture that names a root hash or a digest cannot carry one, so it
+carries a placeholder that the values under build/ replace.
 """
 
 import shutil
 import subprocess
 from pathlib import Path
 
+import layout
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 KEYS = ROOT / "build" / "keys"
 SOURCE_POLICIES = ROOT / "policies"
+DMVERITY = ROOT / "build" / layout.DMVERITY_ASSETS.name
+ROOT_HASH_PLACEHOLDER = "@DMVERITY_ROOTHASH@"
+DMVERITY_ALGORITHM = "sha256"  # what veritysetup format defaults to
 POLICIES = ROOT / "build" / "policies"
 BUILTIN_KEY = KEYS / "builtin-key.pem"
 BUILTIN_CERTIFICATE = KEYS / "builtin-cert.pem"
@@ -96,11 +104,29 @@ def substitute_signed_content(policy, replacement, signature):
     signature.write_bytes(signature.read_bytes().replace(signed_text, replacement_text))
 
 
+def measurements():
+    """Every placeholder and the <algorithm>:<hex> a policy should name."""
+    root_hash = (DMVERITY / layout.ROOT_HASH).read_text().strip()
+    return {
+        ROOT_HASH_PLACEHOLDER: f"{DMVERITY_ALGORITHM}:{root_hash}",
+    }
+
+
+def fill_in_measurements():
+    replacements = measurements()
+    for policy in POLICIES.rglob("*.pol"):
+        text = policy.read_text()
+        for placeholder, value in replacements.items():
+            text = text.replace(placeholder, value)
+        policy.write_text(text)
+
+
 def main():
     if not BUILTIN_KEY.is_file() or not BUILTIN_CERTIFICATE.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
     shutil.rmtree(POLICIES, ignore_errors=True)
     shutil.copytree(SOURCE_POLICIES, POLICIES)
+    fill_in_measurements()
 
     for policy in POLICIES.rglob("*.pol"):
         sign(policy, policy.with_suffix(".p7s"))

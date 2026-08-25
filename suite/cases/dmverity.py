@@ -7,7 +7,11 @@ import ipe
 import layout
 import mounts
 import steps
-from assets import KMODULE_SIGNATURE_FALSE_POLICY, KMODULE_SIGNATURE_TRUE_POLICY
+from assets import (
+    KMODULE_ROOTHASH_POLICY,
+    KMODULE_SIGNATURE_FALSE_POLICY,
+    KMODULE_SIGNATURE_TRUE_POLICY,
+)
 from model import Batch, Case
 from operations import KMODULE
 
@@ -69,6 +73,12 @@ def build():
                     KMODULE_SIGNATURE_FALSE_POLICY,
                     PLAIN,
                     allowed=False,
+                ),
+                kmodule_case(
+                    "kmodule_roothash_signed_ok",
+                    KMODULE_ROOTHASH_POLICY,
+                    SIGNED,
+                    allowed=True,
                 ),
             ),
             (

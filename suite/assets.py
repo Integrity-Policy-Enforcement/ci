@@ -62,3 +62,6 @@ KMODULE_SIGNATURE_TRUE_POLICY = signed_policy(
 KMODULE_SIGNATURE_FALSE_POLICY = signed_policy(
     "dmverity/kmodule_signature_false_deny", "ipe_test_dmverity_kmodule_signature_false"
 )
+KMODULE_ROOTHASH_POLICY = signed_policy(
+    "dmverity/kmodule_roothash_allow", "ipe_test_dmverity_kmodule_roothash"
+)
