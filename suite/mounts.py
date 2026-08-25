@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+import shutil
 from pathlib import Path
 
 import layout
@@ -47,3 +48,8 @@ def dmverity(name, point, signed):
     )
     mount(DEVICE_MAPPER / name, point, "-o", "ro")
 
+
+def tmpfs(point, module):
+    """A filesystem with no block device, carrying a copy of the module."""
+    mount("tmpfs", point, "-t", "tmpfs")
+    shutil.copy(module, point)

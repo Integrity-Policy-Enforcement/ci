@@ -17,10 +17,12 @@ Guest layout after boot:
             dmverity.hash                      its Merkle tree
             dmverity.roothash                  the root hash (ASCII hex)
             dmverity.p7s                       the root hash signed
+        ipe_test.ko                        the module the copies are made from
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
         dmverity-signed/                   squashfs via veritysetup --root-hash-signature
         dmverity-unsigned/                 same squashfs, no signature argument
+        plain/                             tmpfs, no block device at all
 """
 
 from pathlib import Path
@@ -51,3 +53,5 @@ DMVERITY_SIGNED_DEVICE = "ipe-dmverity-signed"
 DMVERITY_SIGNED_MOUNT = MEDIA / "dmverity-signed"
 DMVERITY_UNSIGNED_DEVICE = "ipe-dmverity-unsigned"
 DMVERITY_UNSIGNED_MOUNT = MEDIA / "dmverity-unsigned"
+
+PLAIN_MOUNT = MEDIA / "plain"

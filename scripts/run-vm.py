@@ -21,6 +21,7 @@ LAYOUT = SCRIPT_DIR / "layout.py"
 
 POLICIES = ROOT / "build" / "policies"
 DMVERITY = ROOT / "build" / layout.DMVERITY_ASSETS.name
+KERNEL_MODULE = ROOT / "build" / "kernel-module" / layout.TEST_MODULE_FILE
 
 
 def restore_owner(path):
@@ -42,6 +43,7 @@ def make_payload(output):
         shutil.copy(LAYOUT, staging / LAYOUT.name)
         shutil.copytree(POLICIES, staging / layout.POLICIES.name)
         shutil.copytree(DMVERITY, staging / layout.DMVERITY_ASSETS.name)
+        shutil.copy(KERNEL_MODULE, staging / layout.TEST_MODULE_FILE)
         with output.open("wb") as stream:
             stream.truncate(48 * 1024 * 1024)
         subprocess.run(

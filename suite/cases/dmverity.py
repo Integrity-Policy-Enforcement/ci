@@ -13,6 +13,7 @@ from operations import KMODULE
 
 SIGNED = layout.DMVERITY_SIGNED_MOUNT
 UNSIGNED = layout.DMVERITY_UNSIGNED_MOUNT
+PLAIN = layout.PLAIN_MOUNT
 
 
 def kmodule_case(id, policy, mount, allowed):
@@ -45,6 +46,12 @@ def build():
                     UNSIGNED,
                     allowed=False,
                 ),
+                kmodule_case(
+                    "kmodule_signature_true_plain_denied",
+                    KMODULE_SIGNATURE_TRUE_POLICY,
+                    PLAIN,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
@@ -52,6 +59,7 @@ def build():
                 partial(
                     mounts.dmverity, layout.DMVERITY_UNSIGNED_DEVICE, UNSIGNED, False
                 ),
+                partial(mounts.tmpfs, PLAIN, layout.PAYLOAD / layout.TEST_MODULE_FILE),
             ),
         ),
     )
