@@ -5,7 +5,11 @@ from functools import partial
 import files
 import ipe
 import layout
-from assets import FSVERITY_SIGNATURE_FALSE_POLICY, FSVERITY_SIGNATURE_TRUE_POLICY
+from assets import (
+    FSVERITY_DIGEST_POLICY,
+    FSVERITY_SIGNATURE_FALSE_POLICY,
+    FSVERITY_SIGNATURE_TRUE_POLICY,
+)
 from model import Batch
 
 from . import kmodule
@@ -51,6 +55,12 @@ def build():
                     FSVERITY_SIGNATURE_FALSE_POLICY,
                     layout.FSVERITY_PLAIN_MODULE,
                     allowed=False,
+                ),
+                kmodule.case(
+                    "kmodule_fsverity_digest_signed_ok",
+                    FSVERITY_DIGEST_POLICY,
+                    layout.FSVERITY_SIGNED_MODULE,
+                    allowed=True,
                 ),
             ),
             (

@@ -23,8 +23,10 @@ ROOT = SCRIPT_DIR.parent
 KEYS = ROOT / "build" / "keys"
 SOURCE_POLICIES = ROOT / "policies"
 DMVERITY = ROOT / "build" / layout.DMVERITY_ASSETS.name
+FSVERITY = ROOT / "build" / layout.FSVERITY_ASSETS.name
 ROOT_HASH_PLACEHOLDER = "@DMVERITY_ROOTHASH@"
 OTHER_ROOT_HASH_PLACEHOLDER = "@DMVERITY_OTHER_ROOTHASH@"
+DIGEST_PLACEHOLDER = "@FSVERITY_DIGEST@"
 HEX_DIGITS = "0123456789abcdef"
 DMVERITY_ALGORITHM = "sha256"  # what veritysetup format defaults to
 POLICIES = ROOT / "build" / "policies"
@@ -116,9 +118,12 @@ def shift(hexadecimal):
 def measurements():
     """Every placeholder and the <algorithm>:<hex> a policy should name."""
     root_hash = (DMVERITY / layout.ROOT_HASH).read_text().strip()
+    measured = (FSVERITY / layout.FSVERITY_DIGEST).read_text().strip()
+    algorithm, _, digest = measured.partition(":")
     return {
         ROOT_HASH_PLACEHOLDER: f"{DMVERITY_ALGORITHM}:{root_hash}",
         OTHER_ROOT_HASH_PLACEHOLDER: f"{DMVERITY_ALGORITHM}:{shift(root_hash)}",
+        DIGEST_PLACEHOLDER: f"{algorithm}:{digest}",
     }
 
 
