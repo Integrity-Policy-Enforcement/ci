@@ -54,7 +54,11 @@ PLATFORM_POLICY_NAME = "ipe_test_signature_platform"
 TEXT_POLICY_NAME = "ipe_test_text"
 TEXT_SPECIAL_POLICY_NAME = "ipe_test_text$-.+"
 
-# dm-verity: a module on an image whose root hash carries a signature.
+# dm-verity: a module on an image whose root hash carries a signature,
+# against a rule written as TRUE allow and as FALSE deny.
 KMODULE_SIGNATURE_TRUE_POLICY = signed_policy(
     "dmverity/kmodule_signature_true_allow", "ipe_test_dmverity_kmodule_signature_true"
+)
+KMODULE_SIGNATURE_FALSE_POLICY = signed_policy(
+    "dmverity/kmodule_signature_false_deny", "ipe_test_dmverity_kmodule_signature_false"
 )

@@ -1,0 +1,3 @@
+policy_name=ipe_test_dmverity_kmodule_signature_false policy_version=0.0.1
+DEFAULT action=ALLOW
+op=KMODULE dmverity_signature=FALSE action=DENY
