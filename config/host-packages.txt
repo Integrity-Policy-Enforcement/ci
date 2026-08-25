@@ -3,6 +3,7 @@ bison
 build-essential
 ca-certificates
 cpio
+cryptsetup-bin
 dnf
 dosfstools
 e2fsprogs
@@ -21,6 +22,7 @@ python3-virt-firmware
 qemu-utils
 rpm
 sbsigntool
+squashfs-tools
 systemd
 systemd-boot-efi
 systemd-repart

@@ -4,6 +4,7 @@ from functools import partial
 
 import ipe
 import keyring
+import modules
 from assets import SECONDARY_KEYRING
 from scope import Collection, Scope, Setting
 
@@ -19,4 +20,5 @@ def scope():
             partial(keyring.linked_keys, SECONDARY_KEYRING),
             partial(keyring.unlink, keyring=SECONDARY_KEYRING),
         ),
+        Collection(modules.loaded, modules.remove),
     )

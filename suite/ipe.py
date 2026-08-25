@@ -5,9 +5,10 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-# security/ipe/fs.c and security/ipe/policy_fs.c create IPE_ROOT's securityfs tree.
-IPE_ROOT = Path("/sys/kernel/security/ipe")
-POLICY_ROOT = Path("/run/ipe-tests/policies")
+import layout
+
+IPE_ROOT = layout.SECURITYFS
+POLICY_ROOT = layout.POLICIES
 
 
 @dataclass(frozen=True)

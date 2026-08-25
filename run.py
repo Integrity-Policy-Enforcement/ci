@@ -44,14 +44,20 @@ def main(argv=None):
     step("Prepare signing identities")
     run_checked([PYTHON, ROOT / "scripts" / "prepare-keys.py"])
 
-    step("Prepare signed policies")
-    run_checked([PYTHON, ROOT / "scripts" / "prepare-policies.py"])
-
     step("Build kernel")
     run_checked([PYTHON, ROOT / "scripts" / "build-kernel.py", tree])
 
     step("Verify kernel configuration")
     run_checked([PYTHON, ROOT / "scripts" / "assert-config.py"])
+
+    step("Build the test kernel module")
+    run_checked([PYTHON, ROOT / "scripts" / "build-kernel-module.py"])
+
+    step("Prepare the dm-verity image")
+    run_checked([PYTHON, ROOT / "scripts" / "build-dmverity-image.py"])
+
+    step("Prepare signed policies")
+    run_checked([PYTHON, ROOT / "scripts" / "prepare-policies.py"])
 
     step("Build guest image")
     run_checked(sudo + ["mkosi", "--directory", ROOT / "image", "-f", "build"])

@@ -27,3 +27,4 @@ class Case:
 class Batch:
     id: str
     cases: tuple[Case, ...]
+    setup: tuple[Callable, ...] = ()

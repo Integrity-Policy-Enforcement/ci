@@ -41,3 +41,9 @@ def policy_present_is(policy, expected, detail):
     actual = ipe.policy_present(policy)
     if actual != expected:
         return f"policy {policy} present={actual}, expected {expected}"
+
+
+def operation_completed_is(operation, expected, detail):
+    actual = operation.completed()
+    if actual != expected:
+        return f"{operation.id} completed={actual}, expected {expected}"

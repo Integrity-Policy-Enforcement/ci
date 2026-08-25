@@ -43,3 +43,8 @@ def drop_mac_admin():
 
 def link_certificate(keyring_name, asset):
     keyring.add_certificate(keyring_name, ipe.policy_asset(asset, ".der"))
+
+
+def activate_policy(policy):
+    ipe.deploy_policy(policy.signed)
+    ipe.activate_policy(policy.name)

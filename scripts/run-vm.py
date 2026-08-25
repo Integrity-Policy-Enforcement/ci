@@ -11,11 +11,16 @@ import sys
 import tempfile
 from pathlib import Path
 
+import layout
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 IMAGE_DIR = ROOT / "image"
 SUITE = ROOT / "suite"
+LAYOUT = SCRIPT_DIR / "layout.py"
+
 POLICIES = ROOT / "build" / "policies"
+DMVERITY = ROOT / "build" / layout.DMVERITY_ASSETS.name
 
 
 def restore_owner(path):
@@ -33,9 +38,12 @@ def make_payload(output):
         staging = Path(temporary) / "payload"
         ignored = shutil.ignore_patterns("__pycache__", "*.pyc")
         shutil.copytree(SUITE, staging, ignore=ignored)
-        shutil.copytree(POLICIES, staging / "policies")
+        # The suite imports layout, so the payload has to carry it alongside.
+        shutil.copy(LAYOUT, staging / LAYOUT.name)
+        shutil.copytree(POLICIES, staging / layout.POLICIES.name)
+        shutil.copytree(DMVERITY, staging / layout.DMVERITY_ASSETS.name)
         with output.open("wb") as stream:
-            stream.truncate(8 * 1024 * 1024)
+            stream.truncate(48 * 1024 * 1024)
         subprocess.run(
             ["mkfs.ext4", "-q", "-F", "-L", "ipe-payload", "-d", staging, output],
             check=True,

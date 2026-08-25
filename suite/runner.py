@@ -82,18 +82,21 @@ def run(output):
         ipe.load_baseline(BASELINE_POLICY_ASSET, BASELINE_POLICY_NAME)
         for batch in batches:
             try:
-                for case in batch.cases:
-                    number += 1
-                    with case.scope():
-                        outcome = test(case)
+                with runtime.batch.scope():
+                    for step in batch.setup:
+                        step()
+                    for case in batch.cases:
+                        number += 1
+                        with case.scope():
+                            outcome = test(case)
 
-                    if outcome is None:
-                        emit(f"ok {number} {case.id}")
-                    else:
-                        kind, message = outcome
-                        failures += 1
-                        prefix = "error " if kind == "error" else ""
-                        emit(f"not ok {number} {case.id} # {prefix}{clean(message)}")
+                        if outcome is None:
+                            emit(f"ok {number} {case.id}")
+                        else:
+                            kind, message = outcome
+                            failures += 1
+                            prefix = "error " if kind == "error" else ""
+                            emit(f"not ok {number} {case.id} # {prefix}{clean(message)}")
             except Exception as failure:
                 traceback.print_exc()
                 emit(f"Bail out! batch {batch.id} failed: {clean(failure)}")

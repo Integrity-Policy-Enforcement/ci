@@ -5,9 +5,11 @@ import os
 import subprocess
 import sys
 
-RESULT = "/dev/virtio-ports/ipe-tests-result"
-IPEFS = "/sys/kernel/security/ipe"
-RUNNER = "/run/ipe-tests/run-tests"
+import layout
+
+RESULT = layout.RESULT_CHANNEL
+IPEFS = str(layout.SECURITYFS)
+RUNNER = str(layout.RUNNER)
 
 def emit(line, result):
     data = (line.replace("\n", " ").replace("\r", " ") + "\n").encode()
