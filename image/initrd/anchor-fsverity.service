@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+[Unit]
+Description=Anchor the fs-verity keyring and close it
+DefaultDependencies=no
+Before=initrd-root-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+StandardInput=file:/usr/lib/ipe-tests/fsverity-cert.der
+ExecStart=/usr/bin/keyctl padd asymmetric "" %%:.fs-verity
+ExecStart=/usr/bin/keyctl restrict_keyring %%:.fs-verity

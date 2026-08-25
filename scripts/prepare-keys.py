@@ -11,6 +11,9 @@
         revoked-*.pem         self-signed, built into the blacklist
         untrusted-*.pem       self-signed, in no keyring
         secureboot-*.pem      enrolled in the UEFI db, so it reaches .platform
+        fsverity-key.pem      signs fs-verity digests; the initramfs adds
+        fsverity-cert.pem     its certificate to the .fs-verity keyring
+        fsverity-cert.der
         module-signing.pem    key and certificate joined, for the kernel build
 
 Every run creates them afresh, so changing them means rebuilding the
@@ -36,6 +39,9 @@ REVOKED_KEY = KEYS / "revoked-key.pem"
 REVOKED_CERTIFICATE = KEYS / "revoked-cert.pem"
 UNTRUSTED_KEY = KEYS / "untrusted-key.pem"
 UNTRUSTED_CERTIFICATE = KEYS / "untrusted-cert.pem"
+FSVERITY_KEY = KEYS / "fsverity-key.pem"
+FSVERITY_CERTIFICATE = KEYS / "fsverity-cert.pem"
+FSVERITY_CERTIFICATE_DER = KEYS / "fsverity-cert.der"
 SECURE_BOOT_KEY = KEYS / "secureboot-key.pem"
 SECURE_BOOT_CERTIFICATE = KEYS / "secureboot-cert.pem"
 
@@ -122,20 +128,22 @@ def main():
         LEAF_EXTENSIONS,
     )
     generate_certificate(
+        FSVERITY_KEY,
+        FSVERITY_CERTIFICATE,
+        "fs-verity file signing key",
+        LEAF_EXTENSIONS,
+    )
+    generate_certificate(
         SECURE_BOOT_KEY,
         SECURE_BOOT_CERTIFICATE,
         "Ephemeral Secure Boot signing key",
         LEAF_EXTENSIONS,
     )
-    openssl(
-        "x509",
-        "-in",
-        BUILTIN_CERTIFICATE,
-        "-outform",
-        "DER",
-        "-out",
-        BUILTIN_CERTIFICATE_DER,
-    )
+    for certificate, der in (
+        (BUILTIN_CERTIFICATE, BUILTIN_CERTIFICATE_DER),
+        (FSVERITY_CERTIFICATE, FSVERITY_CERTIFICATE_DER),
+    ):
+        openssl("x509", "-in", certificate, "-outform", "DER", "-out", der)
     MODULE_KEY.write_bytes(BUILTIN_KEY.read_bytes() + BUILTIN_CERTIFICATE.read_bytes())
     MODULE_KEY.chmod(0o600)
     print("    Prepared signing identities")
