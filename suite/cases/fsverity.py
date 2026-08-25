@@ -68,6 +68,12 @@ def build():
                     layout.FSVERITY_UNSIGNED_MODULE,
                     allowed=True,
                 ),
+                kmodule.case(
+                    "kmodule_fsverity_digest_plain_denied",
+                    FSVERITY_DIGEST_POLICY,
+                    layout.FSVERITY_PLAIN_MODULE,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
