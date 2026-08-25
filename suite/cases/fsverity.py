@@ -6,6 +6,7 @@ import files
 import ipe
 import layout
 from assets import (
+    FSVERITY_DIGEST_MISMATCH_POLICY,
     FSVERITY_DIGEST_POLICY,
     FSVERITY_SIGNATURE_FALSE_POLICY,
     FSVERITY_SIGNATURE_TRUE_POLICY,
@@ -72,6 +73,12 @@ def build():
                     "kmodule_fsverity_digest_plain_denied",
                     FSVERITY_DIGEST_POLICY,
                     layout.FSVERITY_PLAIN_MODULE,
+                    allowed=False,
+                ),
+                kmodule.case(
+                    "kmodule_fsverity_digest_mismatch_denied",
+                    FSVERITY_DIGEST_MISMATCH_POLICY,
+                    layout.FSVERITY_SIGNED_MODULE,
                     allowed=False,
                 ),
             ),

@@ -27,6 +27,7 @@ FSVERITY = ROOT / "build" / layout.FSVERITY_ASSETS.name
 ROOT_HASH_PLACEHOLDER = "@DMVERITY_ROOTHASH@"
 OTHER_ROOT_HASH_PLACEHOLDER = "@DMVERITY_OTHER_ROOTHASH@"
 DIGEST_PLACEHOLDER = "@FSVERITY_DIGEST@"
+OTHER_DIGEST_PLACEHOLDER = "@FSVERITY_OTHER_DIGEST@"
 HEX_DIGITS = "0123456789abcdef"
 DMVERITY_ALGORITHM = "sha256"  # what veritysetup format defaults to
 POLICIES = ROOT / "build" / "policies"
@@ -124,6 +125,7 @@ def measurements():
         ROOT_HASH_PLACEHOLDER: f"{DMVERITY_ALGORITHM}:{root_hash}",
         OTHER_ROOT_HASH_PLACEHOLDER: f"{DMVERITY_ALGORITHM}:{shift(root_hash)}",
         DIGEST_PLACEHOLDER: f"{algorithm}:{digest}",
+        OTHER_DIGEST_PLACEHOLDER: f"{algorithm}:{shift(digest)}",
     }
 
 

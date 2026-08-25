@@ -80,3 +80,6 @@ FSVERITY_SIGNATURE_FALSE_POLICY = signed_policy(
 FSVERITY_DIGEST_POLICY = signed_policy(
     "fsverity/kmodule_digest_allow", "ipe_test_fsverity_kmodule_digest"
 )
+FSVERITY_DIGEST_MISMATCH_POLICY = signed_policy(
+    "fsverity/kmodule_digest_mismatch_allow", "ipe_test_fsverity_kmodule_digest_mismatch"
+)
