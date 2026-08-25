@@ -20,6 +20,7 @@ Guest layout after boot:
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
         dmverity-signed/                   squashfs via veritysetup --root-hash-signature
+        dmverity-unsigned/                 same squashfs, no signature argument
 """
 
 from pathlib import Path
@@ -48,3 +49,5 @@ MEDIA = Path("/run/ipe-media")
 
 DMVERITY_SIGNED_DEVICE = "ipe-dmverity-signed"
 DMVERITY_SIGNED_MOUNT = MEDIA / "dmverity-signed"
+DMVERITY_UNSIGNED_DEVICE = "ipe-dmverity-unsigned"
+DMVERITY_UNSIGNED_MOUNT = MEDIA / "dmverity-unsigned"

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Build the dm-verity image the tests open.
+"""Build the dm-verity image the tests open, signed and unsigned.
 
     build/dmverity/
         dmverity.squashfs     holds ipe_test.ko, nothing else
         dmverity.hash         the Merkle tree veritysetup formatted
         dmverity.roothash     its root hash, as ASCII hex
         dmverity.p7s          that root hash signed by the builtin key
+
+The guest opens the same image twice, once passing dmverity.p7s and once
+not, which is the only difference between the two devices.
 """
 
 import shutil

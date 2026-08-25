@@ -12,6 +12,7 @@ from model import Batch, Case
 from operations import KMODULE
 
 SIGNED = layout.DMVERITY_SIGNED_MOUNT
+UNSIGNED = layout.DMVERITY_UNSIGNED_MOUNT
 
 
 def kmodule_case(id, policy, mount, allowed):
@@ -38,10 +39,19 @@ def build():
                     SIGNED,
                     allowed=True,
                 ),
+                kmodule_case(
+                    "kmodule_signature_true_unsigned_denied",
+                    KMODULE_SIGNATURE_TRUE_POLICY,
+                    UNSIGNED,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
-                partial(mounts.dmverity, layout.DMVERITY_SIGNED_DEVICE, SIGNED),
+                partial(mounts.dmverity, layout.DMVERITY_SIGNED_DEVICE, SIGNED, True),
+                partial(
+                    mounts.dmverity, layout.DMVERITY_UNSIGNED_DEVICE, UNSIGNED, False
+                ),
             ),
         ),
     )

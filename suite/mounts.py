@@ -21,7 +21,7 @@ def devices():
     """Only the devices the tests open: the root filesystem has one too."""
     listing = capture("dmsetup", "ls")
     present = {line.split()[0] for line in listing.splitlines() if line[:1].isalnum()}
-    return present & {layout.DMVERITY_SIGNED_DEVICE}
+    return present & {layout.DMVERITY_SIGNED_DEVICE, layout.DMVERITY_UNSIGNED_DEVICE}
 
 
 def close(name):
@@ -33,17 +33,17 @@ def mount(device, point, *options):
     run("mount", *options, device, point)
 
 
-def dmverity(name, point):
+def dmverity(name, point, signed):
     assets = layout.DMVERITY_ASSETS
     root_hash = (assets / layout.ROOT_HASH).read_text().strip()
+    signature = ["--root-hash-signature", assets / layout.SIGNATURE] if signed else []
     run(
         "veritysetup", "open",
         assets / layout.SQUASHFS,
         name,
         assets / layout.HASH_TREE,
         root_hash,
-        "--root-hash-signature",
-        assets / layout.SIGNATURE,
+        *signature,
     )
     mount(DEVICE_MAPPER / name, point, "-o", "ro")
 
