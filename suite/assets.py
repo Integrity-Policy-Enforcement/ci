@@ -74,3 +74,6 @@ KMODULE_ROOTHASH_MISMATCH_POLICY = signed_policy(
 FSVERITY_SIGNATURE_TRUE_POLICY = signed_policy(
     "fsverity/kmodule_signature_true_allow", "ipe_test_fsverity_kmodule_signature_true"
 )
+FSVERITY_SIGNATURE_FALSE_POLICY = signed_policy(
+    "fsverity/kmodule_signature_false_deny", "ipe_test_fsverity_kmodule_signature_false"
+)

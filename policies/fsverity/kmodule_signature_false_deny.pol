@@ -1,0 +1,3 @@
+policy_name=ipe_test_fsverity_kmodule_signature_false policy_version=0.0.1
+DEFAULT action=ALLOW
+op=KMODULE fsverity_signature=FALSE action=DENY
