@@ -10,6 +10,7 @@ from model import Batch
 
 from . import kmodule
 
+
 def build():
     return (
         Batch(
@@ -27,6 +28,12 @@ def build():
                     layout.FSVERITY_UNSIGNED_MODULE,
                     allowed=False,
                 ),
+                kmodule.case(
+                    "kmodule_fsverity_signature_true_plain_denied",
+                    FSVERITY_SIGNATURE_TRUE_POLICY,
+                    layout.FSVERITY_PLAIN_MODULE,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
@@ -36,6 +43,7 @@ def build():
                     layout.FSVERITY_ASSETS / layout.FSVERITY_SIGNATURE,
                 ),
                 partial(files.verity_module, layout.FSVERITY_UNSIGNED_MODULE),
+                partial(files.copy_module, layout.FSVERITY_PLAIN_MODULE),
             ),
         ),
     )
