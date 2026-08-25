@@ -86,6 +86,12 @@ def build():
                     UNSIGNED,
                     allowed=True,
                 ),
+                kmodule_case(
+                    "kmodule_roothash_plain_denied",
+                    KMODULE_ROOTHASH_POLICY,
+                    PLAIN,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
