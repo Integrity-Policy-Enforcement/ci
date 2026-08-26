@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+[Unit]
+Description=Drop the initramfs allowance from the IPE policy
+DefaultDependencies=no
+After=sys-kernel-security.mount
+Before=sysinit.target
+RequiresMountsFor=/sys/kernel/security
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+StandardInput=file:/usr/lib/ipe-tests/root-policy.p7s
+ExecStart=/usr/bin/tee /sys/kernel/security/ipe/new_policy
+ExecStart=/bin/sh -c 'echo 1 >/sys/kernel/security/ipe/policies/ipe_test_root/active'
+
+[Install]
+WantedBy=sysinit.target

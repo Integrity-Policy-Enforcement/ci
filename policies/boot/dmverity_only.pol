@@ -1,0 +1,4 @@
+policy_name=ipe_test_root policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+op=EXECUTE dmverity_signature=TRUE action=ALLOW

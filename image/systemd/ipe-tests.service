@@ -2,6 +2,10 @@
 [Unit]
 Description=Run IPE tests against the booted kernel
 RequiresMountsFor=/run/ipe-tests
+# The run records the policies it starts from, so the narrowing has to
+# have happened by then or the run would take that policy back out.
+Requires=ipe-root-policy.service
+After=ipe-root-policy.service
 
 [Service]
 Type=oneshot
