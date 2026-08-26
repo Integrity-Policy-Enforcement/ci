@@ -5,3 +5,4 @@ image/output
 kernel-source
 __pycache__
 *.pyc
+kernel
