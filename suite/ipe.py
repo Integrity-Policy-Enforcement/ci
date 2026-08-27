@@ -2,11 +2,20 @@
 
 import errno
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
 # security/ipe/fs.c and security/ipe/policy_fs.c create IPE_ROOT's securityfs tree.
 IPE_ROOT = Path("/sys/kernel/security/ipe")
 POLICY_ROOT = Path("/run/ipe-tests/policies")
+
+
+@dataclass(frozen=True)
+class Policy:
+    """A signed policy and the name the kernel will know it by."""
+
+    signed: Path
+    name: str
 
 
 def policy_path(name):
@@ -53,8 +62,8 @@ def policy_active(name):
     return node_path("active", name).read_text().strip() == "1"
 
 
-def deploy_policy(asset):
-    write(node_path("new_policy"), signed_policy(asset))
+def deploy_policy(signed):
+    write(node_path("new_policy"), signed.read_bytes())
 
 
 def activate_policy(name):
@@ -85,7 +94,7 @@ def load_baseline(asset, name):
             raise RuntimeError(f"loaded policy {name} differs from {asset}.pol")
     else:
         try:
-            deploy_policy(asset)
+            deploy_policy(policy_asset(asset, ".p7s"))
         except OSError as failure:
             if failure.errno != errno.EEXIST:
                 raise

@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
+"""Create the signing identities the tests need.
+
+    build/keys/
+        builtin-key.pem       signs IPE policies; its certificate is built
+        builtin-cert.pem      into the kernel and signs the dm-verity root
+        builtin-cert.der
+        intermediate-*.pem    issued by builtin, in no keyring
+        secondary-*.pem       issued by intermediate, linked at run time
+        revoked-*.pem         self-signed, built into the blacklist
+        untrusted-*.pem       self-signed, in no keyring
+        secureboot-*.pem      enrolled in the UEFI db, so it reaches .platform
+        module-signing.pem    key and certificate joined, for the kernel build
+
+Every run creates them afresh, so changing them means rebuilding the
+kernel and the image that trust them.
+"""
 
 import shutil
 import subprocess

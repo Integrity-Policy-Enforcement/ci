@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
+"""Sign the policy fixtures.
+
+    build/policies/
+        ipe_test_baseline-0.0.1.pol   the permissive floor a run starts from
+        <group>/<name>.pol            a fixture
+        <group>/<name>.p7s            it signed, by the builtin key unless
+                                      the group needs another identity
+"""
 
 import shutil
 import subprocess

@@ -8,7 +8,7 @@ import keyring
 
 
 def deploy_policy(asset):
-    ipe.deploy_policy(asset)
+    ipe.deploy_policy(ipe.policy_asset(asset, ".p7s"))
 
 
 def open_node(node, policy, descriptor):
