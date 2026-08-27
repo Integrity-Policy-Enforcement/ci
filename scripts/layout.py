@@ -84,8 +84,12 @@ TEST_MODULE = "ipe_test"
 TEST_MODULE_FILE = f"{TEST_MODULE}.ko"
 
 FSVERITY_MODULES = PAYLOAD / "fsverity-modules"
-FSVERITY_UNSIGNED_MODULE = FSVERITY_MODULES / f"unsigned-{TEST_MODULE_FILE}"
+
 FSVERITY_PLAIN_MODULE = FSVERITY_MODULES / f"plain-{TEST_MODULE_FILE}"
+
+
+def fsverity_unsigned_module(algorithm):
+    return FSVERITY_MODULES / f"unsigned-{algorithm}-{TEST_MODULE_FILE}"
 
 
 def fsverity_signed_module(algorithm):
