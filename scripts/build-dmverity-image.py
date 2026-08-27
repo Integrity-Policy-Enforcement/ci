@@ -48,7 +48,10 @@ def build_squashfs(image):
 
 
 def format_hash_tree(image, hash_tree):
-    for line in capture("veritysetup", "format", image, hash_tree).splitlines():
+    formatted = capture(
+        "veritysetup", "format", image, hash_tree, f"--hash={layout.HASH_ALGORITHM}"
+    )
+    for line in formatted.splitlines():
         if line.startswith("Root hash:"):
             return line.split()[-1]
     raise SystemExit("veritysetup printed no root hash")

@@ -21,7 +21,7 @@ Guest layout after boot:
             dmverity.roothash                  the root hash (ASCII hex)
             dmverity.p7s                       the root hash signed
         fsverity/                          fs-verity digest and signature
-            ipe_test.digest                    <algorithm>:<hex>
+            ipe_test.digest                    the digest, as ASCII hex
             ipe_test.p7s                       the digest signed
         ipe_test.ko                        the module the copies are made from
         fsverity-modules/                  copies with different fs-verity states
@@ -47,6 +47,10 @@ SECURITYFS = Path("/sys/kernel/security/ipe")
 PAYLOAD = Path("/run/ipe-tests")
 RUNNER = PAYLOAD / "run-tests"
 POLICIES = PAYLOAD / "policies"
+
+# What both media are measured with.  veritysetup and fsverity are told to use
+# it rather than asked what they picked, so a policy can name it.
+HASH_ALGORITHM = "sha256"
 
 DMVERITY_ASSETS = PAYLOAD / "dmverity"
 SQUASHFS = "dmverity.squashfs"

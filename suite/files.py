@@ -26,4 +26,10 @@ def copy_module(target):
 def verity_module(target, signature=None):
     copy_module(target)
     signed = [f"--signature={signature}"] if signature else []
-    run("fsverity", "enable", target, *signed)
+    finished = subprocess.run(
+        ["fsverity", "enable", str(target), f"--hash-alg={layout.HASH_ALGORITHM}", *signed],
+        capture_output=True,
+        text=True,
+    )
+    if finished.returncode:
+        raise RuntimeError(f"fsverity enable failed: {finished.stderr.strip()}")

@@ -3,7 +3,7 @@
 """Sign the fs-verity digest of the test module.
 
     build/fsverity/
-        ipe_test.digest       <algorithm>:<hex>, as fsverity prints it
+        ipe_test.digest       the digest, as ASCII hex
         ipe_test.p7s          that digest signed by the fs-verity key
 
 The digest depends on the file alone, so it can be computed here, where
@@ -37,13 +37,18 @@ def main():
         [
             "fsverity", "sign", str(KERNEL_MODULE), str(OUTPUT / layout.FSVERITY_SIGNATURE),
             f"--key={FSVERITY_KEY}", f"--cert={FSVERITY_CERTIFICATE}",
+            f"--hash-alg={layout.HASH_ALGORITHM}",
         ],
         check=True,
         stdout=subprocess.DEVNULL,
     )
-    digest = subprocess.run(
-        ["fsverity", "digest", str(KERNEL_MODULE)], check=True, capture_output=True, text=True
+    reported = subprocess.run(
+        ["fsverity", "digest", str(KERNEL_MODULE), f"--hash-alg={layout.HASH_ALGORITHM}"],
+        check=True,
+        capture_output=True,
+        text=True,
     ).stdout.split()[0]
+    _, _, digest = reported.partition(":")
     (OUTPUT / layout.FSVERITY_DIGEST).write_text(digest + "\n")
 
     print(f"    Prepared the fs-verity signature in {OUTPUT.relative_to(ROOT)}")
