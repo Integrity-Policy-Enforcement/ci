@@ -84,6 +84,12 @@ def build():
                     allowed=True,
                 ),
                 kmodule.case(
+                    "kmodule_roothash_sha512_unsigned_ok",
+                    roothash_policy("sha512"),
+                    layout.dmverity_mount("sha512", signed=False) / MODULE,
+                    allowed=True,
+                ),
+                kmodule.case(
                     "kmodule_roothash_sha256_mismatch_denied",
                     roothash_policy("sha256", matching=False),
                     layout.dmverity_mount("sha256", signed=True) / MODULE,
@@ -92,9 +98,11 @@ def build():
             ),
             (
                 partial(ipe.set_enforcement, False),
-                partial(mounts.dmverity, layout.HASH_ALGORITHM, True),
-                partial(mounts.dmverity, layout.HASH_ALGORITHM, False),
-                partial(mounts.dmverity, layout.OTHER_HASH_ALGORITHM, True),
+                *(
+                    partial(mounts.dmverity, algorithm, signed)
+                    for algorithm in layout.HASH_ALGORITHMS
+                    for signed in (True, False)
+                ),
                 partial(mounts.tmpfs, PLAIN, layout.PAYLOAD / MODULE),
             ),
         ),
