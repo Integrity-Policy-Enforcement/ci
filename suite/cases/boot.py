@@ -19,6 +19,9 @@ from operations import KMODULE
 TRUE_ALLOW_POLICY = ipe.Policy(
     layout.INITRD / "boot-verified-true.p7s", "ipe_test_boot_verified"
 )
+FALSE_DENY_POLICY = ipe.Policy(
+    layout.INITRD / "boot-verified-false.p7s", "ipe_test_boot_verified_false"
+)
 INITRAMFS_MODULE = layout.INITRD / layout.TEST_MODULE_FILE
 TMPFS_MODULE = layout.BOOT_TMPFS_DIRECTORY / layout.TEST_MODULE_FILE
 
@@ -45,6 +48,18 @@ INITRAMFS_CASES = (
     initramfs_case(
         "kmodule_boot_verified_true_tmpfs_denied",
         TRUE_ALLOW_POLICY,
+        TMPFS_MODULE,
+        allowed=False,
+    ),
+    initramfs_case(
+        "kmodule_boot_verified_false_initramfs_ok",
+        FALSE_DENY_POLICY,
+        INITRAMFS_MODULE,
+        allowed=True,
+    ),
+    initramfs_case(
+        "kmodule_boot_verified_false_tmpfs_denied",
+        FALSE_DENY_POLICY,
         TMPFS_MODULE,
         allowed=False,
     ),
