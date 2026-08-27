@@ -6,17 +6,14 @@ import ipe
 import layout
 import mounts
 from assets import (
-    KMODULE_ROOTHASH_MISMATCH_POLICY,
-    KMODULE_ROOTHASH_POLICY,
     KMODULE_SIGNATURE_FALSE_POLICY,
     KMODULE_SIGNATURE_TRUE_POLICY,
+    roothash_policy,
 )
 from model import Batch
 
 from . import kmodule
 
-SIGNED = layout.dmverity_mount(layout.HASH_ALGORITHM, signed=True)
-UNSIGNED = layout.dmverity_mount(layout.HASH_ALGORITHM, signed=False)
 PLAIN = layout.PLAIN_MOUNT
 MODULE = layout.TEST_MODULE_FILE
 
@@ -29,13 +26,13 @@ def build():
                 kmodule.case(
                     "kmodule_signature_true_signed_ok",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    SIGNED / MODULE,
+                    layout.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_signature_true_unsigned_denied",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    UNSIGNED / MODULE,
+                    layout.dmverity_mount("sha256", signed=False) / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
@@ -47,13 +44,13 @@ def build():
                 kmodule.case(
                     "kmodule_signature_false_signed_ok",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    SIGNED / MODULE,
+                    layout.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_signature_false_unsigned_denied",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    UNSIGNED / MODULE,
+                    layout.dmverity_mount("sha256", signed=False) / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
@@ -63,27 +60,27 @@ def build():
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_roothash_signed_ok",
-                    KMODULE_ROOTHASH_POLICY,
-                    SIGNED / MODULE,
+                    "kmodule_roothash_sha256_signed_ok",
+                    roothash_policy("sha256"),
+                    layout.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_roothash_unsigned_ok",
-                    KMODULE_ROOTHASH_POLICY,
-                    UNSIGNED / MODULE,
+                    "kmodule_roothash_sha256_unsigned_ok",
+                    roothash_policy("sha256"),
+                    layout.dmverity_mount("sha256", signed=False) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_roothash_plain_denied",
-                    KMODULE_ROOTHASH_POLICY,
+                    "kmodule_roothash_sha256_plain_denied",
+                    roothash_policy("sha256"),
                     PLAIN / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_roothash_mismatch_denied",
-                    KMODULE_ROOTHASH_MISMATCH_POLICY,
-                    SIGNED / MODULE,
+                    "kmodule_roothash_sha256_mismatch_denied",
+                    roothash_policy("sha256", matching=False),
+                    layout.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=False,
                 ),
             ),

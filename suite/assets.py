@@ -62,13 +62,6 @@ KMODULE_SIGNATURE_TRUE_POLICY = signed_policy(
 KMODULE_SIGNATURE_FALSE_POLICY = signed_policy(
     "dmverity/kmodule_signature_false_deny", "ipe_test_dmverity_kmodule_signature_false"
 )
-KMODULE_ROOTHASH_POLICY = signed_policy(
-    "dmverity/kmodule_roothash_allow", "ipe_test_dmverity_kmodule_roothash"
-)
-KMODULE_ROOTHASH_MISMATCH_POLICY = signed_policy(
-    "dmverity/kmodule_roothash_mismatch_allow",
-    "ipe_test_dmverity_kmodule_roothash_mismatch",
-)
 
 # fs-verity: one module file with a built-in signature, one without.
 FSVERITY_SIGNATURE_TRUE_POLICY = signed_policy(
@@ -83,3 +76,11 @@ FSVERITY_DIGEST_POLICY = signed_policy(
 FSVERITY_DIGEST_MISMATCH_POLICY = signed_policy(
     "fsverity/kmodule_digest_mismatch_allow", "ipe_test_fsverity_kmodule_digest_mismatch"
 )
+
+
+def roothash_policy(algorithm, matching=True):
+    kind = "" if matching else "mismatch_"
+    return signed_policy(
+        f"dmverity/kmodule_roothash_{algorithm}_{kind}allow",
+        f"ipe_test_dmverity_kmodule_roothash_{algorithm}" + ("" if matching else "_mismatch"),
+    )

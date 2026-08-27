@@ -25,7 +25,7 @@ def build():
                 kmodule.case(
                     "kmodule_fsverity_signature_true_signed_ok",
                     FSVERITY_SIGNATURE_TRUE_POLICY,
-                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
+                    layout.fsverity_signed_module("sha256"),
                     allowed=True,
                 ),
                 kmodule.case(
@@ -43,7 +43,7 @@ def build():
                 kmodule.case(
                     "kmodule_fsverity_signature_false_signed_ok",
                     FSVERITY_SIGNATURE_FALSE_POLICY,
-                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
+                    layout.fsverity_signed_module("sha256"),
                     allowed=True,
                 ),
                 kmodule.case(
@@ -61,7 +61,7 @@ def build():
                 kmodule.case(
                     "kmodule_fsverity_digest_signed_ok",
                     FSVERITY_DIGEST_POLICY,
-                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
+                    layout.fsverity_signed_module("sha256"),
                     allowed=True,
                 ),
                 kmodule.case(
@@ -79,7 +79,7 @@ def build():
                 kmodule.case(
                     "kmodule_fsverity_digest_mismatch_denied",
                     FSVERITY_DIGEST_MISMATCH_POLICY,
-                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
+                    layout.fsverity_signed_module("sha256"),
                     allowed=False,
                 ),
             ),
