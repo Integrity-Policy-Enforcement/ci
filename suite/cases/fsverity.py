@@ -6,10 +6,9 @@ import files
 import ipe
 import layout
 from assets import (
-    FSVERITY_DIGEST_MISMATCH_POLICY,
-    FSVERITY_DIGEST_POLICY,
     FSVERITY_SIGNATURE_FALSE_POLICY,
     FSVERITY_SIGNATURE_TRUE_POLICY,
+    digest_policy,
 )
 from model import Batch
 
@@ -59,26 +58,26 @@ def build():
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_fsverity_digest_signed_ok",
-                    FSVERITY_DIGEST_POLICY,
+                    "kmodule_fsverity_digest_sha256_signed_ok",
+                    digest_policy("sha256"),
                     layout.fsverity_signed_module("sha256"),
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_fsverity_digest_unsigned_ok",
-                    FSVERITY_DIGEST_POLICY,
+                    "kmodule_fsverity_digest_sha256_unsigned_ok",
+                    digest_policy("sha256"),
                     layout.FSVERITY_UNSIGNED_MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_fsverity_digest_plain_denied",
-                    FSVERITY_DIGEST_POLICY,
+                    "kmodule_fsverity_digest_sha256_plain_denied",
+                    digest_policy("sha256"),
                     layout.FSVERITY_PLAIN_MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_fsverity_digest_mismatch_denied",
-                    FSVERITY_DIGEST_MISMATCH_POLICY,
+                    "kmodule_fsverity_digest_sha256_mismatch_denied",
+                    digest_policy("sha256", matching=False),
                     layout.fsverity_signed_module("sha256"),
                     allowed=False,
                 ),
