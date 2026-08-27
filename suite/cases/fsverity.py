@@ -88,6 +88,12 @@ def build():
                     allowed=True,
                 ),
                 kmodule.case(
+                    "kmodule_fsverity_digest_sha512_plain_denied",
+                    digest_policy("sha512"),
+                    layout.FSVERITY_PLAIN_MODULE,
+                    allowed=False,
+                ),
+                kmodule.case(
                     "kmodule_fsverity_digest_sha256_mismatch_denied",
                     digest_policy("sha256", matching=False),
                     layout.fsverity_signed_module("sha256"),
