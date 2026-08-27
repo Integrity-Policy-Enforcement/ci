@@ -76,6 +76,12 @@ def build():
                     allowed=False,
                 ),
                 kmodule.case(
+                    "kmodule_fsverity_digest_sha512_signed_ok",
+                    digest_policy("sha512"),
+                    layout.fsverity_signed_module("sha512"),
+                    allowed=True,
+                ),
+                kmodule.case(
                     "kmodule_fsverity_digest_sha256_mismatch_denied",
                     digest_policy("sha256", matching=False),
                     layout.fsverity_signed_module("sha256"),
@@ -84,11 +90,14 @@ def build():
             ),
             (
                 partial(ipe.set_enforcement, False),
-                partial(
-                    files.verity_module,
-                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
-                    layout.HASH_ALGORITHM,
-                    layout.FSVERITY_ASSETS / layout.fsverity_signature(layout.HASH_ALGORITHM),
+                *(
+                    partial(
+                        files.verity_module,
+                        layout.fsverity_signed_module(algorithm),
+                        algorithm,
+                        layout.FSVERITY_ASSETS / layout.fsverity_signature(algorithm),
+                    )
+                    for algorithm in layout.HASH_ALGORITHMS
                 ),
                 partial(files.verity_module, layout.FSVERITY_UNSIGNED_MODULE, layout.HASH_ALGORITHM),
                 partial(files.copy_module, layout.FSVERITY_PLAIN_MODULE),
