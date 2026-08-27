@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+import files
 import ipe
 import mounts
 from scope import Collection, Scope, Setting
@@ -11,4 +12,5 @@ def scope():
         Setting(ipe.enforcement, ipe.set_enforcement),
         Collection(mounts.points, mounts.umount),
         Collection(mounts.devices, mounts.close),
+        Collection(files.copies, files.discard),
     )

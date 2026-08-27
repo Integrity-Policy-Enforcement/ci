@@ -1,10 +1,21 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import shutil
-import subprocess
+from pathlib import Path
 
 import layout
 from command import run
+
+
+def copies():
+    """The module copies a batch made, which outlive it on the payload."""
+    if not layout.FSVERITY_MODULES.is_dir():
+        return set()
+    return {str(path) for path in layout.FSVERITY_MODULES.iterdir()}
+
+
+def discard(copy):
+    Path(copy).unlink()
 
 
 def copy_module(target):
