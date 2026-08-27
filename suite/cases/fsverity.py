@@ -99,6 +99,12 @@ def build():
                     layout.fsverity_signed_module("sha256"),
                     allowed=False,
                 ),
+                kmodule.case(
+                    "kmodule_fsverity_digest_sha512_mismatch_denied",
+                    digest_policy("sha512", matching=False),
+                    layout.fsverity_signed_module("sha512"),
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
