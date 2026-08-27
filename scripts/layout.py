@@ -51,24 +51,45 @@ POLICIES = PAYLOAD / "policies"
 # What both media are measured with.  veritysetup and fsverity are told to use
 # it rather than asked what they picked, so a policy can name it.
 HASH_ALGORITHM = "sha256"
+OTHER_HASH_ALGORITHM = "sha512"
+HASH_ALGORITHMS = (HASH_ALGORITHM, OTHER_HASH_ALGORITHM)
 
 DMVERITY_ASSETS = PAYLOAD / "dmverity"
 SQUASHFS = "dmverity.squashfs"
-HASH_TREE = "dmverity.hash"
-ROOT_HASH = "dmverity.roothash"
-SIGNATURE = "dmverity.p7s"
+
+
+def hash_tree(algorithm):
+    return f"dmverity-{algorithm}.hash"
+
+
+def root_hash(algorithm):
+    return f"dmverity-{algorithm}.roothash"
+
+
+def root_hash_signature(algorithm):
+    return f"dmverity-{algorithm}.p7s"
+
 
 FSVERITY_ASSETS = PAYLOAD / "fsverity"
-FSVERITY_SIGNATURE = "ipe_test.p7s"
-FSVERITY_DIGEST = "ipe_test.digest"
+
+
+def fsverity_signature(algorithm):
+    return f"ipe_test-{algorithm}.p7s"
+
+
+def fsverity_digest(algorithm):
+    return f"ipe_test-{algorithm}.digest"
 
 TEST_MODULE = "ipe_test"
 TEST_MODULE_FILE = f"{TEST_MODULE}.ko"
 
 FSVERITY_MODULES = PAYLOAD / "fsverity-modules"
-FSVERITY_SIGNED_MODULE = FSVERITY_MODULES / f"signed-{TEST_MODULE_FILE}"
 FSVERITY_UNSIGNED_MODULE = FSVERITY_MODULES / f"unsigned-{TEST_MODULE_FILE}"
 FSVERITY_PLAIN_MODULE = FSVERITY_MODULES / f"plain-{TEST_MODULE_FILE}"
+
+
+def fsverity_signed_module(algorithm):
+    return FSVERITY_MODULES / f"signed-{algorithm}-{TEST_MODULE_FILE}"
 
 # --- initrd ------------------------------------------------------------------
 
@@ -81,9 +102,13 @@ BOOT_TMPFS_DIRECTORY = Path("/run/ipe-boot-verified-tmpfs")
 
 MEDIA = Path("/run/ipe-media")
 
-DMVERITY_SIGNED_DEVICE = "ipe-dmverity-signed"
-DMVERITY_SIGNED_MOUNT = MEDIA / "dmverity-signed"
-DMVERITY_UNSIGNED_DEVICE = "ipe-dmverity-unsigned"
-DMVERITY_UNSIGNED_MOUNT = MEDIA / "dmverity-unsigned"
+
+def dmverity_device(algorithm, signed):
+    return f"ipe-dmverity-{algorithm}-{'signed' if signed else 'unsigned'}"
+
+
+def dmverity_mount(algorithm, signed):
+    return MEDIA / f"dmverity-{algorithm}-{'signed' if signed else 'unsigned'}"
+
 
 PLAIN_MOUNT = MEDIA / "plain"

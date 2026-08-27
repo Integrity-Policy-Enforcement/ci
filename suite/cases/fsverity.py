@@ -13,6 +13,7 @@ from assets import (
 )
 from model import Batch
 
+
 from . import kmodule
 
 
@@ -24,7 +25,7 @@ def build():
                 kmodule.case(
                     "kmodule_fsverity_signature_true_signed_ok",
                     FSVERITY_SIGNATURE_TRUE_POLICY,
-                    layout.FSVERITY_SIGNED_MODULE,
+                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
                     allowed=True,
                 ),
                 kmodule.case(
@@ -42,7 +43,7 @@ def build():
                 kmodule.case(
                     "kmodule_fsverity_signature_false_signed_ok",
                     FSVERITY_SIGNATURE_FALSE_POLICY,
-                    layout.FSVERITY_SIGNED_MODULE,
+                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
                     allowed=True,
                 ),
                 kmodule.case(
@@ -60,7 +61,7 @@ def build():
                 kmodule.case(
                     "kmodule_fsverity_digest_signed_ok",
                     FSVERITY_DIGEST_POLICY,
-                    layout.FSVERITY_SIGNED_MODULE,
+                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
                     allowed=True,
                 ),
                 kmodule.case(
@@ -78,7 +79,7 @@ def build():
                 kmodule.case(
                     "kmodule_fsverity_digest_mismatch_denied",
                     FSVERITY_DIGEST_MISMATCH_POLICY,
-                    layout.FSVERITY_SIGNED_MODULE,
+                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
                     allowed=False,
                 ),
             ),
@@ -86,10 +87,11 @@ def build():
                 partial(ipe.set_enforcement, False),
                 partial(
                     files.verity_module,
-                    layout.FSVERITY_SIGNED_MODULE,
-                    layout.FSVERITY_ASSETS / layout.FSVERITY_SIGNATURE,
+                    layout.fsverity_signed_module(layout.HASH_ALGORITHM),
+                    layout.HASH_ALGORITHM,
+                    layout.FSVERITY_ASSETS / layout.fsverity_signature(layout.HASH_ALGORITHM),
                 ),
-                partial(files.verity_module, layout.FSVERITY_UNSIGNED_MODULE),
+                partial(files.verity_module, layout.FSVERITY_UNSIGNED_MODULE, layout.HASH_ALGORITHM),
                 partial(files.copy_module, layout.FSVERITY_PLAIN_MODULE),
             ),
         ),

@@ -1,4 +1,4 @@
 policy_name=ipe_test_fsverity_kmodule_digest policy_version=0.0.1
 DEFAULT action=ALLOW
 DEFAULT op=KMODULE action=DENY
-op=KMODULE fsverity_digest=@FSVERITY_DIGEST@ action=ALLOW
+op=KMODULE fsverity_digest=@FSVERITY_DIGEST_SHA256@ action=ALLOW

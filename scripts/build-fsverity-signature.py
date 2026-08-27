@@ -3,8 +3,10 @@
 """Sign the fs-verity digest of the test module.
 
     build/fsverity/
-        ipe_test.digest       the digest, as ASCII hex
-        ipe_test.p7s          that digest signed by the fs-verity key
+        ipe_test-<hash>.digest    the digest, as ASCII hex
+        ipe_test-<hash>.p7s       that digest signed by the fs-verity key
+
+One pair per hash in layout.HASH_ALGORITHMS.
 
 The digest depends on the file alone, so it can be computed here, where
 the key is, and the guest only has to enable fs-verity with the result.
@@ -33,23 +35,25 @@ def main():
     shutil.rmtree(OUTPUT, ignore_errors=True)
     OUTPUT.mkdir(parents=True)
 
-    subprocess.run(
-        [
-            "fsverity", "sign", str(KERNEL_MODULE), str(OUTPUT / layout.FSVERITY_SIGNATURE),
-            f"--key={FSVERITY_KEY}", f"--cert={FSVERITY_CERTIFICATE}",
-            f"--hash-alg={layout.HASH_ALGORITHM}",
-        ],
-        check=True,
-        stdout=subprocess.DEVNULL,
-    )
-    reported = subprocess.run(
-        ["fsverity", "digest", str(KERNEL_MODULE), f"--hash-alg={layout.HASH_ALGORITHM}"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.split()[0]
-    _, _, digest = reported.partition(":")
-    (OUTPUT / layout.FSVERITY_DIGEST).write_text(digest + "\n")
+    for algorithm in layout.HASH_ALGORITHMS:
+        subprocess.run(
+            [
+                "fsverity", "sign", str(KERNEL_MODULE),
+                str(OUTPUT / layout.fsverity_signature(algorithm)),
+                f"--key={FSVERITY_KEY}", f"--cert={FSVERITY_CERTIFICATE}",
+                f"--hash-alg={algorithm}",
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+        reported = subprocess.run(
+            ["fsverity", "digest", str(KERNEL_MODULE), f"--hash-alg={algorithm}"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.split()[0]
+        _, _, digest = reported.partition(":")
+        (OUTPUT / layout.fsverity_digest(algorithm)).write_text(digest + "\n")
 
     print(f"    Prepared the fs-verity signature in {OUTPUT.relative_to(ROOT)}")
     return 0

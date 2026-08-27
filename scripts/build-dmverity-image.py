@@ -4,9 +4,11 @@
 
     build/dmverity/
         dmverity.squashfs     holds ipe_test.ko, nothing else
-        dmverity.hash         the Merkle tree veritysetup formatted
-        dmverity.roothash     its root hash, as ASCII hex
-        dmverity.p7s          that root hash signed by the builtin key
+        dmverity-<hash>.hash      the Merkle tree veritysetup formatted
+        dmverity-<hash>.roothash  its root hash, as ASCII hex
+        dmverity-<hash>.p7s       that root hash signed by the builtin key
+
+One set per hash in layout.HASH_ALGORITHMS, all over the same image.
 
 The guest opens the same image twice, once passing dmverity.p7s and once
 not, which is the only difference between the two devices.
@@ -47,10 +49,8 @@ def build_squashfs(image):
     shutil.rmtree(staging)
 
 
-def format_hash_tree(image, hash_tree):
-    formatted = capture(
-        "veritysetup", "format", image, hash_tree, f"--hash={layout.HASH_ALGORITHM}"
-    )
+def format_hash_tree(image, hash_tree, algorithm):
+    formatted = capture("veritysetup", "format", image, hash_tree, f"--hash={algorithm}")
     for line in formatted.splitlines():
         if line.startswith("Root hash:"):
             return line.split()[-1]
@@ -78,9 +78,10 @@ def main():
 
     image = OUTPUT / layout.SQUASHFS
     build_squashfs(image)
-    root_hash = format_hash_tree(image, OUTPUT / layout.HASH_TREE)
-    (OUTPUT / layout.ROOT_HASH).write_text(root_hash + "\n")
-    sign_root_hash(root_hash, OUTPUT / layout.SIGNATURE)
+    for algorithm in layout.HASH_ALGORITHMS:
+        root_hash = format_hash_tree(image, OUTPUT / layout.hash_tree(algorithm), algorithm)
+        (OUTPUT / layout.root_hash(algorithm)).write_text(root_hash + "\n")
+        sign_root_hash(root_hash, OUTPUT / layout.root_hash_signature(algorithm))
 
     print(f"    Prepared the dm-verity image in {OUTPUT.relative_to(ROOT)}")
     return 0

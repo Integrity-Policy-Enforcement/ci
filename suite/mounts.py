@@ -22,7 +22,12 @@ def devices():
     """Only the devices the tests open: the root filesystem has one too."""
     listing = capture("dmsetup", "ls")
     present = {line.split()[0] for line in listing.splitlines() if line[:1].isalnum()}
-    return present & {layout.DMVERITY_SIGNED_DEVICE, layout.DMVERITY_UNSIGNED_DEVICE}
+    ours = {
+        layout.dmverity_device(algorithm, signed)
+        for algorithm in layout.HASH_ALGORITHMS
+        for signed in (True, False)
+    }
+    return present & ours
 
 
 def close(name):
@@ -34,19 +39,24 @@ def mount(device, point, *options):
     run("mount", *options, device, point)
 
 
-def dmverity(name, point, signed):
+def dmverity(algorithm, signed):
     assets = layout.DMVERITY_ASSETS
-    root_hash = (assets / layout.ROOT_HASH).read_text().strip()
-    signature = ["--root-hash-signature", assets / layout.SIGNATURE] if signed else []
+    name = layout.dmverity_device(algorithm, signed)
+    root_hash = (assets / layout.root_hash(algorithm)).read_text().strip()
+    signature = (
+        ["--root-hash-signature", assets / layout.root_hash_signature(algorithm)]
+        if signed
+        else []
+    )
     run(
         "veritysetup", "open",
         assets / layout.SQUASHFS,
         name,
-        assets / layout.HASH_TREE,
+        assets / layout.hash_tree(algorithm),
         root_hash,
         *signature,
     )
-    mount(DEVICE_MAPPER / name, point, "-o", "ro")
+    mount(DEVICE_MAPPER / name, layout.dmverity_mount(algorithm, signed), "-o", "ro")
 
 
 def tmpfs(point, module):

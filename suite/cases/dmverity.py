@@ -15,8 +15,8 @@ from model import Batch
 
 from . import kmodule
 
-SIGNED = layout.DMVERITY_SIGNED_MOUNT
-UNSIGNED = layout.DMVERITY_UNSIGNED_MOUNT
+SIGNED = layout.dmverity_mount(layout.HASH_ALGORITHM, signed=True)
+UNSIGNED = layout.dmverity_mount(layout.HASH_ALGORITHM, signed=False)
 PLAIN = layout.PLAIN_MOUNT
 MODULE = layout.TEST_MODULE_FILE
 
@@ -89,10 +89,8 @@ def build():
             ),
             (
                 partial(ipe.set_enforcement, False),
-                partial(mounts.dmverity, layout.DMVERITY_SIGNED_DEVICE, SIGNED, True),
-                partial(
-                    mounts.dmverity, layout.DMVERITY_UNSIGNED_DEVICE, UNSIGNED, False
-                ),
+                partial(mounts.dmverity, layout.HASH_ALGORITHM, True),
+                partial(mounts.dmverity, layout.HASH_ALGORITHM, False),
                 partial(mounts.tmpfs, PLAIN, layout.PAYLOAD / MODULE),
             ),
         ),

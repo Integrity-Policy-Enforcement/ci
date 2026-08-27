@@ -1,4 +1,4 @@
 policy_name=ipe_test_dmverity_kmodule_roothash policy_version=0.0.1
 DEFAULT action=ALLOW
 DEFAULT op=KMODULE action=DENY
-op=KMODULE dmverity_roothash=@DMVERITY_ROOTHASH@ action=ALLOW
+op=KMODULE dmverity_roothash=@DMVERITY_ROOTHASH_SHA256@ action=ALLOW
