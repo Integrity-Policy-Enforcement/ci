@@ -90,6 +90,12 @@ def build():
                     allowed=True,
                 ),
                 kmodule.case(
+                    "kmodule_roothash_sha512_plain_denied",
+                    roothash_policy("sha512"),
+                    PLAIN / MODULE,
+                    allowed=False,
+                ),
+                kmodule.case(
                     "kmodule_roothash_sha256_mismatch_denied",
                     roothash_policy("sha256", matching=False),
                     layout.dmverity_mount("sha256", signed=True) / MODULE,
