@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+[Unit]
+Description=Record what IPE decides about the initramfs
+DefaultDependencies=no
+# The tests run against the trust anchors the boot installs, so measure
+# only once they are all in place.
+After=anchor-fsverity.service
+Before=initrd-switch-root.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/ipe-tests/boot-verified

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+import json
+
 import ipe
+import layout
 
 
 def two_values_match(values):
@@ -47,3 +50,10 @@ def operation_completed_is(operation, expected, detail):
     actual = operation.completed()
     if actual != expected:
         return f"{operation.id} completed={actual}, expected {expected}"
+
+
+def initramfs_case_passed(id, detail):
+    outcome = json.loads(layout.BOOT_VERIFIED_RECORD.read_text())[id]
+    if outcome is not None:
+        kind, message = outcome
+        return f"{kind} in the initramfs: {message}"

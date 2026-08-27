@@ -28,8 +28,10 @@ def run_in_child(case):
                 step()
             for step in case.setup:
                 step()
-            observation = case.trigger()
-            report = {"errno": observation.errno, "detail": observation.detail}
+            report = {"detail": ""}
+            if case.trigger:
+                observation = case.trigger()
+                report = {"errno": observation.errno, "detail": observation.detail}
         except BaseException as failure:
             report = {"error": f"{type(failure).__name__}: {clean(failure)}"}
         os.write(write_fd, json.dumps(report).encode())
@@ -49,18 +51,20 @@ def run_in_child(case):
 
 
 def test(case):
+    """Run one case and put back whatever it disturbed."""
     try:
-        result = run_in_child(case)
-        if "error" in result:
-            return "error", result["error"]
-        if result["errno"] != case.expect:
-            detail = f": {result['detail']}" if result["detail"] else ""
-            return "failure", f"expected errno {case.expect}, got {result['errno']}{detail}"
-        if case.check:
-            problem = case.check(result["detail"])
-            if problem:
-                return "failure", problem
-        return None
+        with case.scope():
+            result = run_in_child(case)
+            if "error" in result:
+                return "error", result["error"]
+            if case.trigger and result["errno"] != case.expect:
+                detail = f": {result['detail']}" if result["detail"] else ""
+                return "failure", f"expected errno {case.expect}, got {result['errno']}{detail}"
+            if case.check:
+                problem = case.check(result["detail"])
+                if problem:
+                    return "failure", problem
+            return None
     except Exception as failure:
         traceback.print_exc()
         return "error", f"{type(failure).__name__}: {clean(failure)}"
@@ -87,8 +91,7 @@ def run(output):
                         step()
                     for case in batch.cases:
                         number += 1
-                        with case.scope():
-                            outcome = test(case)
+                        outcome = test(case)
 
                         if outcome is None:
                             emit(f"ok {number} {case.id}")

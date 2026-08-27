@@ -15,8 +15,8 @@ class Observation:
 @dataclass(frozen=True)
 class Case:
     id: str
-    trigger: Callable
-    expect: int
+    trigger: Callable | None = None
+    expect: int | None = None
     collect: tuple[Callable, ...] = ()
     setup: tuple[Callable, ...] = ()
     check: Callable | None = None

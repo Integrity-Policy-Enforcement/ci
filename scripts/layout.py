@@ -9,6 +9,9 @@ Guest layout after boot:
     /sys/kernel/security/ipe/          IPE's securityfs tree
     /dev/virtio-ports/ipe-tests-result TAP output collected by scripts/run-vm.py
 
+    /usr/lib/ipe-tests/                initrd: suite, layout.py, policies, module
+    /run/ipe-boot-verified             initrd → real root: boot_verified results
+
     /run/ipe-tests/                    payload disk (ext4, mounted rw)
         run-tests                          entry point
         policies/<group>/<name>.{pol,p7s}  signed policy fixtures
@@ -64,6 +67,13 @@ FSVERITY_UNSIGNED_MODULE = FSVERITY_MODULES / f"unsigned-{TEST_MODULE_FILE}"
 FSVERITY_PLAIN_MODULE = FSVERITY_MODULES / f"plain-{TEST_MODULE_FILE}"
 
 # --- initrd ------------------------------------------------------------------
+
+INITRD = Path("/usr/lib/ipe-tests")
+
+BOOT_VERIFIED_RECORD = Path("/run/ipe-boot-verified")
+BOOT_TMPFS_DIRECTORY = Path("/run/ipe-boot-verified-tmpfs")
+
+# --- test media (/run/ipe-media, scoped to the batch) ------------------------
 
 MEDIA = Path("/run/ipe-media")
 
