@@ -101,6 +101,12 @@ def build():
                     layout.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=False,
                 ),
+                kmodule.case(
+                    "kmodule_roothash_sha512_mismatch_denied",
+                    roothash_policy("sha512", matching=False),
+                    layout.dmverity_mount("sha512", signed=True) / MODULE,
+                    allowed=False,
+                ),
             ),
             (
                 partial(ipe.set_enforcement, False),
