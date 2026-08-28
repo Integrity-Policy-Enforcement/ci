@@ -129,6 +129,9 @@ def build():
                 ),
                 partial(files.copy_module, layout.guest.FSVERITY_PLAIN_MODULE),
             ),
-            scope=partial(runtime.batch.scope, Collection(files.copies, files.discard)),
+            scope=partial(
+                runtime.batch.scope,
+                Collection(members=files.copies, discard=files.discard),
+            ),
         ),
     )

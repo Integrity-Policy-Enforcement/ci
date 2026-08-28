@@ -121,8 +121,8 @@ def build():
             ),
             scope=partial(
                 runtime.batch.scope,
-                Collection(mounts.points, mounts.umount),
-                Collection(mounts.devices, mounts.close),
+                Collection(members=mounts.points, discard=mounts.umount),
+                Collection(members=mounts.devices, discard=mounts.close),
             ),
         ),
     )

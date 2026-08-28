@@ -19,15 +19,15 @@ class Policy:
     name: str
 
     @property
-    def text(self):
+    def text(self) -> Path:
         return self.asset.with_name(self.asset.name + layout.POLICY_TEXT_SUFFIX)
 
     @property
-    def signed(self):
+    def signed(self) -> Path:
         return self.asset.with_name(self.asset.name + layout.POLICY_SIGNATURE_SUFFIX)
 
     @property
-    def certificate(self):
+    def certificate(self) -> Path:
         return self.asset.with_name(self.asset.name + ".der")
 
 
@@ -46,15 +46,15 @@ class node:
     POLICY = "policy"
 
 
-def policy_path(name):
+def policy_path(name: str) -> Path:
     return IPE_ROOT / node.POLICIES / name
 
 
-def node_path(entry, policy=None):
+def node_path(entry: str, policy: Policy | None = None) -> Path:
     return IPE_ROOT / entry if policy is None else policy_path(policy.name) / entry
 
 
-def write(path, data):
+def write(path: Path, data: bytes | str) -> None:
     payload = data.encode() if isinstance(data, str) else data
     descriptor = os.open(path, os.O_WRONLY)
     try:
@@ -63,66 +63,66 @@ def write(path, data):
         os.close(descriptor)
 
 
-def policy_names():
+def policy_names() -> frozenset[str]:
     return frozenset(path.name for path in node_path(node.POLICIES).iterdir() if path.is_dir())
 
 
-def policy_present(name):
+def policy_present(name: str) -> bool:
     return policy_path(name).is_dir()
 
 
-def policy_version(name):
+def policy_version(name: str) -> str | None:
     try:
         return (policy_path(name) / node.VERSION).read_text().strip()
     except OSError:
         return None
 
 
-def policy_active(name):
+def policy_active(name: str) -> bool:
     return (policy_path(name) / node.ACTIVE).read_text().strip() == "1"
 
 
-def deploy_policy(signed):
+def deploy_policy(signed: Path) -> None:
     write(node_path(node.NEW_POLICY), signed.read_bytes())
 
 
-def activate_policy(name):
+def activate_policy(name: str) -> None:
     active = policy_path(name) / node.ACTIVE
     if active.read_text().strip() != "1":
         write(active, "1")
 
 
-def delete_policy(name):
+def delete_policy(name: str) -> None:
     if policy_present(name):
         write(policy_path(name) / node.DELETE, "1")
     if policy_present(name):
         raise RuntimeError(f"policy {name} was not deleted")
 
 
-def enforcement():
+def enforcement() -> bool:
     return node_path(node.ENFORCE).read_text().strip() == "1"
 
 
-def success_audit():
+def success_audit() -> bool:
     return node_path(node.SUCCESS_AUDIT).read_text().strip() == "1"
 
 
-def active_policy():
+def active_policy() -> str | None:
     for name in policy_names():
         if policy_active(name):
             return name
     return None
 
 
-def set_enforcement(enabled):
+def set_enforcement(enabled: bool) -> None:
     write(node_path(node.ENFORCE), "1" if enabled else "0")
 
 
-def set_success_audit(enabled):
+def set_success_audit(enabled: bool) -> None:
     write(node_path(node.SUCCESS_AUDIT), "1" if enabled else "0")
 
 
-def load_baseline(policy):
+def load_baseline(policy: Policy) -> str:
     expected = policy.text.read_bytes().rstrip(b"\n")
     if policy_present(policy.name):
         loaded = (policy_path(policy.name) / node.POLICY).read_bytes().rstrip(b"\n")

@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import ipe
-from scope import Scope, Setting
+from scope import Collection, Scope, Setting
 
 
-def scope(*also):
+def scope(*also: Collection | Setting) -> Scope:
     """What any batch may disturb, and what this one disturbs beyond that."""
     return Scope(
-        Setting(ipe.enforcement, ipe.set_enforcement),
+        Setting(read=ipe.enforcement, write=ipe.set_enforcement),
         *also,
     )

@@ -44,8 +44,8 @@ def build():
             scope=partial(
                 runtime.case.scope,
                 Collection(
-                    partial(keyring.linked_keys, SECONDARY_KEYRING),
-                    partial(keyring.unlink, keyring=SECONDARY_KEYRING),
+                    members=partial(keyring.linked_keys, SECONDARY_KEYRING),
+                    discard=partial(keyring.unlink, keyring=SECONDARY_KEYRING),
                 ),
             ),
             trigger=partial(

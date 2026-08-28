@@ -38,7 +38,10 @@ def initramfs_case(id, policy, module, allowed):
         ),
         trigger=partial(KMODULE.attempt, module),
         expect=0 if allowed else KMODULE.refused,
-        scope=partial(runtime.case.scope, Collection(modules.loaded, modules.remove)),
+        scope=partial(
+            runtime.case.scope,
+            Collection(members=modules.loaded, discard=modules.remove),
+        ),
     )
 
 
