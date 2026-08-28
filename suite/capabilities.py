@@ -27,7 +27,7 @@ libc.capget.argtypes = (ctypes.POINTER(CapabilityHeader), ctypes.POINTER(Capabil
 libc.capset.argtypes = (ctypes.POINTER(CapabilityHeader), ctypes.POINTER(CapabilityData))
 
 
-def read():
+def read() -> tuple[CapabilityHeader, ctypes.Array]:
     header = CapabilityHeader(LINUX_CAPABILITY_VERSION_3, 0)
     values = (CapabilityData * LINUX_CAPABILITY_U32S_3)()
     ctypes.set_errno(0)
@@ -36,13 +36,13 @@ def read():
     return header, values
 
 
-def write(header, values):
+def write(header: CapabilityHeader, values: ctypes.Array) -> None:
     ctypes.set_errno(0)
     if libc.capset(ctypes.byref(header), values) != 0:
         raise OSError(ctypes.get_errno(), "capset failed")
 
 
-def set_mac_admin_effective(enabled):
+def set_mac_admin_effective(enabled: bool) -> None:
     header, values = read()
     if enabled:
         values[MAC_ADMIN_WORD].effective |= MAC_ADMIN_MASK
@@ -55,7 +55,7 @@ def set_mac_admin_effective(enabled):
         raise RuntimeError(f"CAP_MAC_ADMIN effective={actual}, expected {enabled}")
 
 
-def drop_mac_admin():
+def drop_mac_admin() -> None:
     header, values = read()
     values[MAC_ADMIN_WORD].effective &= ~MAC_ADMIN_MASK
     values[MAC_ADMIN_WORD].permitted &= ~MAC_ADMIN_MASK

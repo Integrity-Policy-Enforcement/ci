@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import json
+from typing import TextIO
 import os
 import signal
 import traceback
 
 import cases
+from model import Case
 from assets import BASELINE_POLICY
 import ipe
 import runtime
@@ -13,11 +15,11 @@ import runtime
 CASE_TIMEOUT_SECONDS = 60
 
 
-def clean(text):
+def clean(text: object) -> str:
     return " ".join(str(text).replace("\r", " ").replace("\n", " ").split())
 
 
-def run_in_child(case):
+def run_in_child(case: Case) -> dict:
     read_fd, write_fd = os.pipe()
     child = os.fork()
     if child == 0:
@@ -50,7 +52,7 @@ def run_in_child(case):
     return json.loads(payload)
 
 
-def test(case):
+def test(case: Case) -> tuple[str, str] | None:
     """Run one case and put back whatever it disturbed."""
     try:
         with case.scope():
@@ -70,8 +72,8 @@ def test(case):
         return "error", f"{type(failure).__name__}: {clean(failure)}"
 
 
-def run(output):
-    def emit(line):
+def run(output: TextIO) -> int:
+    def emit(line: str) -> None:
         output.write(line.replace("\n", " ").replace("\r", " ") + "\n")
         output.flush()
 

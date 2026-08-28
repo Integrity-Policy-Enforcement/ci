@@ -7,9 +7,10 @@ from . import policy
 from . import policy_signature
 from . import policy_text
 from . import securityfs
+from model import Batch
 
 
-def build():
+def build() -> tuple[Batch, ...]:
     batches = []
     for module in (securityfs, policy, policy_signature, policy_text, dmverity, fsverity, boot):
         batches.extend(module.build())

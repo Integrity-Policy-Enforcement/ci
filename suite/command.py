@@ -3,7 +3,7 @@
 import subprocess
 
 
-def run(*arguments):
+def run(*arguments: object) -> None:
     """Run a command, and report what it said when it refuses."""
     finished = subprocess.run(
         [str(argument) for argument in arguments], capture_output=True, text=True
@@ -12,7 +12,7 @@ def run(*arguments):
         raise RuntimeError(f"{arguments[0]} failed: {finished.stderr.strip()}")
 
 
-def capture(*arguments):
+def capture(*arguments: object) -> str:
     return subprocess.run(
         [str(argument) for argument in arguments], capture_output=True, text=True, check=True
     ).stdout

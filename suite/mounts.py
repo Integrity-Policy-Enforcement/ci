@@ -9,16 +9,16 @@ from command import capture, run
 DEVICE_MAPPER = Path("/dev/mapper")
 
 
-def points():
+def points() -> set[str]:
     live = capture("findmnt", "--noheadings", "--raw", "--output", "TARGET").split()
     return {point for point in live if point.startswith(f"{layout.guest.MEDIA}/")}
 
 
-def umount(point):
+def umount(point: str) -> None:
     run("umount", point)
 
 
-def devices():
+def devices() -> set[str]:
     """Only the devices the tests open: the root filesystem has one too."""
     listing = capture("dmsetup", "ls")
     present = {line.split()[0] for line in listing.splitlines() if line[:1].isalnum()}
@@ -30,16 +30,16 @@ def devices():
     return present & ours
 
 
-def close(name):
+def close(name: str) -> None:
     run("veritysetup", "close", name)
 
 
-def mount(device, point, *options):
+def mount(device: Path | str, point: Path, *options: str) -> None:
     point.mkdir(parents=True, exist_ok=True)
     run("mount", *options, device, point)
 
 
-def dmverity(algorithm, signed):
+def dmverity(algorithm: str, signed: bool) -> None:
     assets = layout.guest.DMVERITY_ASSETS
     name = layout.guest.dmverity_device(algorithm, signed)
     root_hash = (assets / layout.guest.root_hash(algorithm)).read_text().strip()
@@ -59,7 +59,7 @@ def dmverity(algorithm, signed):
     mount(DEVICE_MAPPER / name, layout.guest.dmverity_mount(algorithm, signed), "-o", "ro")
 
 
-def tmpfs(point, module):
+def tmpfs(point: Path, module: Path) -> None:
     """A filesystem with no block device, carrying a copy of the module."""
     mount("tmpfs", point, "-t", "tmpfs")
     shutil.copy(module, point)
