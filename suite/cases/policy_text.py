@@ -306,7 +306,7 @@ def build():
                 triggers.write_node,
                 ipe.node.NEW_POLICY,
                 None,
-                text_policy("special_name_ok").signed.read_bytes(),
+                TEXT_SPECIAL_NAME_POLICY.signed.read_bytes(),
             ),
             expect=0,
             check=partial(checks.policy_present_is, TEXT_SPECIAL_NAME_POLICY, True),
