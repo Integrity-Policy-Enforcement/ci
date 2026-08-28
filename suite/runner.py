@@ -86,7 +86,7 @@ def run(output):
         ipe.load_baseline(BASELINE_POLICY)
         for batch in batches:
             try:
-                with runtime.batch.scope():
+                with batch.scope():
                     for step in batch.setup:
                         step()
                     for case in batch.cases:

@@ -5,12 +5,14 @@ from functools import partial
 import files
 import ipe
 import layout
+import runtime
 from assets import (
     FSVERITY_SIGNATURE_FALSE_POLICY,
     FSVERITY_SIGNATURE_TRUE_POLICY,
     digest_policy,
 )
 from model import Batch
+from scope import Collection
 
 
 from . import kmodule
@@ -127,5 +129,6 @@ def build():
                 ),
                 partial(files.copy_module, layout.guest.FSVERITY_PLAIN_MODULE),
             ),
+            scope=partial(runtime.batch.scope, Collection(files.copies, files.discard)),
         ),
     )

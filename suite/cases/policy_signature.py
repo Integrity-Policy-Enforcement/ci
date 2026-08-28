@@ -5,6 +5,8 @@ from functools import partial
 
 import checks
 import ipe
+import keyring
+import runtime
 import steps
 import triggers
 from assets import (
@@ -16,6 +18,7 @@ from assets import (
     UNTRUSTED_POLICY,
 )
 from model import Batch, Case
+from scope import Collection
 
 
 def build():
@@ -37,6 +40,13 @@ def build():
             id="policy_signature_secondary_linked_ok",
             setup=(
                 partial(steps.link_certificate, SECONDARY_KEYRING, SECONDARY_POLICY),
+            ),
+            scope=partial(
+                runtime.case.scope,
+                Collection(
+                    partial(keyring.linked_keys, SECONDARY_KEYRING),
+                    partial(keyring.unlink, keyring=SECONDARY_KEYRING),
+                ),
             ),
             trigger=partial(
                 triggers.write_node,

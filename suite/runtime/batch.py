@@ -1,16 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-import files
 import ipe
-import mounts
-from scope import Collection, Scope, Setting
+from scope import Scope, Setting
 
 
-def scope():
-    """Everything a batch prepares for its cases, undone in mount order."""
+def scope(*also):
+    """What any batch may disturb, and what this one disturbs beyond that."""
     return Scope(
         Setting(ipe.enforcement, ipe.set_enforcement),
-        Collection(mounts.points, mounts.umount),
-        Collection(mounts.devices, mounts.close),
-        Collection(files.copies, files.discard),
+        *also,
     )

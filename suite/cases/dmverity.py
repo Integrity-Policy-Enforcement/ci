@@ -5,12 +5,14 @@ from functools import partial
 import ipe
 import layout
 import mounts
+import runtime
 from assets import (
     KMODULE_SIGNATURE_FALSE_POLICY,
     KMODULE_SIGNATURE_TRUE_POLICY,
     roothash_policy,
 )
 from model import Batch
+from scope import Collection
 
 from . import kmodule
 
@@ -116,6 +118,11 @@ def build():
                     for signed in (True, False)
                 ),
                 partial(mounts.tmpfs, PLAIN, layout.guest.PAYLOAD / MODULE),
+            ),
+            scope=partial(
+                runtime.batch.scope,
+                Collection(mounts.points, mounts.umount),
+                Collection(mounts.devices, mounts.close),
             ),
         ),
     )

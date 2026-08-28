@@ -28,3 +28,4 @@ class Batch:
     id: str
     cases: tuple[Case, ...]
     setup: tuple[Callable, ...] = ()
+    scope: Callable = runtime.batch.scope
