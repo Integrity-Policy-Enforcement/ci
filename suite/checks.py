@@ -4,9 +4,10 @@ import json
 
 import ipe
 import layout
+from operations import Operation
 
 
-def two_values_match(values):
+def two_values_match(values: list[str]) -> str | None:
     if len(values) != 2:
         return f"expected two reads, got {len(values)}"
     first, second = values
@@ -14,7 +15,7 @@ def two_values_match(values):
         return f"read values differ: {first!r} != {second!r}"
 
 
-def two_values_differ(values):
+def two_values_differ(values: list[str]) -> str | None:
     if len(values) != 2:
         return f"expected two reads, got {len(values)}"
     first, second = values
@@ -22,37 +23,37 @@ def two_values_differ(values):
         return f"read values did not change: {first!r}"
 
 
-def policy_version_is(policy, expected, detail):
+def policy_version_is(policy: ipe.Policy, expected: str, detail: list[str]) -> str | None:
     actual = ipe.policy_version(policy.name)
     if actual != expected:
         return f"policy {policy.name} version is {actual}, expected {expected}"
 
 
-def policy_active_is(policy, expected, detail):
+def policy_active_is(policy: ipe.Policy, expected: bool, detail: list[str]) -> str | None:
     actual = ipe.policy_active(policy.name)
     if actual != expected:
         return f"policy {policy.name} active={actual}, expected {expected}"
 
 
-def node_value_is(node, expected, detail):
-    actual = ipe.node_path(node).read_text().strip()
+def node_value_is(entry: str, expected: str, detail: list[str]) -> str | None:
+    actual = ipe.node_path(entry).read_text().strip()
     if actual != expected:
-        return f"{node} is {actual!r}, expected {expected!r}"
+        return f"{entry} is {actual!r}, expected {expected!r}"
 
 
-def policy_present_is(policy, expected, detail):
+def policy_present_is(policy: ipe.Policy, expected: bool, detail: list[str]) -> str | None:
     actual = ipe.policy_present(policy.name)
     if actual != expected:
         return f"policy {policy.name} present={actual}, expected {expected}"
 
 
-def operation_completed_is(operation, expected, detail):
+def operation_completed_is(operation: Operation, expected: bool, detail: list[str]) -> str | None:
     actual = operation.completed()
     if actual != expected:
         return f"{operation.id} completed={actual}, expected {expected}"
 
 
-def initramfs_case_passed(id, detail):
+def initramfs_case_passed(id: str, detail: list[str]) -> str | None:
     outcome = json.loads(layout.initrd.BOOT_VERIFIED_RECORD.read_text())[id]
     if outcome is not None:
         kind, message = outcome

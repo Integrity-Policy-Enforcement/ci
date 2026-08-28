@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 
 import modules
 from model import Observation
@@ -17,13 +18,18 @@ class Operation:
     completed: Callable
 
 
-def insert_module(path):
+def insert_module(path: Path) -> Observation:
     finished = modules.insert(path)
     return Observation(finished.returncode, finished.stderr.strip())
 
 
-def test_module_loaded():
+def test_module_loaded() -> bool:
     return bool(modules.loaded())
 
 
-KMODULE = Operation("kmodule", insert_module, INSMOD_REFUSED, test_module_loaded)
+KMODULE = Operation(
+    id="kmodule",
+    attempt=insert_module,
+    refused=INSMOD_REFUSED,
+    completed=test_module_loaded,
+)
