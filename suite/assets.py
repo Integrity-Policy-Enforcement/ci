@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import ipe
+import layout
 
 
 def policy(asset, name):
@@ -27,21 +28,20 @@ POLICY_OTHER_NAME = policy("policy/ipe_test_policy-other-name", "ipe_test_policy
 POLICY_MALFORMED = policy("policy/ipe_test_policy-malformed", "ipe_test_policy")
 
 # policy signature cases sign this policy with a key the blacklist holds,
-REVOKED_POLICY = policy("policy_signature/revoked", "ipe_test_signature_revoked")
+REVOKED_POLICY = policy(layout.REVOKED_POLICY, "ipe_test_signature_revoked")
 
 # this one with a key no keyring trusts,
-UNTRUSTED_POLICY = policy("policy_signature/untrusted", "ipe_test_signature_untrusted")
+UNTRUSTED_POLICY = policy(layout.UNTRUSTED_POLICY, "ipe_test_signature_untrusted")
 
 # and replace this one's text after signing with a copy claiming a higher version.
-TAMPERED_POLICY = policy("policy_signature/tampered", "ipe_test_signature_tampered")
+TAMPERED_POLICY = policy(layout.TAMPERED_POLICY, "ipe_test_signature_tampered")
 
 # and this one with a leaf whose issuer must first be linked into a keyring.
-SECONDARY_POLICY = policy("policy_signature/secondary", "ipe_test_signature_secondary")
+SECONDARY_POLICY = policy(layout.SECONDARY_POLICY, "ipe_test_signature_secondary")
 SECONDARY_KEYRING = "%:.secondary_trusted_keys"
 
 # and this one with the Secure Boot key the firmware already trusts.
-PLATFORM_POLICY = policy("policy_signature/platform", "ipe_test_signature_platform")
-
+PLATFORM_POLICY = policy(layout.PLATFORM_POLICY, "ipe_test_signature_platform")
 
 # policy text corpus: one policy per parser decision point, all under one name
 # except the one whose name exercises the characters a name may contain.
