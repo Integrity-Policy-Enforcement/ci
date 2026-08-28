@@ -8,16 +8,13 @@ batch here reports those outcomes.
 """
 
 from functools import partial
-from pathlib import Path
 
 import checks
 import ipe
 import layout
-import modules
-import runtime
-import steps
 from model import Batch, Case
-from operations import KMODULE
+
+from . import kmodule
 
 TRUE_ALLOW_POLICY = ipe.Policy(
     layout.initrd.ROOT / "boot-verified-true", "ipe_test_boot_verified"
@@ -29,39 +26,26 @@ INITRAMFS_MODULE = layout.initrd.ROOT / layout.TEST_MODULE_FILE
 TMPFS_MODULE = layout.initrd.BOOT_TMPFS_DIRECTORY / layout.TEST_MODULE_FILE
 
 
-def initramfs_case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
-    return Case(
-        id=id,
-        setup=(
-            partial(steps.activate_policy, policy),
-            partial(ipe.set_enforcement, True),
-        ),
-        trigger=partial(KMODULE.attempt, module),
-        expect=0 if allowed else KMODULE.refused,
-        scope=partial(runtime.case.scope, modules.LOADED),
-    )
-
-
 INITRAMFS_CASES = (
-    initramfs_case(
+    kmodule.case(
         "kmodule_boot_verified_true_initramfs_ok",
         TRUE_ALLOW_POLICY,
         INITRAMFS_MODULE,
         allowed=True,
     ),
-    initramfs_case(
+    kmodule.case(
         "kmodule_boot_verified_true_tmpfs_denied",
         TRUE_ALLOW_POLICY,
         TMPFS_MODULE,
         allowed=False,
     ),
-    initramfs_case(
+    kmodule.case(
         "kmodule_boot_verified_false_initramfs_ok",
         FALSE_DENY_POLICY,
         INITRAMFS_MODULE,
         allowed=True,
     ),
-    initramfs_case(
+    kmodule.case(
         "kmodule_boot_verified_false_tmpfs_denied",
         FALSE_DENY_POLICY,
         TMPFS_MODULE,
