@@ -15,12 +15,12 @@ def open_node(entry: str, policy: ipe.Policy | None, descriptor: list[int]) -> N
     descriptor[0] = os.open(ipe.node_path(entry, policy), os.O_WRONLY)
 
 
-def read_node(entry: str, policy: ipe.Policy | None, values: list[str]) -> None:
-    values.append(ipe.node_path(entry, policy).read_text().strip())
+def read_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> None:
+    observed.append(ipe.node_path(entry, policy).read_text().strip())
 
 
-def read_binary_node(entry: str, policy: ipe.Policy | None, values: list[str]) -> None:
-    values.append(ipe.node_path(entry, policy).read_bytes().hex())
+def read_binary_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> None:
+    observed.append(ipe.node_path(entry, policy).read_bytes().hex())
 
 
 def unshare_user_namespace() -> None:

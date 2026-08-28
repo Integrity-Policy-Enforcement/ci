@@ -18,36 +18,36 @@ def write_node(entry: str, policy: ipe.Policy | None, data: bytes) -> Observatio
 
 
 def write_node_and_read(
-    entry: str, policy: ipe.Policy | None, data: bytes, values: list[str]
+    entry: str, policy: ipe.Policy | None, data: bytes, observed: list[str]
 ) -> Observation:
     observation = write_node(entry, policy, data)
-    values.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, values)
+    observed.append(ipe.node_path(entry, policy).read_text().strip())
+    return Observation(observation.errno, observed)
 
 
-def toggle_node(entry: str, policy: ipe.Policy | None, values: list[str]) -> Observation:
-    if len(values) != 1:
-        raise RuntimeError(f"expected one read, got {len(values)}")
-    (current,) = values
+def toggle_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
+    if len(observed) != 1:
+        raise RuntimeError(f"expected one read, got {len(observed)}")
+    (current,) = observed
     if current not in ("0", "1"):
         raise RuntimeError(f"cannot toggle {current!r}")
     observation = write_node(entry, policy, b"0" if current == "1" else b"1")
-    values.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, values)
+    observed.append(ipe.node_path(entry, policy).read_text().strip())
+    return Observation(observation.errno, observed)
 
 
-def read_node(entry: str, policy: ipe.Policy | None, values: list[str]) -> Observation:
+def read_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
     try:
-        values.append(ipe.node_path(entry, policy).read_text().strip())
-        return Observation(0, values)
+        observed.append(ipe.node_path(entry, policy).read_text().strip())
+        return Observation(0, observed)
     except OSError as failure:
         return Observation(failure.errno)
 
 
-def read_binary_node(entry: str, policy: ipe.Policy | None, values: list[str]) -> Observation:
+def read_binary_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
     try:
-        values.append(ipe.node_path(entry, policy).read_bytes().hex())
-        return Observation(0, values)
+        observed.append(ipe.node_path(entry, policy).read_bytes().hex())
+        return Observation(0, observed)
     except OSError as failure:
         return Observation(failure.errno)
 
@@ -57,11 +57,11 @@ def write_opened_file_and_read(
     policy: ipe.Policy | None,
     data: bytes,
     descriptor: list[int],
-    values: list[str],
+    observed: list[str],
 ) -> Observation:
     observation = write_opened_file(data, descriptor)
-    values.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, values)
+    observed.append(ipe.node_path(entry, policy).read_text().strip())
+    return Observation(observation.errno, observed)
 
 
 def write_opened_file(data: bytes, descriptor: list[int]) -> Observation:
