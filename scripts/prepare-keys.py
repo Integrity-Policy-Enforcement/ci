@@ -22,28 +22,9 @@ kernel and the image that trust them.
 
 import shutil
 import subprocess
-from pathlib import Path
+import layout
+import signing
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT = SCRIPT_DIR.parent
-KEYS = ROOT / "build" / "keys"
-BUILTIN_KEY = KEYS / "builtin-key.pem"
-BUILTIN_CERTIFICATE = KEYS / "builtin-cert.pem"
-BUILTIN_CERTIFICATE_DER = KEYS / "builtin-cert.der"
-MODULE_KEY = KEYS / "module-signing.pem"
-INTERMEDIATE_KEY = KEYS / "intermediate-key.pem"
-INTERMEDIATE_CERTIFICATE = KEYS / "intermediate-cert.pem"
-SECONDARY_KEY = KEYS / "secondary-key.pem"
-SECONDARY_CERTIFICATE = KEYS / "secondary-cert.pem"
-REVOKED_KEY = KEYS / "revoked-key.pem"
-REVOKED_CERTIFICATE = KEYS / "revoked-cert.pem"
-UNTRUSTED_KEY = KEYS / "untrusted-key.pem"
-UNTRUSTED_CERTIFICATE = KEYS / "untrusted-cert.pem"
-FSVERITY_KEY = KEYS / "fsverity-key.pem"
-FSVERITY_CERTIFICATE = KEYS / "fsverity-cert.pem"
-FSVERITY_CERTIFICATE_DER = KEYS / "fsverity-cert.der"
-SECURE_BOOT_KEY = KEYS / "secureboot-key.pem"
-SECURE_BOOT_CERTIFICATE = KEYS / "secureboot-cert.pem"
 
 
 CERTIFICATE_CONFIG = """[req]
@@ -94,58 +75,58 @@ def generate_certificate(key, certificate, common_name, extensions, issuer=None,
 
 
 def main():
-    shutil.rmtree(KEYS, ignore_errors=True)
-    KEYS.mkdir(parents=True)
+    shutil.rmtree(layout.build.KEYS, ignore_errors=True)
+    layout.build.KEYS.mkdir(parents=True)
     generate_certificate(
-        BUILTIN_KEY, BUILTIN_CERTIFICATE, "Builtin IPE policy signing key", AUTHORITY_EXTENSIONS
+        signing.BUILTIN.key, signing.BUILTIN.certificate, "Builtin IPE policy signing key", AUTHORITY_EXTENSIONS
     )
     generate_certificate(
-        UNTRUSTED_KEY,
-        UNTRUSTED_CERTIFICATE,
+        signing.UNTRUSTED.key,
+        signing.UNTRUSTED.certificate,
         "Untrusted IPE policy signing key",
         LEAF_EXTENSIONS,
     )
     generate_certificate(
-        INTERMEDIATE_KEY,
-        INTERMEDIATE_CERTIFICATE,
+        signing.INTERMEDIATE.key,
+        signing.INTERMEDIATE.certificate,
         "Intermediate IPE policy authority",
         AUTHORITY_EXTENSIONS,
-        BUILTIN_CERTIFICATE,
-        BUILTIN_KEY,
+        signing.BUILTIN.certificate,
+        signing.BUILTIN.key,
     )
     generate_certificate(
-        SECONDARY_KEY,
-        SECONDARY_CERTIFICATE,
+        signing.SECONDARY.key,
+        signing.SECONDARY.certificate,
         "Secondary keyring IPE policy signing key",
         LEAF_EXTENSIONS,
-        INTERMEDIATE_CERTIFICATE,
-        INTERMEDIATE_KEY,
+        signing.INTERMEDIATE.certificate,
+        signing.INTERMEDIATE.key,
     )
     generate_certificate(
-        REVOKED_KEY,
-        REVOKED_CERTIFICATE,
+        signing.REVOKED.key,
+        signing.REVOKED.certificate,
         "Revoked IPE policy signing key",
         LEAF_EXTENSIONS,
     )
     generate_certificate(
-        FSVERITY_KEY,
-        FSVERITY_CERTIFICATE,
+        signing.FSVERITY.key,
+        signing.FSVERITY.certificate,
         "fs-verity file signing key",
         LEAF_EXTENSIONS,
     )
     generate_certificate(
-        SECURE_BOOT_KEY,
-        SECURE_BOOT_CERTIFICATE,
+        signing.SECUREBOOT.key,
+        signing.SECUREBOOT.certificate,
         "Ephemeral Secure Boot signing key",
         LEAF_EXTENSIONS,
     )
     for certificate, der in (
-        (BUILTIN_CERTIFICATE, BUILTIN_CERTIFICATE_DER),
-        (FSVERITY_CERTIFICATE, FSVERITY_CERTIFICATE_DER),
+        (signing.BUILTIN.certificate, signing.BUILTIN.certificate_der),
+        (signing.FSVERITY.certificate, signing.FSVERITY.certificate_der),
     ):
         openssl("x509", "-in", certificate, "-outform", "DER", "-out", der)
-    MODULE_KEY.write_bytes(BUILTIN_KEY.read_bytes() + BUILTIN_CERTIFICATE.read_bytes())
-    MODULE_KEY.chmod(0o600)
+    signing.MODULE_SIGNING.write_bytes(signing.BUILTIN.key.read_bytes() + signing.BUILTIN.certificate.read_bytes())
+    signing.MODULE_SIGNING.chmod(0o600)
     print("    Prepared signing identities")
     return 0
 

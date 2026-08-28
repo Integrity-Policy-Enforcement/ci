@@ -7,8 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-BUILD = ROOT / "build"
+HERE = Path(__file__).resolve().parent
+SCRIPTS = HERE / "scripts"
 PYTHON = sys.executable
 
 
@@ -24,50 +24,43 @@ def step(name):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="Build and run the IPE capability tests against a kernel tree."
+        description="Build and run the IPE tests against a kernel tree."
     )
     parser.add_argument("kernel_tree", type=Path)
-    parser.add_argument("output", nargs="?", type=Path, default=ROOT / "out")
+    parser.add_argument("output", nargs="?", type=Path, default=HERE / "out")
     args = parser.parse_args(argv)
 
     tree = args.kernel_tree.resolve()
     output = args.output.resolve()
-    if not (tree / "Makefile").is_file() or not (
-        tree / "scripts" / "kconfig" / "merge_config.sh"
-    ).is_file():
-        parser.error(f"not a Linux kernel tree: {tree}")
-
-    BUILD.mkdir(exist_ok=True)
     output.mkdir(parents=True, exist_ok=True)
     sudo = [] if os.geteuid() == 0 else ["sudo"]
 
     step("Prepare signing identities")
-    run_checked([PYTHON, ROOT / "scripts" / "prepare-keys.py"])
+    run_checked([PYTHON, SCRIPTS / "prepare-keys.py"])
 
     step("Build kernel")
-    run_checked([PYTHON, ROOT / "scripts" / "build-kernel.py", tree])
+    run_checked([PYTHON, SCRIPTS / "build-kernel.py", tree])
 
     step("Verify kernel configuration")
-    run_checked([PYTHON, ROOT / "scripts" / "assert-config.py"])
+    run_checked([PYTHON, SCRIPTS / "assert-config.py"])
 
     step("Build the test kernel module")
-    run_checked([PYTHON, ROOT / "scripts" / "build-kernel-module.py"])
+    run_checked([PYTHON, SCRIPTS / "build-kernel-module.py"])
 
     step("Prepare the dm-verity image")
-    run_checked([PYTHON, ROOT / "scripts" / "build-dmverity-image.py"])
+    run_checked([PYTHON, SCRIPTS / "build-dmverity-image.py"])
 
     step("Sign the fs-verity digest")
-    run_checked([PYTHON, ROOT / "scripts" / "build-fsverity-signature.py"])
+    run_checked([PYTHON, SCRIPTS / "build-fsverity-signature.py"])
 
     step("Prepare signed policies")
-    run_checked([PYTHON, ROOT / "scripts" / "prepare-policies.py"])
+    run_checked([PYTHON, SCRIPTS / "prepare-policies.py"])
 
     step("Build guest image")
-    run_checked(sudo + ["mkosi", "--directory", ROOT / "image", "-f", "build"])
+    run_checked(sudo + [PYTHON, SCRIPTS / "build-image.py"])
 
     step("Run tests")
-    run_checked(sudo + [PYTHON, ROOT / "scripts" / "run-vm.py", output])
-    print(f"\nVerdict: {output / 'verdict.json'}")
+    run_checked(sudo + [PYTHON, SCRIPTS / "run-vm.py", output])
     return 0
 
 

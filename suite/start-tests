@@ -7,9 +7,9 @@ import sys
 
 import layout
 
-RESULT = layout.RESULT_CHANNEL
-IPEFS = str(layout.SECURITYFS)
-RUNNER = str(layout.RUNNER)
+RESULT = layout.guest.RESULT_CHANNEL
+IPEFS = str(layout.guest.SECURITYFS)
+RUNNER = str(layout.guest.RUNNER)
 
 def emit(line, result):
     data = (line.replace("\n", " ").replace("\r", " ") + "\n").encode()

@@ -14,7 +14,7 @@ from model import Batch
 
 from . import kmodule
 
-PLAIN = layout.PLAIN_MOUNT
+PLAIN = layout.guest.PLAIN_MOUNT
 MODULE = layout.TEST_MODULE_FILE
 
 
@@ -26,13 +26,13 @@ def build():
                 kmodule.case(
                     "kmodule_signature_true_signed_ok",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    layout.dmverity_mount("sha256", signed=True) / MODULE,
+                    layout.guest.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_signature_true_unsigned_denied",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    layout.dmverity_mount("sha256", signed=False) / MODULE,
+                    layout.guest.dmverity_mount("sha256", signed=False) / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
@@ -44,13 +44,13 @@ def build():
                 kmodule.case(
                     "kmodule_signature_false_signed_ok",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    layout.dmverity_mount("sha256", signed=True) / MODULE,
+                    layout.guest.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_signature_false_unsigned_denied",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    layout.dmverity_mount("sha256", signed=False) / MODULE,
+                    layout.guest.dmverity_mount("sha256", signed=False) / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
@@ -62,13 +62,13 @@ def build():
                 kmodule.case(
                     "kmodule_roothash_sha256_signed_ok",
                     roothash_policy("sha256"),
-                    layout.dmverity_mount("sha256", signed=True) / MODULE,
+                    layout.guest.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_roothash_sha256_unsigned_ok",
                     roothash_policy("sha256"),
-                    layout.dmverity_mount("sha256", signed=False) / MODULE,
+                    layout.guest.dmverity_mount("sha256", signed=False) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
@@ -80,13 +80,13 @@ def build():
                 kmodule.case(
                     "kmodule_roothash_sha512_signed_ok",
                     roothash_policy("sha512"),
-                    layout.dmverity_mount("sha512", signed=True) / MODULE,
+                    layout.guest.dmverity_mount("sha512", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_roothash_sha512_unsigned_ok",
                     roothash_policy("sha512"),
-                    layout.dmverity_mount("sha512", signed=False) / MODULE,
+                    layout.guest.dmverity_mount("sha512", signed=False) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
@@ -98,13 +98,13 @@ def build():
                 kmodule.case(
                     "kmodule_roothash_sha256_mismatch_denied",
                     roothash_policy("sha256", matching=False),
-                    layout.dmverity_mount("sha256", signed=True) / MODULE,
+                    layout.guest.dmverity_mount("sha256", signed=True) / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_roothash_sha512_mismatch_denied",
                     roothash_policy("sha512", matching=False),
-                    layout.dmverity_mount("sha512", signed=True) / MODULE,
+                    layout.guest.dmverity_mount("sha512", signed=True) / MODULE,
                     allowed=False,
                 ),
             ),
@@ -115,7 +115,7 @@ def build():
                     for algorithm in layout.HASH_ALGORITHMS
                     for signed in (True, False)
                 ),
-                partial(mounts.tmpfs, PLAIN, layout.PAYLOAD / MODULE),
+                partial(mounts.tmpfs, PLAIN, layout.guest.PAYLOAD / MODULE),
             ),
         ),
     )

@@ -10,23 +10,16 @@
 
 One set per hash in layout.HASH_ALGORITHMS, all over the same image.
 
-The guest opens the same image twice, once passing dmverity.p7s and once
-not, which is the only difference between the two devices.
+The guest opens the same image twice per hash, once passing that hash's
+signature and once not, which is the only difference between the two
+devices it gets.
 """
 
 import shutil
 import subprocess
-from pathlib import Path
 
 import layout
-
-SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT = SCRIPT_DIR.parent
-KEYS = ROOT / "build" / "keys"
-OUTPUT = ROOT / "build" / layout.DMVERITY_ASSETS.name
-KERNEL_MODULE = ROOT / "build" / "kernel-module" / layout.TEST_MODULE_FILE
-BUILTIN_KEY = KEYS / "builtin-key.pem"
-BUILTIN_CERTIFICATE = KEYS / "builtin-cert.pem"
+import signing
 
 
 def run(*command, **kwargs):
@@ -42,9 +35,9 @@ def capture(*command):
 
 
 def build_squashfs(image):
-    staging = OUTPUT / "tree"
+    staging = layout.build.DMVERITY_ASSETS / "tree"
     staging.mkdir()
-    shutil.copy(KERNEL_MODULE, staging / KERNEL_MODULE.name)
+    shutil.copy(layout.build.TEST_MODULE, staging / layout.build.TEST_MODULE.name)
     run("mksquashfs", staging, image, "-noappend", "-all-root")
     shutil.rmtree(staging)
 
@@ -62,28 +55,28 @@ def sign_root_hash(root_hash, signature):
     plain.write_text(root_hash)
     run(
         "openssl", "cms", "-sign", "-binary", "-in", plain,
-        "-signer", BUILTIN_CERTIFICATE, "-inkey", BUILTIN_KEY,
+        "-signer", signing.BUILTIN.certificate, "-inkey", signing.BUILTIN.key,
         "-noattr", "-outform", "DER", "-out", signature,
     )
     plain.unlink()
 
 
 def main():
-    if not BUILTIN_KEY.is_file():
+    if not signing.BUILTIN.key.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
-    if not KERNEL_MODULE.is_file():
+    if not layout.build.TEST_MODULE.is_file():
         raise SystemExit("the test module is missing; run build-kernel-module.py")
-    shutil.rmtree(OUTPUT, ignore_errors=True)
-    OUTPUT.mkdir(parents=True)
+    shutil.rmtree(layout.build.DMVERITY_ASSETS, ignore_errors=True)
+    layout.build.DMVERITY_ASSETS.mkdir(parents=True)
 
-    image = OUTPUT / layout.SQUASHFS
+    image = layout.build.DMVERITY_ASSETS / layout.guest.SQUASHFS
     build_squashfs(image)
     for algorithm in layout.HASH_ALGORITHMS:
-        root_hash = format_hash_tree(image, OUTPUT / layout.hash_tree(algorithm), algorithm)
-        (OUTPUT / layout.root_hash(algorithm)).write_text(root_hash + "\n")
-        sign_root_hash(root_hash, OUTPUT / layout.root_hash_signature(algorithm))
+        root_hash = format_hash_tree(image, layout.build.DMVERITY_ASSETS / layout.guest.hash_tree(algorithm), algorithm)
+        (layout.build.DMVERITY_ASSETS / layout.guest.root_hash(algorithm)).write_text(root_hash + "\n")
+        sign_root_hash(root_hash, layout.build.DMVERITY_ASSETS / layout.guest.root_hash_signature(algorithm))
 
-    print(f"    Prepared the dm-verity image in {OUTPUT.relative_to(ROOT)}")
+    print(f"    Prepared the dm-verity image in {layout.build.DMVERITY_ASSETS.relative_to(layout.source.ROOT)}")
     return 0
 
 

@@ -11,28 +11,22 @@ The module does nothing; only whether the kernel accepts it matters.
 import os
 import shutil
 import subprocess
-from pathlib import Path
 
 import layout
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT = SCRIPT_DIR.parent
-SOURCE = ROOT / "kernel-module" / "ipe-test-module.c"
-KERNEL = ROOT / "build" / "kernel"
-OUTPUT = ROOT / "build" / "kernel-module"
 NAME = layout.TEST_MODULE
 
 
 def main():
-    if not (KERNEL / "Module.symvers").is_file():
+    if not (layout.build.KERNEL / "Module.symvers").is_file():
         raise SystemExit("the kernel is not built; run build-kernel.py")
-    shutil.rmtree(OUTPUT, ignore_errors=True)
-    OUTPUT.mkdir(parents=True)
+    shutil.rmtree(layout.build.KERNEL_MODULE, ignore_errors=True)
+    layout.build.KERNEL_MODULE.mkdir(parents=True)
 
-    shutil.copy(SOURCE, OUTPUT / f"{NAME}.c")
-    (OUTPUT / "Makefile").write_text(f"obj-m := {NAME}.o\n")
+    shutil.copy(layout.source.KERNEL_MODULE, layout.build.KERNEL_MODULE / f"{NAME}.c")
+    (layout.build.KERNEL_MODULE / "Makefile").write_text(f"obj-m := {NAME}.o\n")
     subprocess.run(
-        ["make", "-C", str(KERNEL), f"M={OUTPUT}", f"-j{os.cpu_count() or 1}", "modules"],
+        ["make", "-C", str(layout.build.KERNEL), f"M={layout.build.KERNEL_MODULE}", f"-j{os.cpu_count() or 1}", "modules"],
         check=True,
         stdout=subprocess.DEVNULL,
     )

@@ -7,8 +7,8 @@ from pathlib import Path
 
 import layout
 
-IPE_ROOT = layout.SECURITYFS
-POLICY_ROOT = layout.POLICIES
+IPE_ROOT = layout.guest.SECURITYFS
+POLICY_ROOT = layout.guest.POLICIES
 
 
 @dataclass(frozen=True)
@@ -20,11 +20,11 @@ class Policy:
 
     @property
     def text(self):
-        return self.asset.with_name(self.asset.name + ".pol")
+        return self.asset.with_name(self.asset.name + layout.POLICY_TEXT_SUFFIX)
 
     @property
     def signed(self):
-        return self.asset.with_name(self.asset.name + ".p7s")
+        return self.asset.with_name(self.asset.name + layout.POLICY_SIGNATURE_SUFFIX)
 
     @property
     def certificate(self):

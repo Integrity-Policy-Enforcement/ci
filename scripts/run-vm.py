@@ -13,17 +13,6 @@ from pathlib import Path
 
 import layout
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT = SCRIPT_DIR.parent
-IMAGE_DIR = ROOT / "image"
-SUITE = ROOT / "suite"
-LAYOUT = SCRIPT_DIR / "layout.py"
-
-POLICIES = ROOT / "build" / "policies"
-DMVERITY = ROOT / "build" / layout.DMVERITY_ASSETS.name
-FSVERITY = ROOT / "build" / layout.FSVERITY_ASSETS.name
-KERNEL_MODULE = ROOT / "build" / "kernel-module" / layout.TEST_MODULE_FILE
-
 
 def restore_owner(path):
     uid = os.environ.get("SUDO_UID")
@@ -34,18 +23,18 @@ def restore_owner(path):
 
 
 def make_payload(output):
-    if not tuple(POLICIES.rglob("*.p7s")):
+    if not tuple(layout.build.POLICIES.rglob(f"*{layout.POLICY_SIGNATURE_SUFFIX}")):
         raise SystemExit("signed policies are missing; run prepare-policies.py")
     with tempfile.TemporaryDirectory() as temporary:
         staging = Path(temporary) / "payload"
         ignored = shutil.ignore_patterns("__pycache__", "*.pyc")
-        shutil.copytree(SUITE, staging, ignore=ignored)
+        shutil.copytree(layout.source.SUITE, staging, ignore=ignored)
         # The suite imports layout, so the payload has to carry it alongside.
-        shutil.copy(LAYOUT, staging / LAYOUT.name)
-        shutil.copytree(POLICIES, staging / layout.POLICIES.name)
-        shutil.copytree(DMVERITY, staging / layout.DMVERITY_ASSETS.name)
-        shutil.copy(KERNEL_MODULE, staging / layout.TEST_MODULE_FILE)
-        shutil.copytree(FSVERITY, staging / layout.FSVERITY_ASSETS.name)
+        shutil.copy(layout.source.LAYOUT, staging / layout.source.LAYOUT.name)
+        shutil.copytree(layout.build.POLICIES, staging / layout.guest.POLICIES.name)
+        shutil.copytree(layout.build.DMVERITY_ASSETS, staging / layout.guest.DMVERITY_ASSETS.name)
+        shutil.copy(layout.build.TEST_MODULE, staging / layout.TEST_MODULE_FILE)
+        shutil.copytree(layout.build.FSVERITY_ASSETS, staging / layout.guest.FSVERITY_ASSETS.name)
         with output.open("wb") as stream:
             stream.truncate(48 * 1024 * 1024)
         subprocess.run(
@@ -66,18 +55,18 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     output = args.output.resolve()
-    image = IMAGE_DIR / "output" / "ipe-tests.raw"
+    image = layout.build.GUEST_IMAGE
     if not image.is_file():
         parser.error(f"guest image does not exist: {image}")
 
     output.mkdir(parents=True, exist_ok=True)
     atexit.register(restore_owner, output)
-    result = output / "result.log"
-    console = output / "console.log"
-    payload = output / "payload.raw"
-    verdict = output / "verdict.json"
-    host = output / "host.json"
-    for path in (result, console, payload, verdict, host):
+    result = output / layout.output.RESULT
+    console = output / layout.output.CONSOLE
+    payload = output / layout.output.PAYLOAD
+    verdict = output / layout.output.VERDICT
+    vm_facts = output / layout.output.VM_FACTS
+    for path in (result, console, payload, verdict, vm_facts):
         path.unlink(missing_ok=True)
     result.touch()
     make_payload(payload)
@@ -90,7 +79,7 @@ def main(argv=None):
         timeout,
         args.mkosi,
         "--directory",
-        IMAGE_DIR,
+        layout.source.IMAGE,
         f"--kvm={'yes' if kvm else 'no'}",
         f"--machine=ipe-tests-{os.getpid()}",
         "vm",
@@ -118,11 +107,11 @@ def main(argv=None):
         f"    VM exit code {returncode}; acceleration={acceleration}; "
         f"timeout={timeout}s; lines={line_count(result)}"
     )
-    temporary_host = host.with_suffix(".tmp")
+    temporary_host = vm_facts.with_suffix(".tmp")
     temporary_host.write_text(
         json.dumps(
             {
-                "vm_exit_code": returncode,
+                layout.output.VM_EXIT_CODE: returncode,
                 "acceleration": acceleration,
                 "timeout_seconds": timeout,
             },
@@ -130,9 +119,9 @@ def main(argv=None):
         ) + "\n",
         encoding="utf-8",
     )
-    temporary_host.replace(host)
+    temporary_host.replace(vm_facts)
     return subprocess.run(
-        [sys.executable, ROOT / "scripts" / "verdict.py", output], check=False
+        [sys.executable, layout.source.SCRIPTS / "verdict.py", output], check=False
     ).returncode
 
 

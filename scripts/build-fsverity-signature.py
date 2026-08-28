@@ -14,48 +14,40 @@ the key is, and the guest only has to enable fs-verity with the result.
 
 import shutil
 import subprocess
-from pathlib import Path
 
 import layout
-
-SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT = SCRIPT_DIR.parent
-KEYS = ROOT / "build" / "keys"
-OUTPUT = ROOT / "build" / layout.FSVERITY_ASSETS.name
-KERNEL_MODULE = ROOT / "build" / "kernel-module" / layout.TEST_MODULE_FILE
-FSVERITY_KEY = KEYS / "fsverity-key.pem"
-FSVERITY_CERTIFICATE = KEYS / "fsverity-cert.pem"
+import signing
 
 
 def main():
-    if not FSVERITY_KEY.is_file():
+    if not signing.FSVERITY.key.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
-    if not KERNEL_MODULE.is_file():
+    if not layout.build.TEST_MODULE.is_file():
         raise SystemExit("the test module is missing; run build-kernel-module.py")
-    shutil.rmtree(OUTPUT, ignore_errors=True)
-    OUTPUT.mkdir(parents=True)
+    shutil.rmtree(layout.build.FSVERITY_ASSETS, ignore_errors=True)
+    layout.build.FSVERITY_ASSETS.mkdir(parents=True)
 
     for algorithm in layout.HASH_ALGORITHMS:
         subprocess.run(
             [
-                "fsverity", "sign", str(KERNEL_MODULE),
-                str(OUTPUT / layout.fsverity_signature(algorithm)),
-                f"--key={FSVERITY_KEY}", f"--cert={FSVERITY_CERTIFICATE}",
+                "fsverity", "sign", str(layout.build.TEST_MODULE),
+                str(layout.build.FSVERITY_ASSETS / layout.guest.fsverity_signature(algorithm)),
+                f"--key={signing.FSVERITY.key}", f"--cert={signing.FSVERITY.certificate}",
                 f"--hash-alg={algorithm}",
             ],
             check=True,
             stdout=subprocess.DEVNULL,
         )
         reported = subprocess.run(
-            ["fsverity", "digest", str(KERNEL_MODULE), f"--hash-alg={algorithm}"],
+            ["fsverity", "digest", str(layout.build.TEST_MODULE), f"--hash-alg={algorithm}"],
             check=True,
             capture_output=True,
             text=True,
         ).stdout.split()[0]
         _, _, digest = reported.partition(":")
-        (OUTPUT / layout.fsverity_digest(algorithm)).write_text(digest + "\n")
+        (layout.build.FSVERITY_ASSETS / layout.guest.fsverity_digest(algorithm)).write_text(digest + "\n")
 
-    print(f"    Prepared the fs-verity signature in {OUTPUT.relative_to(ROOT)}")
+    print(f"    Prepared the fs-verity signature in {layout.build.FSVERITY_ASSETS.relative_to(layout.source.ROOT)}")
     return 0
 
 

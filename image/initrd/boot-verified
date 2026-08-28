@@ -17,12 +17,12 @@ from cases.boot import INITRAMFS_CASES
 
 
 def main():
-    mounts.tmpfs(layout.BOOT_TMPFS_DIRECTORY, layout.INITRD / layout.TEST_MODULE_FILE)
+    mounts.tmpfs(layout.initrd.BOOT_TMPFS_DIRECTORY, layout.initrd.ROOT / layout.TEST_MODULE_FILE)
 
     outcomes = {case.id: runner.test(case) for case in INITRAMFS_CASES}
 
-    mounts.umount(layout.BOOT_TMPFS_DIRECTORY)
-    layout.BOOT_VERIFIED_RECORD.write_text(json.dumps(outcomes) + "\n")
+    mounts.umount(layout.initrd.BOOT_TMPFS_DIRECTORY)
+    layout.initrd.BOOT_VERIFIED_RECORD.write_text(json.dumps(outcomes) + "\n")
     return 0
 
 

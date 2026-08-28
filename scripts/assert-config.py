@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import re
-from pathlib import Path
+import layout
 
-ROOT = Path(__file__).resolve().parent.parent
-REQUESTED = ROOT / "config" / "ipe-tests.config"
-PRODUCED = ROOT / "build" / "kernel" / ".config"
+
 SETTING = re.compile(r"^(CONFIG_[A-Z0-9_]+)=(.*)$")
 UNSET = re.compile(r"^# (CONFIG_[A-Z0-9_]+) is not set$")
 
@@ -22,8 +20,8 @@ def read_config(path):
 
 
 def main():
-    requested = read_config(REQUESTED)
-    produced = read_config(PRODUCED)
+    requested = read_config(layout.source.KERNEL_CONFIG)
+    produced = read_config(layout.build.KERNEL_CONFIG)
     drifted = [
         f"{name}: requested {want or 'unset'}, produced {produced.get(name) or 'unset'}"
         for name, want in requested.items()

@@ -7,17 +7,10 @@ import platform
 import shutil
 import subprocess
 import sys
+import layout
+import signing
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT = SCRIPT_DIR.parent
-IPE_TEST_CONFIG = ROOT / "config" / "ipe-tests.config"
-BOOT_POLICY = ROOT / "config" / "boot-policy.pol"
-BUILTIN_CERTIFICATE = ROOT / "build" / "keys" / "builtin-cert.pem"
-MODULE_KEY = ROOT / "build" / "keys" / "module-signing.pem"
-REVOKED_CERTIFICATE = ROOT / "build" / "keys" / "revoked-cert.pem"
-OUTPUT = ROOT / "build" / "kernel"
-STAGING = ROOT / "build" / "kernel-install"
 
 
 def run_result(command, **kwargs):
@@ -40,53 +33,53 @@ def main(argv=None):
         architecture = "x86_64"
         kernel_arch = "x86"
         defconfig = "x86_64_defconfig"
-        image = OUTPUT / "arch" / "x86" / "boot" / "bzImage"
+        image = layout.build.KERNEL / "arch" / "x86" / "boot" / "bzImage"
     elif machine == "aarch64":
         architecture = "arm64"
         kernel_arch = "arm64"
         defconfig = "defconfig"
-        image = OUTPUT / "arch" / "arm64" / "boot" / "Image"
+        image = layout.build.KERNEL / "arch" / "arm64" / "boot" / "Image"
     else:
         return fail(f"unsupported build host architecture: {machine}")
     if not (source / "Makefile").is_file():
         return fail(f"not a Linux kernel tree: {source}")
-    if not BOOT_POLICY.is_file():
-        return fail(f"boot policy is missing: {BOOT_POLICY}")
-    if not BUILTIN_CERTIFICATE.is_file() or not MODULE_KEY.is_file():
+    if not layout.source.BOOT_POLICY.is_file():
+        return fail(f"boot policy is missing: {layout.source.BOOT_POLICY}")
+    if not signing.BUILTIN.certificate.is_file() or not signing.MODULE_SIGNING.is_file():
         return fail("signing keys are missing; run prepare-policies.py")
 
-    shutil.rmtree(OUTPUT, ignore_errors=True)
-    shutil.rmtree(STAGING, ignore_errors=True)
-    OUTPUT.mkdir(parents=True)
+    shutil.rmtree(layout.build.KERNEL, ignore_errors=True)
+    shutil.rmtree(layout.build.KERNEL_STAGING, ignore_errors=True)
+    layout.build.KERNEL.mkdir(parents=True)
     jobs = os.cpu_count() or 1
-    make = ["make", "-C", source, f"O={OUTPUT}", f"ARCH={kernel_arch}", f"-j{jobs}"]
+    make = ["make", "-C", source, f"O={layout.build.KERNEL}", f"ARCH={kernel_arch}", f"-j{jobs}"]
 
     print(f"    Configure {architecture} kernel", flush=True)
     if run_result([*make, defconfig], stdout=subprocess.DEVNULL).returncode:
         return 1
 
-    key_fragment = OUTPUT / ".signing-key.config"
+    key_fragment = layout.build.KERNEL / ".signing-key.config"
     key_fragment.write_text(
-        f'CONFIG_SYSTEM_TRUSTED_KEYS="{BUILTIN_CERTIFICATE}"\n'
-        f'CONFIG_MODULE_SIG_KEY="{MODULE_KEY}"\n'
-        f'CONFIG_IPE_BOOT_POLICY="{BOOT_POLICY}"\n'
-        f'CONFIG_SYSTEM_REVOCATION_KEYS="{REVOKED_CERTIFICATE}"\n',
+        f'CONFIG_SYSTEM_TRUSTED_KEYS="{signing.BUILTIN.certificate}"\n'
+        f'CONFIG_MODULE_SIG_KEY="{signing.MODULE_SIGNING}"\n'
+        f'CONFIG_IPE_BOOT_POLICY="{layout.source.BOOT_POLICY}"\n'
+        f'CONFIG_SYSTEM_REVOCATION_KEYS="{signing.REVOKED.certificate}"\n',
         encoding="utf-8",
     )
-    merge_log = OUTPUT / "merge.log"
+    merge_log = layout.build.KERNEL / "merge.log"
     environment = os.environ.copy()
     environment["ARCH"] = kernel_arch
     with merge_log.open("w", encoding="utf-8") as log:
         result = run_result(
             [
-                source / "scripts" / "kconfig" / "merge_config.sh",
+                source / layout.KERNEL_MERGE_CONFIG,
                 "-O",
-                OUTPUT,
-                OUTPUT / ".config",
-                IPE_TEST_CONFIG,
+                layout.build.KERNEL,
+                layout.build.KERNEL_CONFIG,
+                layout.source.KERNEL_CONFIG,
                 key_fragment,
             ],
-            cwd=OUTPUT,
+            cwd=layout.build.KERNEL,
             env=environment,
             stdout=log,
             stderr=subprocess.STDOUT,
@@ -97,7 +90,7 @@ def main(argv=None):
         return result.returncode
 
     print("    Compile kernel", flush=True)
-    build_log = OUTPUT / "build.log"
+    build_log = layout.build.KERNEL / "build.log"
     with build_log.open("w", encoding="utf-8") as log:
         result = run_result(make, stdout=log, stderr=subprocess.STDOUT, text=True)
     if result.returncode:
@@ -118,12 +111,12 @@ def main(argv=None):
     release = release.stdout.strip()
 
     print("    Install kernel", flush=True)
-    install_log = OUTPUT / "install.log"
+    install_log = layout.build.KERNEL / "install.log"
     with install_log.open("w", encoding="utf-8") as log:
         result = run_result(
             [
                 *make,
-                f"INSTALL_MOD_PATH={STAGING / 'usr'}",
+                f"INSTALL_MOD_PATH={layout.build.KERNEL_STAGING / 'usr'}",
                 "INSTALL_MOD_STRIP=1",
                 "modules_install",
             ],
@@ -135,7 +128,7 @@ def main(argv=None):
         print(install_log.read_text(encoding="utf-8", errors="replace"), file=sys.stderr)
         return result.returncode
 
-    modules = STAGING / "usr" / "lib" / "modules" / release
+    modules = layout.build.KERNEL_STAGING / "usr" / "lib" / "modules" / release
     if not modules.is_dir():
         return fail(f"kernel modules were not installed: {modules}")
     shutil.copy2(image, modules / "vmlinuz")

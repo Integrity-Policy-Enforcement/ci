@@ -1,47 +1,24 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Sign the policy fixtures, and fill in what only the build knows.
+"""Sign the policies, and fill in what only the build knows.
 
     build/policies/
         ipe_test_baseline-0.0.1.pol   the permissive floor a run starts from
-        <group>/<name>.pol            a fixture, placeholders replaced
+        <group>/<name>.pol            a policy, placeholders replaced
         <group>/<name>.p7s            it signed, by the builtin key unless
                                       the group needs another identity
 
-A fixture that names a root hash or a digest cannot carry one, so it
+A policy that names a root hash or a digest cannot carry one, so it
 carries a placeholder that the values under build/ replace.
 """
 
 import shutil
 import subprocess
-from pathlib import Path
 
 import layout
+import signing
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT = SCRIPT_DIR.parent
-KEYS = ROOT / "build" / "keys"
-SOURCE_POLICIES = ROOT / "policies"
-DMVERITY = ROOT / "build" / layout.DMVERITY_ASSETS.name
-FSVERITY = ROOT / "build" / layout.FSVERITY_ASSETS.name
 HEX_DIGITS = "0123456789abcdef"
-POLICIES = ROOT / "build" / "policies"
-BUILTIN_KEY = KEYS / "builtin-key.pem"
-BUILTIN_CERTIFICATE = KEYS / "builtin-cert.pem"
-UNTRUSTED_KEY = KEYS / "untrusted-key.pem"
-UNTRUSTED_CERTIFICATE = KEYS / "untrusted-cert.pem"
-INTERMEDIATE_CERTIFICATE = KEYS / "intermediate-cert.pem"
-SECONDARY_KEY = KEYS / "secondary-key.pem"
-SECONDARY_CERTIFICATE = KEYS / "secondary-cert.pem"
-SECONDARY_POLICY = "policy_signature/secondary.pol"
-PLATFORM_KEY = KEYS / "secureboot-key.pem"
-PLATFORM_CERTIFICATE = KEYS / "secureboot-cert.pem"
-PLATFORM_POLICY = "policy_signature/platform.pol"
-REVOKED_KEY = KEYS / "revoked-key.pem"
-REVOKED_CERTIFICATE = KEYS / "revoked-cert.pem"
-REVOKED_POLICY = "policy_signature/revoked.pol"
-UNTRUSTED_POLICY = "policy_signature/untrusted.pol"
-TAMPERED_POLICY = "policy_signature/tampered.pol"
 
 
 def openssl(*args, **kwargs):
@@ -53,7 +30,7 @@ def openssl(*args, **kwargs):
     )
 
 
-def sign(policy, output, key=BUILTIN_KEY, certificate=BUILTIN_CERTIFICATE, anchor=BUILTIN_CERTIFICATE):
+def sign(policy, output, key=signing.BUILTIN.key, certificate=signing.BUILTIN.certificate, anchor=signing.BUILTIN.certificate):
     openssl(
         "cms",
         "-sign",
@@ -115,8 +92,8 @@ def measurements():
     """Every placeholder and the <algorithm>:<hex> a policy should name."""
     table = {}
     for algorithm in layout.HASH_ALGORITHMS:
-        root_hash = (DMVERITY / layout.root_hash(algorithm)).read_text().strip()
-        digest = (FSVERITY / layout.fsverity_digest(algorithm)).read_text().strip()
+        root_hash = (layout.build.DMVERITY_ASSETS / layout.guest.root_hash(algorithm)).read_text().strip()
+        digest = (layout.build.FSVERITY_ASSETS / layout.guest.fsverity_digest(algorithm)).read_text().strip()
         upper = algorithm.upper()
         table[f"@DMVERITY_ROOTHASH_{upper}@"] = f"{algorithm}:{root_hash}"
         table[f"@DMVERITY_OTHER_ROOTHASH_{upper}@"] = f"{algorithm}:{shift(root_hash)}"
@@ -127,7 +104,7 @@ def measurements():
 
 def fill_in_measurements():
     replacements = measurements()
-    for policy in POLICIES.rglob("*.pol"):
+    for policy in layout.build.POLICIES.rglob(f"*{layout.POLICY_TEXT_SUFFIX}"):
         text = policy.read_text()
         for placeholder, value in replacements.items():
             text = text.replace(placeholder, value)
@@ -135,60 +112,60 @@ def fill_in_measurements():
 
 
 def main():
-    if not BUILTIN_KEY.is_file() or not BUILTIN_CERTIFICATE.is_file():
+    if not signing.BUILTIN.key.is_file() or not signing.BUILTIN.certificate.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
-    shutil.rmtree(POLICIES, ignore_errors=True)
-    shutil.copytree(SOURCE_POLICIES, POLICIES)
+    shutil.rmtree(layout.build.POLICIES, ignore_errors=True)
+    shutil.copytree(layout.source.POLICIES, layout.build.POLICIES)
     fill_in_measurements()
 
-    for policy in POLICIES.rglob("*.pol"):
-        sign(policy, policy.with_suffix(".p7s"))
+    for policy in layout.build.POLICIES.rglob(f"*{layout.POLICY_TEXT_SUFFIX}"):
+        sign(policy, policy.with_suffix(layout.POLICY_SIGNATURE_SUFFIX))
 
-    untrusted = POLICIES / UNTRUSTED_POLICY
+    untrusted = layout.build.POLICIES / f"{layout.UNTRUSTED_POLICY}{layout.POLICY_TEXT_SUFFIX}"
     sign(
         untrusted,
-        untrusted.with_suffix(".p7s"),
-        UNTRUSTED_KEY,
-        UNTRUSTED_CERTIFICATE,
-        UNTRUSTED_CERTIFICATE,
+        untrusted.with_suffix(layout.POLICY_SIGNATURE_SUFFIX),
+        signing.UNTRUSTED.key,
+        signing.UNTRUSTED.certificate,
+        signing.UNTRUSTED.certificate,
     )
 
-    secondary = POLICIES / SECONDARY_POLICY
+    secondary = layout.build.POLICIES / f"{layout.SECONDARY_POLICY}{layout.POLICY_TEXT_SUFFIX}"
     sign(
         secondary,
-        secondary.with_suffix(".p7s"),
-        SECONDARY_KEY,
-        SECONDARY_CERTIFICATE,
-        INTERMEDIATE_CERTIFICATE,
+        secondary.with_suffix(layout.POLICY_SIGNATURE_SUFFIX),
+        signing.SECONDARY.key,
+        signing.SECONDARY.certificate,
+        signing.INTERMEDIATE.certificate,
     )
     openssl(
-        "x509", "-in", INTERMEDIATE_CERTIFICATE, "-outform", "DER",
+        "x509", "-in", signing.INTERMEDIATE.certificate, "-outform", "DER",
         "-out", secondary.with_suffix(".der"),
     )
 
-    platform = POLICIES / PLATFORM_POLICY
+    platform = layout.build.POLICIES / f"{layout.PLATFORM_POLICY}{layout.POLICY_TEXT_SUFFIX}"
     sign(
         platform,
-        platform.with_suffix(".p7s"),
-        PLATFORM_KEY,
-        PLATFORM_CERTIFICATE,
-        PLATFORM_CERTIFICATE,
+        platform.with_suffix(layout.POLICY_SIGNATURE_SUFFIX),
+        signing.SECUREBOOT.key,
+        signing.SECUREBOOT.certificate,
+        signing.SECUREBOOT.certificate,
     )
 
-    revoked = POLICIES / REVOKED_POLICY
+    revoked = layout.build.POLICIES / f"{layout.REVOKED_POLICY}{layout.POLICY_TEXT_SUFFIX}"
     sign(
         revoked,
-        revoked.with_suffix(".p7s"),
-        REVOKED_KEY,
-        REVOKED_CERTIFICATE,
-        REVOKED_CERTIFICATE,
+        revoked.with_suffix(layout.POLICY_SIGNATURE_SUFFIX),
+        signing.REVOKED.key,
+        signing.REVOKED.certificate,
+        signing.REVOKED.certificate,
     )
 
-    tampered = POLICIES / TAMPERED_POLICY
+    tampered = layout.build.POLICIES / f"{layout.TAMPERED_POLICY}{layout.POLICY_TEXT_SUFFIX}"
     substitute_signed_content(
-        tampered, tampered.with_suffix(".replacement"), tampered.with_suffix(".p7s")
+        tampered, tampered.with_suffix(".replacement"), tampered.with_suffix(layout.POLICY_SIGNATURE_SUFFIX)
     )
-    print(f"    Prepared {len(tuple(POLICIES.rglob('*.pol')))} signed policies")
+    print(f"    Prepared {len(tuple(layout.build.POLICIES.rglob(f"*{layout.POLICY_TEXT_SUFFIX}")))} signed policies")
     return 0
 
 

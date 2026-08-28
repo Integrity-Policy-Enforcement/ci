@@ -7,6 +7,8 @@ import re
 import subprocess
 from pathlib import Path
 
+import layout
+
 PASS = "PASS"
 FAIL = "FAIL"
 
@@ -31,7 +33,7 @@ def health_failures(path):
     ):
         for pattern, label in HEALTH_PATTERNS:
             if pattern.search(line):
-                failures.append(f"console.log:{number} {label}: {line.strip()[:160]}")
+                failures.append(f"{layout.output.CONSOLE}:{number} {label}: {line.strip()[:160]}")
                 break
     return failures
 
@@ -61,14 +63,14 @@ def tap_failures(path):
 
 
 def decide(output):
-    console = output / "console.log"
+    console = output / layout.output.CONSOLE
     if not console.is_file():
         return FAIL, ["missing console evidence"]
     try:
-        host = json.loads((output / "host.json").read_text(encoding="utf-8"))
+        vm_facts = json.loads((output / layout.output.VM_FACTS).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return FAIL, ["missing or invalid host metadata"]
-    vm_exit_code = host.get("vm_exit_code")
+    vm_exit_code = vm_facts.get(layout.output.VM_EXIT_CODE)
     if type(vm_exit_code) is not int:
         return FAIL, ["invalid VM exit code in host metadata"]
     if vm_exit_code != 0:
@@ -78,7 +80,7 @@ def decide(output):
     if health:
         return FAIL, health
 
-    lines = read_lines(output / "result.log")
+    lines = read_lines(output / layout.output.RESULT)
     if not lines:
         return FAIL, ["the guest produced no output"]
     if not any(line.startswith("boot") for line in lines):
@@ -86,7 +88,7 @@ def decide(output):
     if "noipe" in lines:
         return FAIL, ["IPE is unavailable in securityfs"]
 
-    tap = tap_failures(output / "result.log")
+    tap = tap_failures(output / layout.output.RESULT)
     if tap:
         return FAIL, tap
 
@@ -108,7 +110,7 @@ def main(argv=None):
     for reason in reasons:
         print(f"  {reason}")
     args.output.mkdir(parents=True, exist_ok=True)
-    (args.output / "verdict.json").write_text(
+    (args.output / layout.output.VERDICT).write_text(
         json.dumps({"verdict": verdict, "reasons": reasons}, indent=2) + "\n",
         encoding="utf-8",
     )

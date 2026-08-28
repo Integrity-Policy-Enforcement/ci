@@ -11,7 +11,7 @@ DEVICE_MAPPER = Path("/dev/mapper")
 
 def points():
     live = capture("findmnt", "--noheadings", "--raw", "--output", "TARGET").split()
-    return {point for point in live if point.startswith(f"{layout.MEDIA}/")}
+    return {point for point in live if point.startswith(f"{layout.guest.MEDIA}/")}
 
 
 def umount(point):
@@ -23,7 +23,7 @@ def devices():
     listing = capture("dmsetup", "ls")
     present = {line.split()[0] for line in listing.splitlines() if line[:1].isalnum()}
     ours = {
-        layout.dmverity_device(algorithm, signed)
+        layout.guest.dmverity_device(algorithm, signed)
         for algorithm in layout.HASH_ALGORITHMS
         for signed in (True, False)
     }
@@ -40,23 +40,23 @@ def mount(device, point, *options):
 
 
 def dmverity(algorithm, signed):
-    assets = layout.DMVERITY_ASSETS
-    name = layout.dmverity_device(algorithm, signed)
-    root_hash = (assets / layout.root_hash(algorithm)).read_text().strip()
+    assets = layout.guest.DMVERITY_ASSETS
+    name = layout.guest.dmverity_device(algorithm, signed)
+    root_hash = (assets / layout.guest.root_hash(algorithm)).read_text().strip()
     signature = (
-        ["--root-hash-signature", assets / layout.root_hash_signature(algorithm)]
+        ["--root-hash-signature", assets / layout.guest.root_hash_signature(algorithm)]
         if signed
         else []
     )
     run(
         "veritysetup", "open",
-        assets / layout.SQUASHFS,
+        assets / layout.guest.SQUASHFS,
         name,
-        assets / layout.hash_tree(algorithm),
+        assets / layout.guest.hash_tree(algorithm),
         root_hash,
         *signature,
     )
-    mount(DEVICE_MAPPER / name, layout.dmverity_mount(algorithm, signed), "-o", "ro")
+    mount(DEVICE_MAPPER / name, layout.guest.dmverity_mount(algorithm, signed), "-o", "ro")
 
 
 def tmpfs(point, module):

@@ -53,7 +53,7 @@ def operation_completed_is(operation, expected, detail):
 
 
 def initramfs_case_passed(id, detail):
-    outcome = json.loads(layout.BOOT_VERIFIED_RECORD.read_text())[id]
+    outcome = json.loads(layout.initrd.BOOT_VERIFIED_RECORD.read_text())[id]
     if outcome is not None:
         kind, message = outcome
         return f"{kind} in the initramfs: {message}"
