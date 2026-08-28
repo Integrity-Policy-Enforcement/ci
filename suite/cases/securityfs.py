@@ -4,6 +4,7 @@ import errno
 from functools import partial
 
 import checks
+import ipe
 import steps
 import triggers
 from assets import (
@@ -34,7 +35,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "update",
+                ipe.node.UPDATE,
                 CAPABILITY_POLICY_V1,
                 CAPABILITY_POLICY_V2.signed.read_bytes(),
             ),
@@ -46,7 +47,7 @@ def build():
             setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
             trigger=partial(
                 triggers.write_node,
-                "update",
+                ipe.node.UPDATE,
                 CAPABILITY_POLICY_V1,
                 CAPABILITY_POLICY_V2.signed.read_bytes(),
             ),
@@ -61,7 +62,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "active",
+                ipe.node.ACTIVE,
                 CAPABILITY_POLICY_V1,
                 b"1",
             ),
@@ -73,7 +74,7 @@ def build():
             setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
             trigger=partial(
                 triggers.write_node,
-                "active",
+                ipe.node.ACTIVE,
                 CAPABILITY_POLICY_V1,
                 b"1",
             ),
@@ -83,15 +84,15 @@ def build():
         Case(
             id="cap_audit_nocap_eperm",
             setup=(steps.drop_mac_admin,),
-            trigger=partial(triggers.write_node, "success_audit", None, b"1"),
+            trigger=partial(triggers.write_node, ipe.node.SUCCESS_AUDIT, None, b"1"),
             expect=errno.EPERM,
-            check=partial(checks.node_value_is, "success_audit", "0"),
+            check=partial(checks.node_value_is, ipe.node.SUCCESS_AUDIT, "0"),
         ),
         Case(
             id="cap_audit_withcap_ok",
-            trigger=partial(triggers.write_node, "success_audit", None, b"1"),
+            trigger=partial(triggers.write_node, ipe.node.SUCCESS_AUDIT, None, b"1"),
             expect=0,
-            check=partial(checks.node_value_is, "success_audit", "1"),
+            check=partial(checks.node_value_is, ipe.node.SUCCESS_AUDIT, "1"),
         ),
         Case(
             id="cap_delete_nocap_eperm",
@@ -101,7 +102,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "delete",
+                ipe.node.DELETE,
                 CAPABILITY_POLICY_V1,
                 b"1",
             ),
@@ -113,7 +114,7 @@ def build():
             setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
             trigger=partial(
                 triggers.write_node,
-                "delete",
+                ipe.node.DELETE,
                 CAPABILITY_POLICY_V1,
                 b"1",
             ),
@@ -122,26 +123,26 @@ def build():
         ),
         Case(
             id="cap_enforce_nocap_eperm",
-            collect=(partial(steps.read_node, "enforce", None, read_values),),
+            collect=(partial(steps.read_node, ipe.node.ENFORCE, None, read_values),),
             setup=(steps.drop_mac_admin,),
             trigger=partial(
-                triggers.write_node_and_read, "enforce", None, b"1", read_values
+                triggers.write_node_and_read, ipe.node.ENFORCE, None, b"1", read_values
             ),
             expect=errno.EPERM,
             check=checks.two_values_match,
         ),
         Case(
             id="cap_enforce_withcap_ok",
-            trigger=partial(triggers.write_node, "enforce", None, b"1"),
+            trigger=partial(triggers.write_node, ipe.node.ENFORCE, None, b"1"),
             expect=0,
-            check=partial(checks.node_value_is, "enforce", "1"),
+            check=partial(checks.node_value_is, ipe.node.ENFORCE, "1"),
         ),
         Case(
             id="cap_newpol_nocap_eperm",
             setup=(steps.drop_mac_admin,),
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 CAPABILITY_POLICY_V1.signed.read_bytes(),
             ),
@@ -152,7 +153,7 @@ def build():
             id="cap_newpol_withcap_ok",
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 CAPABILITY_POLICY_V1.signed.read_bytes(),
             ),
@@ -165,7 +166,7 @@ def build():
                 partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
                 partial(
                     steps.open_node,
-                    "update",
+                    ipe.node.UPDATE,
                     CAPABILITY_POLICY_V1,
                     opened_file,
                 ),
@@ -190,7 +191,7 @@ def build():
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
-                    "update",
+                    ipe.node.UPDATE,
                     CAPABILITY_POLICY_V1,
                     opened_file,
                 ),
@@ -214,7 +215,7 @@ def build():
                 partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
                 partial(
                     steps.open_node,
-                    "active",
+                    ipe.node.ACTIVE,
                     CAPABILITY_POLICY_V1,
                     opened_file,
                 ),
@@ -235,7 +236,7 @@ def build():
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
-                    "active",
+                    ipe.node.ACTIVE,
                     CAPABILITY_POLICY_V1,
                     opened_file,
                 ),
@@ -254,7 +255,7 @@ def build():
             setup=(
                 partial(
                     steps.open_node,
-                    "success_audit",
+                    ipe.node.SUCCESS_AUDIT,
                     None,
                     opened_file,
                 ),
@@ -266,7 +267,7 @@ def build():
                 opened_file,
             ),
             expect=0,
-            check=partial(checks.node_value_is, "success_audit", "1"),
+            check=partial(checks.node_value_is, ipe.node.SUCCESS_AUDIT, "1"),
         ),
         Case(
             id="cap_audit_fcred_nocap_eperm",
@@ -274,7 +275,7 @@ def build():
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
-                    "success_audit",
+                    ipe.node.SUCCESS_AUDIT,
                     None,
                     opened_file,
                 ),
@@ -286,7 +287,7 @@ def build():
                 opened_file,
             ),
             expect=errno.EPERM,
-            check=partial(checks.node_value_is, "success_audit", "0"),
+            check=partial(checks.node_value_is, ipe.node.SUCCESS_AUDIT, "0"),
         ),
         Case(
             id="cap_delete_fcred_withcap_ok",
@@ -294,7 +295,7 @@ def build():
                 partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
                 partial(
                     steps.open_node,
-                    "delete",
+                    ipe.node.DELETE,
                     CAPABILITY_POLICY_V1,
                     opened_file,
                 ),
@@ -315,7 +316,7 @@ def build():
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
-                    "delete",
+                    ipe.node.DELETE,
                     CAPABILITY_POLICY_V1,
                     opened_file,
                 ),
@@ -334,7 +335,7 @@ def build():
             setup=(
                 partial(
                     steps.open_node,
-                    "enforce",
+                    ipe.node.ENFORCE,
                     None,
                     opened_file,
                 ),
@@ -346,16 +347,16 @@ def build():
                 opened_file,
             ),
             expect=0,
-            check=partial(checks.node_value_is, "enforce", "1"),
+            check=partial(checks.node_value_is, ipe.node.ENFORCE, "1"),
         ),
         Case(
             id="cap_enforce_fcred_nocap_eperm",
-            collect=(partial(steps.read_node, "enforce", None, read_values),),
+            collect=(partial(steps.read_node, ipe.node.ENFORCE, None, read_values),),
             setup=(
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
-                    "enforce",
+                    ipe.node.ENFORCE,
                     None,
                     opened_file,
                 ),
@@ -363,7 +364,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_opened_file_and_read,
-                "enforce",
+                ipe.node.ENFORCE,
                 None,
                 b"1",
                 opened_file,
@@ -377,7 +378,7 @@ def build():
             setup=(
                 partial(
                     steps.open_node,
-                    "new_policy",
+                    ipe.node.NEW_POLICY,
                     None,
                     opened_file,
                 ),
@@ -397,7 +398,7 @@ def build():
                 steps.clear_mac_admin,
                 partial(
                     steps.open_node,
-                    "new_policy",
+                    ipe.node.NEW_POLICY,
                     None,
                     opened_file,
                 ),
@@ -419,7 +420,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "update",
+                ipe.node.UPDATE,
                 CAPABILITY_POLICY_V1,
                 CAPABILITY_POLICY_V2.signed.read_bytes(),
             ),
@@ -438,7 +439,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "active",
+                ipe.node.ACTIVE,
                 CAPABILITY_POLICY_V1,
                 b"1",
             ),
@@ -452,12 +453,12 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "success_audit",
+                ipe.node.SUCCESS_AUDIT,
                 None,
                 b"1",
             ),
             expect=errno.EPERM,
-            check=partial(checks.node_value_is, "success_audit", "0"),
+            check=partial(checks.node_value_is, ipe.node.SUCCESS_AUDIT, "0"),
         ),
         Case(
             id="userns_delete_eperm",
@@ -467,7 +468,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "delete",
+                ipe.node.DELETE,
                 CAPABILITY_POLICY_V1,
                 b"1",
             ),
@@ -476,13 +477,13 @@ def build():
         ),
         Case(
             id="userns_enforce_eperm",
-            collect=(partial(steps.read_node, "enforce", None, read_values),),
+            collect=(partial(steps.read_node, ipe.node.ENFORCE, None, read_values),),
             setup=(
                 steps.unshare_user_namespace,
             ),
             trigger=partial(
                 triggers.write_node_and_read,
-                "enforce",
+                ipe.node.ENFORCE,
                 None,
                 b"1",
                 read_values,
@@ -497,7 +498,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 CAPABILITY_POLICY_V1.signed.read_bytes(),
             ),
@@ -507,20 +508,20 @@ def build():
         Case(
             id="read_enforce_nocap_ok",
             setup=(
-                partial(steps.read_node, "enforce", None, read_values),
+                partial(steps.read_node, ipe.node.ENFORCE, None, read_values),
                 steps.drop_mac_admin,
             ),
-            trigger=partial(triggers.read_node, "enforce", None, read_values),
+            trigger=partial(triggers.read_node, ipe.node.ENFORCE, None, read_values),
             expect=0,
             check=checks.two_values_match,
         ),
         Case(
             id="read_audit_nocap_ok",
             setup=(
-                partial(steps.read_node, "success_audit", None, read_values),
+                partial(steps.read_node, ipe.node.SUCCESS_AUDIT, None, read_values),
                 steps.drop_mac_admin,
             ),
-            trigger=partial(triggers.read_node, "success_audit", None, read_values),
+            trigger=partial(triggers.read_node, ipe.node.SUCCESS_AUDIT, None, read_values),
             expect=0,
             check=checks.two_values_match,
         ),
@@ -528,10 +529,10 @@ def build():
             id="read_active_nocap_ok",
             setup=(
                 partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
-                partial(steps.read_node, "active", CAPABILITY_POLICY_V1, read_values),
+                partial(steps.read_node, ipe.node.ACTIVE, CAPABILITY_POLICY_V1, read_values),
                 steps.drop_mac_admin,
             ),
-            trigger=partial(triggers.read_node, "active", CAPABILITY_POLICY_V1, read_values),
+            trigger=partial(triggers.read_node, ipe.node.ACTIVE, CAPABILITY_POLICY_V1, read_values),
             expect=0,
             check=checks.two_values_match,
         ),
@@ -550,10 +551,10 @@ def build():
             id="read_policy_nocap_ok",
             setup=(
                 partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
-                partial(steps.read_node, "policy", CAPABILITY_POLICY_V1, read_values),
+                partial(steps.read_node, ipe.node.POLICY, CAPABILITY_POLICY_V1, read_values),
                 steps.drop_mac_admin,
             ),
-            trigger=partial(triggers.read_node, "policy", CAPABILITY_POLICY_V1, read_values),
+            trigger=partial(triggers.read_node, ipe.node.POLICY, CAPABILITY_POLICY_V1, read_values),
             expect=0,
             check=checks.two_values_match,
         ),
@@ -561,10 +562,10 @@ def build():
             id="read_version_nocap_ok",
             setup=(
                 partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
-                partial(steps.read_node, "version", CAPABILITY_POLICY_V1, read_values),
+                partial(steps.read_node, ipe.node.VERSION, CAPABILITY_POLICY_V1, read_values),
                 steps.drop_mac_admin,
             ),
-            trigger=partial(triggers.read_node, "version", CAPABILITY_POLICY_V1, read_values),
+            trigger=partial(triggers.read_node, ipe.node.VERSION, CAPABILITY_POLICY_V1, read_values),
             expect=0,
             check=checks.two_values_match,
         ),
@@ -591,10 +592,10 @@ def build():
         ),
         Case(
             id="badvalue_enforce_einval",
-            setup=(partial(steps.read_node, "enforce", None, read_values),),
+            setup=(partial(steps.read_node, ipe.node.ENFORCE, None, read_values),),
             trigger=partial(
                 triggers.write_node_and_read,
-                "enforce",
+                ipe.node.ENFORCE,
                 None,
                 b"maybe",
                 read_values,
@@ -604,10 +605,10 @@ def build():
         ),
         Case(
             id="badvalue_audit_einval",
-            setup=(partial(steps.read_node, "success_audit", None, read_values),),
+            setup=(partial(steps.read_node, ipe.node.SUCCESS_AUDIT, None, read_values),),
             trigger=partial(
                 triggers.write_node_and_read,
-                "success_audit",
+                ipe.node.SUCCESS_AUDIT,
                 None,
                 b"maybe",
                 read_values,
@@ -619,11 +620,11 @@ def build():
             id="badvalue_active_einval",
             setup=(
                 partial(steps.deploy_policy, CAPABILITY_POLICY_V1),
-                partial(steps.read_node, "active", CAPABILITY_POLICY_V1, read_values),
+                partial(steps.read_node, ipe.node.ACTIVE, CAPABILITY_POLICY_V1, read_values),
             ),
             trigger=partial(
                 triggers.write_node_and_read,
-                "active",
+                ipe.node.ACTIVE,
                 CAPABILITY_POLICY_V1,
                 b"maybe",
                 read_values,
@@ -636,7 +637,7 @@ def build():
             setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
             trigger=partial(
                 triggers.write_node,
-                "delete",
+                ipe.node.DELETE,
                 CAPABILITY_POLICY_V1,
                 b"maybe",
             ),
@@ -645,13 +646,13 @@ def build():
         ),
         Case(
             id="newpol_truncated_ebadmsg",
-            trigger=partial(triggers.write_node, "new_policy", None, truncated_policy),
+            trigger=partial(triggers.write_node, ipe.node.NEW_POLICY, None, truncated_policy),
             expect=errno.EBADMSG,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_V1, False),
         ),
         Case(
             id="newpol_trailing_fragment_ebadmsg",
-            trigger=partial(triggers.write_node, "new_policy", None, trailing_fragment),
+            trigger=partial(triggers.write_node, ipe.node.NEW_POLICY, None, trailing_fragment),
             expect=errno.EBADMSG,
             check=partial(checks.policy_present_is, CAPABILITY_POLICY_V1, False),
         ),
@@ -660,7 +661,7 @@ def build():
             setup=(partial(steps.deploy_policy, CAPABILITY_POLICY_V1),),
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 CAPABILITY_POLICY_V1.signed.read_bytes(),
             ),
@@ -669,15 +670,15 @@ def build():
         ),
         Case(
             id="toggle_audit_ok",
-            setup=(partial(steps.read_node, "success_audit", None, read_values),),
-            trigger=partial(triggers.toggle_node, "success_audit", None, read_values),
+            setup=(partial(steps.read_node, ipe.node.SUCCESS_AUDIT, None, read_values),),
+            trigger=partial(triggers.toggle_node, ipe.node.SUCCESS_AUDIT, None, read_values),
             expect=0,
             check=checks.two_values_differ,
         ),
         Case(
             id="toggle_enforce_ok",
-            setup=(partial(steps.read_node, "enforce", None, read_values),),
-            trigger=partial(triggers.toggle_node, "enforce", None, read_values),
+            setup=(partial(steps.read_node, ipe.node.ENFORCE, None, read_values),),
+            trigger=partial(triggers.toggle_node, ipe.node.ENFORCE, None, read_values),
             expect=0,
             check=checks.two_values_differ,
         ),

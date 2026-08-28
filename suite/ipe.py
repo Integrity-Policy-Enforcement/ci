@@ -31,8 +31,23 @@ class Policy:
         return self.asset.with_name(self.asset.name + ".der")
 
 
+class node:
+    """The entries IPE puts in securityfs, at its root or under one policy."""
+
+    POLICIES = "policies"
+    NEW_POLICY = "new_policy"
+    ENFORCE = "enforce"
+    SUCCESS_AUDIT = "success_audit"
+
+    ACTIVE = "active"
+    DELETE = "delete"
+    UPDATE = "update"
+    VERSION = "version"
+    POLICY = "policy"
+
+
 def policy_path(name):
-    return IPE_ROOT / "policies" / name
+    return IPE_ROOT / node.POLICIES / name
 
 
 def node_path(entry, policy=None):
@@ -49,7 +64,7 @@ def write(path, data):
 
 
 def policy_names():
-    return frozenset(path.name for path in node_path("policies").iterdir() if path.is_dir())
+    return frozenset(path.name for path in node_path(node.POLICIES).iterdir() if path.is_dir())
 
 
 def policy_present(name):
@@ -58,38 +73,38 @@ def policy_present(name):
 
 def policy_version(name):
     try:
-        return (policy_path(name) / "version").read_text().strip()
+        return (policy_path(name) / node.VERSION).read_text().strip()
     except OSError:
         return None
 
 
 def policy_active(name):
-    return (policy_path(name) / "active").read_text().strip() == "1"
+    return (policy_path(name) / node.ACTIVE).read_text().strip() == "1"
 
 
 def deploy_policy(signed):
-    write(node_path("new_policy"), signed.read_bytes())
+    write(node_path(node.NEW_POLICY), signed.read_bytes())
 
 
 def activate_policy(name):
-    active = policy_path(name) / "active"
+    active = policy_path(name) / node.ACTIVE
     if active.read_text().strip() != "1":
         write(active, "1")
 
 
 def delete_policy(name):
     if policy_present(name):
-        write(policy_path(name) / "delete", "1")
+        write(policy_path(name) / node.DELETE, "1")
     if policy_present(name):
         raise RuntimeError(f"policy {name} was not deleted")
 
 
 def enforcement():
-    return node_path("enforce").read_text().strip() == "1"
+    return node_path(node.ENFORCE).read_text().strip() == "1"
 
 
 def success_audit():
-    return node_path("success_audit").read_text().strip() == "1"
+    return node_path(node.SUCCESS_AUDIT).read_text().strip() == "1"
 
 
 def active_policy():
@@ -100,17 +115,17 @@ def active_policy():
 
 
 def set_enforcement(enabled):
-    write(node_path("enforce"), "1" if enabled else "0")
+    write(node_path(node.ENFORCE), "1" if enabled else "0")
 
 
 def set_success_audit(enabled):
-    write(node_path("success_audit"), "1" if enabled else "0")
+    write(node_path(node.SUCCESS_AUDIT), "1" if enabled else "0")
 
 
 def load_baseline(policy):
     expected = policy.text.read_bytes().rstrip(b"\n")
     if policy_present(policy.name):
-        loaded = (policy_path(policy.name) / "policy").read_bytes().rstrip(b"\n")
+        loaded = (policy_path(policy.name) / node.POLICY).read_bytes().rstrip(b"\n")
         if loaded != expected:
             raise RuntimeError(f"loaded policy {policy.name} differs from {policy.text}")
     else:

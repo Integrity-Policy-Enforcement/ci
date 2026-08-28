@@ -4,6 +4,7 @@ import errno
 from functools import partial
 
 import checks
+import ipe
 import steps
 import triggers
 from assets import (
@@ -25,7 +26,7 @@ def build():
             id="policy_signature_untrusted_enokey",
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 UNTRUSTED_POLICY.signed.read_bytes(),
             ),
@@ -39,7 +40,7 @@ def build():
             ),
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 SECONDARY_POLICY.signed.read_bytes(),
             ),
@@ -50,7 +51,7 @@ def build():
             id="policy_signature_secondary_absent_enokey",
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 SECONDARY_POLICY.signed.read_bytes(),
             ),
@@ -61,7 +62,7 @@ def build():
             id="policy_signature_platform_ok",
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 PLATFORM_POLICY.signed.read_bytes(),
             ),
@@ -72,7 +73,7 @@ def build():
             id="policy_signature_revoked_ekeyrejected",
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 REVOKED_POLICY.signed.read_bytes(),
             ),
@@ -83,7 +84,7 @@ def build():
             id="policy_signature_tampered_ekeyrejected",
             trigger=partial(
                 triggers.write_node,
-                "new_policy",
+                ipe.node.NEW_POLICY,
                 None,
                 TAMPERED_POLICY.signed.read_bytes(),
             ),
