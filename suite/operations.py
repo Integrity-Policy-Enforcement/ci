@@ -20,7 +20,7 @@ class Operation:
 
 def insert_module(path: Path) -> Observation:
     finished = modules.insert(path)
-    return Observation(finished.returncode, finished.stderr.strip())
+    return Observation(finished.returncode, message=finished.stderr.strip())
 
 
 def test_module_loaded() -> bool:

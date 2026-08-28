@@ -22,7 +22,7 @@ def write_node_and_read(
 ) -> Observation:
     observation = write_node(entry, policy, data)
     observed.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, observed)
+    return Observation(observation.errno, observed=tuple(observed))
 
 
 def toggle_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
@@ -33,13 +33,13 @@ def toggle_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> O
         raise RuntimeError(f"cannot toggle {current!r}")
     observation = write_node(entry, policy, b"0" if current == "1" else b"1")
     observed.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, observed)
+    return Observation(observation.errno, observed=tuple(observed))
 
 
 def read_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
     try:
         observed.append(ipe.node_path(entry, policy).read_text().strip())
-        return Observation(0, observed)
+        return Observation(0, observed=tuple(observed))
     except OSError as failure:
         return Observation(failure.errno)
 
@@ -47,7 +47,7 @@ def read_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Obs
 def read_binary_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
     try:
         observed.append(ipe.node_path(entry, policy).read_bytes().hex())
-        return Observation(0, observed)
+        return Observation(0, observed=tuple(observed))
     except OSError as failure:
         return Observation(failure.errno)
 
@@ -61,7 +61,7 @@ def write_opened_file_and_read(
 ) -> Observation:
     observation = write_opened_file(data, descriptor)
     observed.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, observed)
+    return Observation(observation.errno, observed=tuple(observed))
 
 
 def write_opened_file(data: bytes, descriptor: list[int]) -> Observation:

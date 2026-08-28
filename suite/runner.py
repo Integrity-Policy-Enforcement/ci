@@ -30,10 +30,14 @@ def run_in_child(case: Case) -> dict:
                 step()
             for step in case.setup:
                 step()
-            report = {"detail": ""}
+            report = {"observed": []}
             if case.trigger:
                 observation = case.trigger()
-                report = {"errno": observation.errno, "detail": observation.detail}
+                report = {
+                    "errno": observation.errno,
+                    "message": observation.message,
+                    "observed": list(observation.observed),
+                }
         except BaseException as failure:
             report = {"error": f"{type(failure).__name__}: {clean(failure)}"}
         os.write(write_fd, json.dumps(report).encode())
@@ -60,10 +64,10 @@ def test(case: Case) -> tuple[str, str] | None:
             if "error" in result:
                 return "error", result["error"]
             if case.trigger and result["errno"] != case.expect:
-                detail = f": {result['detail']}" if result["detail"] else ""
-                return "failure", f"expected errno {case.expect}, got {result['errno']}{detail}"
+                said = f": {result['message']}" if result["message"] else ""
+                return "failure", f"expected errno {case.expect}, got {result['errno']}{said}"
             if case.check:
-                problem = case.check(result["detail"])
+                problem = case.check(tuple(result["observed"]))
                 if problem:
                     return "failure", problem
             return None

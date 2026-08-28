@@ -8,8 +8,11 @@ import runtime
 
 @dataclass(frozen=True)
 class Observation:
+    """What the attempt returned, what the tool said, and what the case read."""
+
     errno: int
-    detail: str | list[str] = ""
+    message: str = ""
+    observed: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
