@@ -7,6 +7,7 @@
 """
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import layout
 
@@ -16,15 +17,15 @@ class Identity:
     name: str
 
     @property
-    def key(self):
+    def key(self) -> Path:
         return layout.build.KEYS / f"{self.name}-key.pem"
 
     @property
-    def certificate(self):
+    def certificate(self) -> Path:
         return layout.build.KEYS / f"{self.name}-cert.pem"
 
     @property
-    def certificate_der(self):
+    def certificate_der(self) -> Path:
         return layout.build.KEYS / f"{self.name}-cert.der"
 
 

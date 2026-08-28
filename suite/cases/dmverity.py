@@ -20,7 +20,7 @@ PLAIN = layout.guest.PLAIN_MOUNT
 MODULE = layout.TEST_MODULE_FILE
 
 
-def build():
+def build() -> tuple[Batch, ...]:
     return (
         Batch(
             "dmverity",

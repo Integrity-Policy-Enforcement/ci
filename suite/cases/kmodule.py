@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 from functools import partial
+from pathlib import Path
 
 import checks
 import ipe
@@ -12,7 +13,7 @@ from operations import KMODULE
 from scope import Collection
 
 
-def case(id, policy, module, allowed):
+def case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
     return Case(
         id=id,
         setup=(

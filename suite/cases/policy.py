@@ -20,7 +20,7 @@ from assets import (
 from model import Batch, Case
 
 
-def build():
+def build() -> tuple[Batch, ...]:
     return (Batch(
         "policy",
         (

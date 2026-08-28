@@ -92,46 +92,46 @@ class guest:
     SQUASHFS = "dmverity.squashfs"
 
     @staticmethod
-    def hash_tree(algorithm):
+    def hash_tree(algorithm: str) -> str:
         return f"dmverity-{algorithm}.hash"
 
     @staticmethod
-    def root_hash(algorithm):
+    def root_hash(algorithm: str) -> str:
         return f"dmverity-{algorithm}.roothash"
 
     @staticmethod
-    def root_hash_signature(algorithm):
+    def root_hash_signature(algorithm: str) -> str:
         return f"dmverity-{algorithm}.p7s"
 
     FSVERITY_ASSETS = PAYLOAD / "fsverity"
 
     @staticmethod
-    def fsverity_signature(algorithm):
+    def fsverity_signature(algorithm: str) -> str:
         return f"ipe_test-{algorithm}.p7s"
 
     @staticmethod
-    def fsverity_digest(algorithm):
+    def fsverity_digest(algorithm: str) -> str:
         return f"ipe_test-{algorithm}.digest"
 
     FSVERITY_MODULES = PAYLOAD / "fsverity-modules"
     FSVERITY_PLAIN_MODULE = FSVERITY_MODULES / f"plain-{TEST_MODULE_FILE}"
 
     @staticmethod
-    def fsverity_unsigned_module(algorithm):
+    def fsverity_unsigned_module(algorithm: str) -> Path:
         return guest.FSVERITY_MODULES / f"unsigned-{algorithm}-{TEST_MODULE_FILE}"
 
     @staticmethod
-    def fsverity_signed_module(algorithm):
+    def fsverity_signed_module(algorithm: str) -> Path:
         return guest.FSVERITY_MODULES / f"signed-{algorithm}-{TEST_MODULE_FILE}"
 
     MEDIA = Path("/run/ipe-media")
 
     @staticmethod
-    def dmverity_device(algorithm, signed):
+    def dmverity_device(algorithm: str, signed: bool) -> str:
         return f"ipe-dmverity-{algorithm}-{'signed' if signed else 'unsigned'}"
 
     @staticmethod
-    def dmverity_mount(algorithm, signed):
+    def dmverity_mount(algorithm: str, signed: bool) -> Path:
         return guest.MEDIA / f"dmverity-{algorithm}-{'signed' if signed else 'unsigned'}"
 
     PLAIN_MOUNT = MEDIA / "plain"

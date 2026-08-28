@@ -4,7 +4,7 @@ import ipe
 import layout
 
 
-def policy(asset, name):
+def policy(asset: str, name: str) -> ipe.Policy:
     return ipe.Policy(ipe.POLICY_ROOT / asset, name)
 
 
@@ -45,7 +45,7 @@ PLATFORM_POLICY = policy(layout.PLATFORM_POLICY, "ipe_test_signature_platform")
 
 # policy text corpus: one policy per parser decision point, all under one name
 # except the one whose name exercises the characters a name may contain.
-def text_policy(asset, name="ipe_test_text"):
+def text_policy(asset: str, name: str = "ipe_test_text") -> ipe.Policy:
     return policy(f"policy_text/{asset}", name)
 
 
@@ -69,7 +69,7 @@ FSVERITY_SIGNATURE_FALSE_POLICY = policy(
 )
 
 
-def roothash_policy(algorithm, matching=True):
+def roothash_policy(algorithm: str, matching: bool = True) -> ipe.Policy:
     kind = "" if matching else "mismatch_"
     return policy(
         f"dmverity/kmodule_roothash_{algorithm}_{kind}allow",
@@ -77,7 +77,7 @@ def roothash_policy(algorithm, matching=True):
     )
 
 
-def digest_policy(algorithm, matching=True):
+def digest_policy(algorithm: str, matching: bool = True) -> ipe.Policy:
     kind = "" if matching else "mismatch_"
     return policy(
         f"fsverity/kmodule_digest_{algorithm}_{kind}allow",

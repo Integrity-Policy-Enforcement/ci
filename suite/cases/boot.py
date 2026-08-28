@@ -8,6 +8,7 @@ batch here reports those outcomes.
 """
 
 from functools import partial
+from pathlib import Path
 
 import checks
 import ipe
@@ -29,7 +30,7 @@ INITRAMFS_MODULE = layout.initrd.ROOT / layout.TEST_MODULE_FILE
 TMPFS_MODULE = layout.initrd.BOOT_TMPFS_DIRECTORY / layout.TEST_MODULE_FILE
 
 
-def initramfs_case(id, policy, module, allowed):
+def initramfs_case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
     return Case(
         id=id,
         setup=(
@@ -73,7 +74,7 @@ INITRAMFS_CASES = (
 )
 
 
-def build():
+def build() -> tuple[Batch, ...]:
     return (
         Batch(
             "boot",

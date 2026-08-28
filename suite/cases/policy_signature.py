@@ -21,7 +21,7 @@ from model import Batch, Case
 from scope import Collection
 
 
-def build():
+def build() -> tuple[Batch, ...]:
     return (Batch(
         "policy_signature",
         (

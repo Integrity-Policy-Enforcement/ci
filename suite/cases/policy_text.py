@@ -10,7 +10,7 @@ from assets import TEXT_SPECIAL_NAME_POLICY, text_policy
 from model import Batch, Case
 
 
-def build():
+def build() -> tuple[Batch, ...]:
     return (Batch(
         "policy_text",
         (

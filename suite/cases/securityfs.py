@@ -16,7 +16,7 @@ from assets import (
 from model import Batch, Case
 
 
-def build():
+def build() -> tuple[Batch, ...]:
     opened_file = [None]
     read_values = []
     truncated_policy = CAPABILITY_POLICY_V1.signed.read_bytes()

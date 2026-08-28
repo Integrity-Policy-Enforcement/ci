@@ -18,7 +18,7 @@ from scope import Collection
 from . import kmodule
 
 
-def build():
+def build() -> tuple[Batch, ...]:
     return (
         Batch(
             "fsverity",
