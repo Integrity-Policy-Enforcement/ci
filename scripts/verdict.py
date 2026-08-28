@@ -26,7 +26,7 @@ HEALTH_PATTERNS = (
 )
 
 
-def health_failures(path):
+def health_failures(path: Path) -> list[str]:
     failures = []
     for number, line in enumerate(
         path.read_text(encoding="utf-8", errors="replace").splitlines(), 1
@@ -38,7 +38,7 @@ def health_failures(path):
     return failures
 
 
-def read_lines(path):
+def read_lines(path: Path) -> list[str]:
     if not path.exists():
         return []
     lines = []
@@ -49,7 +49,7 @@ def read_lines(path):
     return lines
 
 
-def tap_failures(path):
+def tap_failures(path: Path) -> list[str]:
     parsed = subprocess.run(
         ["prove", "--exec", "cat", path],
         capture_output=True,
@@ -62,7 +62,7 @@ def tap_failures(path):
     return [f"TAP parser: {line}" for line in report[-20:]]
 
 
-def decide(output):
+def decide(output: Path) -> tuple[str, list[str]]:
     console = output / layout.output.CONSOLE
     if not console.is_file():
         return FAIL, ["missing console evidence"]
@@ -101,7 +101,7 @@ def decide(output):
     return PASS, ["all TAP cases passed"]
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Evaluate IPE VM test evidence.")
     parser.add_argument("output", type=Path)
     args = parser.parse_args(argv)

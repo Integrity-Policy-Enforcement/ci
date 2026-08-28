@@ -14,7 +14,7 @@ from pathlib import Path
 import layout
 
 
-def restore_owner(path):
+def restore_owner(path: Path) -> None:
     uid = os.environ.get("SUDO_UID")
     if not uid:
         return
@@ -22,7 +22,7 @@ def restore_owner(path):
     subprocess.run(["chown", "-fhR", f"{uid}:{gid}", path], check=False)
 
 
-def make_payload(output):
+def make_payload(output: Path) -> None:
     if not tuple(layout.build.POLICIES.rglob(f"*{layout.POLICY_SIGNATURE_SUFFIX}")):
         raise SystemExit("signed policies are missing; run prepare-policies.py")
     with tempfile.TemporaryDirectory() as temporary:
@@ -43,12 +43,12 @@ def make_payload(output):
         )
 
 
-def line_count(path):
+def line_count(path: Path) -> int:
     with path.open("rb") as stream:
         return sum(chunk.count(b"\n") for chunk in iter(lambda: stream.read(1 << 20), b""))
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the IPE tests in a virtual machine.")
     parser.add_argument("output", type=Path)
     parser.add_argument("--mkosi", default="mkosi")

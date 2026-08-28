@@ -17,7 +17,7 @@ import layout
 NAME = layout.TEST_MODULE
 
 
-def main():
+def main() -> int:
     if not (layout.build.KERNEL / "Module.symvers").is_file():
         raise SystemExit("the kernel is not built; run build-kernel.py")
     shutil.rmtree(layout.build.KERNEL_MODULE, ignore_errors=True)

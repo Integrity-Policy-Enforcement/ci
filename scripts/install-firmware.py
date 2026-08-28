@@ -15,12 +15,12 @@ ARM64_FIRMWARE_URL = (
 ARM64_FIRMWARE_SHA256 = "ec0a922bc758fcf4b57b00b81870475d97e07ef166d4160d4651931958bbbdc3"
 
 
-def download(url, destination):
+def download(url: str, destination: Path) -> None:
     with urllib.request.urlopen(url) as response:
         destination.write_bytes(response.read())
 
 
-def main():
+def main() -> int:
     with tempfile.TemporaryDirectory() as workspace:
         package = Path(workspace) / "firmware.deb"
         download(ARM64_FIRMWARE_URL, package)

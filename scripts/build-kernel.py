@@ -13,16 +13,16 @@ from pathlib import Path
 
 
 
-def run_result(command, **kwargs):
+def run_result(command: list, **kwargs: object) -> subprocess.CompletedProcess:
     return subprocess.run([str(part) for part in command], check=False, **kwargs)
 
 
-def fail(message):
+def fail(message: str) -> int:
     print(f"error: {message}", file=sys.stderr)
     return 1
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build the IPE test kernel.")
     parser.add_argument("kernel_tree", type=Path)
     args = parser.parse_args(argv)

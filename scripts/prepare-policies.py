@@ -14,6 +14,7 @@ carries a placeholder that the values under build/ replace.
 
 import shutil
 import subprocess
+from pathlib import Path
 
 import layout
 import signing
@@ -21,7 +22,7 @@ import signing
 HEX_DIGITS = "0123456789abcdef"
 
 
-def openssl(*args, **kwargs):
+def openssl(*args: object, **kwargs: object) -> None:
     subprocess.run(
         ["openssl", *map(str, args)],
         check=True,
@@ -30,7 +31,13 @@ def openssl(*args, **kwargs):
     )
 
 
-def sign(policy, output, key=signing.BUILTIN.key, certificate=signing.BUILTIN.certificate, anchor=signing.BUILTIN.certificate):
+def sign(
+    policy: Path,
+    output: Path,
+    key: Path = signing.BUILTIN.key,
+    certificate: Path = signing.BUILTIN.certificate,
+    anchor: Path = signing.BUILTIN.certificate,
+) -> None:
     openssl(
         "cms",
         "-sign",
@@ -73,7 +80,7 @@ def sign(policy, output, key=signing.BUILTIN.key, certificate=signing.BUILTIN.ce
         raise SystemExit(f"signed content differs from {policy}")
 
 
-def substitute_signed_content(policy, replacement, signature):
+def substitute_signed_content(policy: Path, replacement: Path, signature: Path) -> None:
     signed_text = policy.read_bytes()
     replacement_text = replacement.read_bytes()
     if len(replacement_text) != len(signed_text):
@@ -81,14 +88,14 @@ def substitute_signed_content(policy, replacement, signature):
     signature.write_bytes(signature.read_bytes().replace(signed_text, replacement_text))
 
 
-def shift(hexadecimal):
+def shift(hexadecimal: str) -> str:
     """A well formed value of the same length that nothing here carries."""
     return "".join(
         HEX_DIGITS[(HEX_DIGITS.index(digit) + 1) % len(HEX_DIGITS)] for digit in hexadecimal
     )
 
 
-def measurements():
+def measurements() -> dict[str, str]:
     """Every placeholder and the <algorithm>:<hex> a policy should name."""
     table = {}
     for algorithm in layout.HASH_ALGORITHMS:
@@ -102,7 +109,7 @@ def measurements():
     return table
 
 
-def fill_in_measurements():
+def fill_in_measurements() -> None:
     replacements = measurements()
     for policy in layout.build.POLICIES.rglob(f"*{layout.POLICY_TEXT_SUFFIX}"):
         text = policy.read_text()
@@ -111,7 +118,7 @@ def fill_in_measurements():
         policy.write_text(text)
 
 
-def main():
+def main() -> int:
     if not signing.BUILTIN.key.is_file() or not signing.BUILTIN.certificate.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
     shutil.rmtree(layout.build.POLICIES, ignore_errors=True)

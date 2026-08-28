@@ -17,24 +17,25 @@ devices it gets.
 
 import shutil
 import subprocess
+from pathlib import Path
 
 import layout
 import signing
 
 
-def run(*command, **kwargs):
+def run(*command: object, **kwargs: object) -> subprocess.CompletedProcess:
     return subprocess.run(
         [str(part) for part in command], check=True, stdout=subprocess.DEVNULL, **kwargs
     )
 
 
-def capture(*command):
+def capture(*command: object) -> str:
     return subprocess.run(
         [str(part) for part in command], check=True, capture_output=True, text=True
     ).stdout
 
 
-def build_squashfs(image):
+def build_squashfs(image: Path) -> None:
     staging = layout.build.DMVERITY_ASSETS / "tree"
     staging.mkdir()
     shutil.copy(layout.build.TEST_MODULE, staging / layout.build.TEST_MODULE.name)
@@ -42,7 +43,7 @@ def build_squashfs(image):
     shutil.rmtree(staging)
 
 
-def format_hash_tree(image, hash_tree, algorithm):
+def format_hash_tree(image: Path, hash_tree: Path, algorithm: str) -> str:
     formatted = capture("veritysetup", "format", image, hash_tree, f"--hash={algorithm}")
     for line in formatted.splitlines():
         if line.startswith("Root hash:"):
@@ -50,7 +51,7 @@ def format_hash_tree(image, hash_tree, algorithm):
     raise SystemExit("veritysetup printed no root hash")
 
 
-def sign_root_hash(root_hash, signature):
+def sign_root_hash(root_hash: str, signature: Path) -> None:
     plain = signature.with_suffix(".txt")
     plain.write_text(root_hash)
     run(
@@ -61,7 +62,7 @@ def sign_root_hash(root_hash, signature):
     plain.unlink()
 
 
-def main():
+def main() -> int:
     if not signing.BUILTIN.key.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
     if not layout.build.TEST_MODULE.is_file():

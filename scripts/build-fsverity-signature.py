@@ -19,7 +19,7 @@ import layout
 import signing
 
 
-def main():
+def main() -> int:
     if not signing.FSVERITY.key.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
     if not layout.build.TEST_MODULE.is_file():

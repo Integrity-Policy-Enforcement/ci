@@ -3,13 +3,14 @@
 
 import re
 import layout
+from pathlib import Path
 
 
 SETTING = re.compile(r"^(CONFIG_[A-Z0-9_]+)=(.*)$")
 UNSET = re.compile(r"^# (CONFIG_[A-Z0-9_]+) is not set$")
 
 
-def read_config(path):
+def read_config(path: Path) -> dict[str, str]:
     values = {}
     for line in path.read_text().splitlines():
         if match := SETTING.match(line):
@@ -19,7 +20,7 @@ def read_config(path):
     return values
 
 
-def main():
+def main() -> int:
     requested = read_config(layout.source.KERNEL_CONFIG)
     produced = read_config(layout.build.KERNEL_CONFIG)
     drifted = [

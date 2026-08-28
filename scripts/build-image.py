@@ -12,7 +12,7 @@ import subprocess
 import layout
 
 
-def main():
+def main() -> int:
     subprocess.run(
         ["mkosi", "--directory", str(layout.source.IMAGE), "-f", "build"], check=True
     )

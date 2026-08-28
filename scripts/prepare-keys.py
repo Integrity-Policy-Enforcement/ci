@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import layout
 import signing
+from pathlib import Path
 
 
 
@@ -53,7 +54,7 @@ authorityKeyIdentifier = keyid:always
 """
 
 
-def openssl(*args, **kwargs):
+def openssl(*args: object, **kwargs: object) -> None:
     subprocess.run(
         ["openssl", *map(str, args)],
         check=True,
@@ -62,7 +63,14 @@ def openssl(*args, **kwargs):
     )
 
 
-def generate_certificate(key, certificate, common_name, extensions, issuer=None, issuer_key=None):
+def generate_certificate(
+    key: Path,
+    certificate: Path,
+    common_name: str,
+    extensions: str,
+    issuer: Path | None = None,
+    issuer_key: Path | None = None,
+) -> None:
     signer = ["-CA", issuer, "-CAkey", issuer_key] if issuer else []
     openssl(
         "req", "-new", "-nodes", "-sha256", "-days", "3", "-batch", "-x509",
@@ -74,7 +82,7 @@ def generate_certificate(key, certificate, common_name, extensions, issuer=None,
     key.chmod(0o600)
 
 
-def main():
+def main() -> int:
     shutil.rmtree(layout.build.KEYS, ignore_errors=True)
     layout.build.KEYS.mkdir(parents=True)
     generate_certificate(

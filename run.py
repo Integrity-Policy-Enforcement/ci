@@ -12,17 +12,17 @@ SCRIPTS = HERE / "scripts"
 PYTHON = sys.executable
 
 
-def run_checked(command):
+def run_checked(command: list) -> None:
     command = [str(part) for part in command]
     print("    $ " + " ".join(command), flush=True)
     subprocess.run(command, check=True)
 
 
-def step(name):
+def step(name: str) -> None:
     print(f"\n==> {name}", flush=True)
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Build and run the IPE tests against a kernel tree."
     )
