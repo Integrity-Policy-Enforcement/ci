@@ -74,6 +74,10 @@ REVOKED_POLICY = "policy_signature/revoked"
 UNTRUSTED_POLICY = "policy_signature/untrusted"
 TAMPERED_POLICY = "policy_signature/tampered"
 
+# The keyring cases link a signer's certificate, which the guest can only reach
+# if it travels with the policies.
+SIGNER_CERTIFICATES = "signers"
+
 # What prepare-policies.py writes beside each policy, and the suite then reads.
 POLICY_TEXT_SUFFIX = ".pol"
 POLICY_SIGNATURE_SUFFIX = ".p7s"

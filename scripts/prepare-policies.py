@@ -145,9 +145,11 @@ def main() -> int:
         signing.SECONDARY.certificate,
         signing.INTERMEDIATE.certificate,
     )
+    signers = layout.build.POLICIES / layout.SIGNER_CERTIFICATES
+    signers.mkdir(parents=True, exist_ok=True)
     openssl(
         "x509", "-in", signing.INTERMEDIATE.certificate, "-outform", "DER",
-        "-out", secondary.with_suffix(".der"),
+        "-out", signers / f"{signing.INTERMEDIATE.name}.der",
     )
 
     platform = layout.build.POLICIES / f"{layout.PLATFORM_POLICY}{layout.POLICY_TEXT_SUFFIX}"

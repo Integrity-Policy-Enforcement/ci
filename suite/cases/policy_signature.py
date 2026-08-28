@@ -7,9 +7,9 @@ import checks
 import ipe
 import keyring
 import runtime
-import steps
 import triggers
 from assets import (
+    INTERMEDIATE_CERTIFICATE,
     PLATFORM_POLICY,
     REVOKED_POLICY,
     SECONDARY_KEYRING,
@@ -38,7 +38,7 @@ def build() -> tuple[Batch, ...]:
         Case(
             id="policy_signature_secondary_linked_ok",
             setup=(
-                partial(steps.link_certificate, SECONDARY_KEYRING, SECONDARY_POLICY),
+                partial(keyring.add_certificate, SECONDARY_KEYRING, INTERMEDIATE_CERTIFICATE),
             ),
             scope=partial(runtime.case.scope, keyring.linked(SECONDARY_KEYRING)),
             trigger=partial(

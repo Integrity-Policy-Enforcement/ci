@@ -26,10 +26,6 @@ class Policy:
     def signed(self) -> Path:
         return self.asset.with_name(self.asset.name + layout.POLICY_SIGNATURE_SUFFIX)
 
-    @property
-    def certificate(self) -> Path:
-        return self.asset.with_name(self.asset.name + ".der")
-
 
 class node:
     """The entries IPE puts in securityfs, at its root or under one policy."""

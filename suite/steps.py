@@ -4,7 +4,6 @@ import os
 
 import capabilities
 import ipe
-import keyring
 
 
 def deploy_policy(policy: ipe.Policy) -> None:
@@ -39,10 +38,6 @@ def raise_mac_admin() -> None:
 
 def drop_mac_admin() -> None:
     capabilities.drop_mac_admin()
-
-
-def link_certificate(keyring_name: str, policy: ipe.Policy) -> None:
-    keyring.add_certificate(keyring_name, policy.certificate)
 
 
 def activate_policy(policy: ipe.Policy) -> None:

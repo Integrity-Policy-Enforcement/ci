@@ -39,6 +39,9 @@ TAMPERED_POLICY = policy(layout.TAMPERED_POLICY, "ipe_test_signature_tampered")
 # and this one with a leaf whose issuer must first be linked into a keyring.
 SECONDARY_POLICY = policy(layout.SECONDARY_POLICY, "ipe_test_signature_secondary")
 SECONDARY_KEYRING = "%:.secondary_trusted_keys"
+INTERMEDIATE_CERTIFICATE = (
+    ipe.POLICY_ROOT / layout.SIGNER_CERTIFICATES / "intermediate.der"
+)
 
 # and this one with the Secure Boot key the firmware already trusts.
 PLATFORM_POLICY = policy(layout.PLATFORM_POLICY, "ipe_test_signature_platform")
