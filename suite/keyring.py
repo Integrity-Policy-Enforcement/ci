@@ -1,7 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import subprocess
+from functools import partial
 from pathlib import Path
+
+from scope import Collection
 
 ASYMMETRIC_KEY_TYPE = "asymmetric"
 
@@ -25,3 +28,10 @@ def add_certificate(keyring: str, certificate: Path) -> None:
 
 def unlink(key: str, keyring: str) -> None:
     keyctl("unlink", key, keyring)
+
+
+def linked(keyring: str) -> Collection:
+    return Collection(
+        members=partial(linked_keys, keyring),
+        discard=partial(unlink, keyring=keyring),
+    )

@@ -18,7 +18,6 @@ from assets import (
     UNTRUSTED_POLICY,
 )
 from model import Batch, Case
-from scope import Collection
 
 
 def build() -> tuple[Batch, ...]:
@@ -41,13 +40,7 @@ def build() -> tuple[Batch, ...]:
             setup=(
                 partial(steps.link_certificate, SECONDARY_KEYRING, SECONDARY_POLICY),
             ),
-            scope=partial(
-                runtime.case.scope,
-                Collection(
-                    members=partial(keyring.linked_keys, SECONDARY_KEYRING),
-                    discard=partial(keyring.unlink, keyring=SECONDARY_KEYRING),
-                ),
-            ),
+            scope=partial(runtime.case.scope, keyring.linked(SECONDARY_KEYRING)),
             trigger=partial(
                 triggers.write_node,
                 ipe.node.NEW_POLICY,

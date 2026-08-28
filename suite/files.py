@@ -5,6 +5,7 @@ from pathlib import Path
 
 import layout
 from command import run
+from scope import Collection
 
 
 def copies() -> set[str]:
@@ -27,3 +28,6 @@ def verity_module(target: Path, algorithm: str, signature: Path | None = None) -
     copy_module(target)
     signed = [f"--signature={signature}"] if signature else []
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)
+
+
+COPIES = Collection(members=copies, discard=discard)

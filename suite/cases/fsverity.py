@@ -12,7 +12,6 @@ from assets import (
     digest_policy,
 )
 from model import Batch
-from scope import Collection
 
 
 from . import kmodule
@@ -129,9 +128,6 @@ def build() -> tuple[Batch, ...]:
                 ),
                 partial(files.copy_module, layout.guest.FSVERITY_PLAIN_MODULE),
             ),
-            scope=partial(
-                runtime.batch.scope,
-                Collection(members=files.copies, discard=files.discard),
-            ),
+            scope=partial(runtime.batch.scope, files.COPIES),
         ),
     )

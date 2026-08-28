@@ -5,6 +5,7 @@ from pathlib import Path
 
 import layout
 from command import capture, run
+from scope import Collection
 
 DEVICE_MAPPER = Path("/dev/mapper")
 
@@ -63,3 +64,7 @@ def tmpfs(point: Path, module: Path) -> None:
     """A filesystem with no block device, carrying a copy of the module."""
     mount("tmpfs", point, "-t", "tmpfs")
     shutil.copy(module, point)
+
+
+MOUNTED = Collection(members=points, discard=umount)
+OPENED = Collection(members=devices, discard=close)

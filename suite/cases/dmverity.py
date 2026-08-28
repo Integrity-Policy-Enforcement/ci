@@ -12,7 +12,6 @@ from assets import (
     roothash_policy,
 )
 from model import Batch
-from scope import Collection
 
 from . import kmodule
 
@@ -119,10 +118,6 @@ def build() -> tuple[Batch, ...]:
                 ),
                 partial(mounts.tmpfs, PLAIN, layout.guest.PAYLOAD / MODULE),
             ),
-            scope=partial(
-                runtime.batch.scope,
-                Collection(members=mounts.points, discard=mounts.umount),
-                Collection(members=mounts.devices, discard=mounts.close),
-            ),
+            scope=partial(runtime.batch.scope, mounts.MOUNTED, mounts.OPENED),
         ),
     )

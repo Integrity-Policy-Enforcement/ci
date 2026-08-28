@@ -5,6 +5,7 @@ from pathlib import Path
 
 import layout
 from command import capture, run
+from scope import Collection
 
 
 def loaded() -> set[str]:
@@ -19,3 +20,6 @@ def insert(path: Path) -> subprocess.CompletedProcess:
 
 def remove(name: str) -> None:
     run("rmmod", name)
+
+
+LOADED = Collection(members=loaded, discard=remove)

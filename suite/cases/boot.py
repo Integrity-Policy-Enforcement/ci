@@ -18,7 +18,6 @@ import runtime
 import steps
 from model import Batch, Case
 from operations import KMODULE
-from scope import Collection
 
 TRUE_ALLOW_POLICY = ipe.Policy(
     layout.initrd.ROOT / "boot-verified-true", "ipe_test_boot_verified"
@@ -39,10 +38,7 @@ def initramfs_case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> 
         ),
         trigger=partial(KMODULE.attempt, module),
         expect=0 if allowed else KMODULE.refused,
-        scope=partial(
-            runtime.case.scope,
-            Collection(members=modules.loaded, discard=modules.remove),
-        ),
+        scope=partial(runtime.case.scope, modules.LOADED),
     )
 
 
