@@ -7,8 +7,8 @@ import ipe
 import keyring
 
 
-def deploy_policy(asset):
-    ipe.deploy_policy(ipe.policy_asset(asset, ".p7s"))
+def deploy_policy(policy):
+    ipe.deploy_policy(policy.signed)
 
 
 def open_node(node, policy, descriptor):
@@ -41,8 +41,8 @@ def drop_mac_admin():
     capabilities.drop_mac_admin()
 
 
-def link_certificate(keyring_name, asset):
-    keyring.add_certificate(keyring_name, ipe.policy_asset(asset, ".der"))
+def link_certificate(keyring_name, policy):
+    keyring.add_certificate(keyring_name, policy.certificate)
 
 
 def activate_policy(policy):

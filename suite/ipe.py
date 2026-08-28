@@ -13,18 +13,30 @@ POLICY_ROOT = layout.POLICIES
 
 @dataclass(frozen=True)
 class Policy:
-    """A signed policy and the name the kernel will know it by."""
+    """The files prepare-policies.py wrote for one policy, and the name it declares."""
 
-    signed: Path
+    asset: Path
     name: str
+
+    @property
+    def text(self):
+        return self.asset.with_name(self.asset.name + ".pol")
+
+    @property
+    def signed(self):
+        return self.asset.with_name(self.asset.name + ".p7s")
+
+    @property
+    def certificate(self):
+        return self.asset.with_name(self.asset.name + ".der")
 
 
 def policy_path(name):
     return IPE_ROOT / "policies" / name
 
 
-def node_path(node, policy=None):
-    return IPE_ROOT / node if policy is None else policy_path(policy) / node
+def node_path(entry, policy=None):
+    return IPE_ROOT / entry if policy is None else policy_path(policy.name) / entry
 
 
 def write(path, data):
@@ -34,14 +46,6 @@ def write(path, data):
         os.write(descriptor, payload)
     finally:
         os.close(descriptor)
-
-
-def policy_asset(name, suffix=".pol"):
-    return POLICY_ROOT / f"{name}{suffix}"
-
-
-def signed_policy(name):
-    return policy_asset(name, ".p7s").read_bytes()
 
 
 def policy_names():
@@ -54,13 +58,13 @@ def policy_present(name):
 
 def policy_version(name):
     try:
-        return node_path("version", name).read_text().strip()
+        return (policy_path(name) / "version").read_text().strip()
     except OSError:
         return None
 
 
 def policy_active(name):
-    return node_path("active", name).read_text().strip() == "1"
+    return (policy_path(name) / "active").read_text().strip() == "1"
 
 
 def deploy_policy(signed):
@@ -68,13 +72,14 @@ def deploy_policy(signed):
 
 
 def activate_policy(name):
-    if node_path("active", name).read_text().strip() != "1":
-        write(node_path("active", name), "1")
+    active = policy_path(name) / "active"
+    if active.read_text().strip() != "1":
+        write(active, "1")
 
 
 def delete_policy(name):
     if policy_present(name):
-        write(node_path("delete", name), "1")
+        write(policy_path(name) / "delete", "1")
     if policy_present(name):
         raise RuntimeError(f"policy {name} was not deleted")
 
@@ -102,17 +107,17 @@ def set_success_audit(enabled):
     write(node_path("success_audit"), "1" if enabled else "0")
 
 
-def load_baseline(asset, name):
-    expected = policy_asset(asset).read_bytes().rstrip(b"\n")
-    if policy_present(name):
-        loaded = node_path("policy", name).read_bytes().rstrip(b"\n")
+def load_baseline(policy):
+    expected = policy.text.read_bytes().rstrip(b"\n")
+    if policy_present(policy.name):
+        loaded = (policy_path(policy.name) / "policy").read_bytes().rstrip(b"\n")
         if loaded != expected:
-            raise RuntimeError(f"loaded policy {name} differs from {asset}.pol")
+            raise RuntimeError(f"loaded policy {policy.name} differs from {policy.text}")
     else:
         try:
-            deploy_policy(policy_asset(asset, ".p7s"))
+            deploy_policy(policy.signed)
         except OSError as failure:
             if failure.errno != errno.EEXIST:
                 raise
-    activate_policy(name)
-    return name
+    activate_policy(policy.name)
+    return policy.name

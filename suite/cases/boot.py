@@ -17,10 +17,10 @@ from model import Batch, Case
 from operations import KMODULE
 
 TRUE_ALLOW_POLICY = ipe.Policy(
-    layout.INITRD / "boot-verified-true.p7s", "ipe_test_boot_verified"
+    layout.INITRD / "boot-verified-true", "ipe_test_boot_verified"
 )
 FALSE_DENY_POLICY = ipe.Policy(
-    layout.INITRD / "boot-verified-false.p7s", "ipe_test_boot_verified_false"
+    layout.INITRD / "boot-verified-false", "ipe_test_boot_verified_false"
 )
 INITRAMFS_MODULE = layout.INITRD / layout.TEST_MODULE_FILE
 TMPFS_MODULE = layout.BOOT_TMPFS_DIRECTORY / layout.TEST_MODULE_FILE

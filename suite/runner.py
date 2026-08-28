@@ -6,7 +6,7 @@ import signal
 import traceback
 
 import cases
-from assets import BASELINE_POLICY_ASSET, BASELINE_POLICY_NAME
+from assets import BASELINE_POLICY
 import ipe
 import runtime
 
@@ -83,7 +83,7 @@ def run(output):
     failures = 0
     number = 0
     with runtime.run.scope():
-        ipe.load_baseline(BASELINE_POLICY_ASSET, BASELINE_POLICY_NAME)
+        ipe.load_baseline(BASELINE_POLICY)
         for batch in batches:
             try:
                 with runtime.batch.scope():

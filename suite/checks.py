@@ -23,15 +23,15 @@ def two_values_differ(values):
 
 
 def policy_version_is(policy, expected, detail):
-    actual = ipe.policy_version(policy)
+    actual = ipe.policy_version(policy.name)
     if actual != expected:
-        return f"policy {policy} version is {actual}, expected {expected}"
+        return f"policy {policy.name} version is {actual}, expected {expected}"
 
 
 def policy_active_is(policy, expected, detail):
-    actual = ipe.policy_active(policy)
+    actual = ipe.policy_active(policy.name)
     if actual != expected:
-        return f"policy {policy} active={actual}, expected {expected}"
+        return f"policy {policy.name} active={actual}, expected {expected}"
 
 
 def node_value_is(node, expected, detail):
@@ -41,9 +41,9 @@ def node_value_is(node, expected, detail):
 
 
 def policy_present_is(policy, expected, detail):
-    actual = ipe.policy_present(policy)
+    actual = ipe.policy_present(policy.name)
     if actual != expected:
-        return f"policy {policy} present={actual}, expected {expected}"
+        return f"policy {policy.name} present={actual}, expected {expected}"
 
 
 def operation_completed_is(operation, expected, detail):
