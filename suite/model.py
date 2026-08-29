@@ -3,8 +3,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-import runtime
-
 
 @dataclass(frozen=True)
 class Observation:
@@ -23,7 +21,7 @@ class Case:
     collect: tuple[Callable, ...] = ()
     setup: tuple[Callable, ...] = ()
     check: Callable | None = None
-    scope: Callable = runtime.case.scope
+    scope: Callable | None = None
 
 
 @dataclass(frozen=True)
@@ -31,4 +29,4 @@ class Batch:
     id: str
     cases: tuple[Case, ...]
     setup: tuple[Callable, ...] = ()
-    scope: Callable = runtime.batch.scope
+    scope: Callable | None = None

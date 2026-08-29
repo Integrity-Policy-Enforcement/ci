@@ -59,7 +59,7 @@ def run_in_child(case: Case) -> dict:
 def test(case: Case) -> tuple[str, str] | None:
     """Run one case and put back whatever it disturbed."""
     try:
-        with case.scope():
+        with (case.scope or runtime.case.scope)():
             result = run_in_child(case)
             if "error" in result:
                 return "error", result["error"]
@@ -92,7 +92,7 @@ def run(output: TextIO) -> int:
         ipe.load_baseline(BASELINE_POLICY)
         for batch in batches:
             try:
-                with batch.scope():
+                with (batch.scope or runtime.batch.scope)():
                     for step in batch.setup:
                         step()
                     for case in batch.cases:
