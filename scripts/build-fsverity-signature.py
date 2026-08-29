@@ -3,8 +3,10 @@
 """Sign the fs-verity digest of the test module.
 
     build/fsverity/
-        ipe_test-<hash>.digest    the digest, as ASCII hex
-        ipe_test-<hash>.p7s       that digest signed by the fs-verity key
+        ipe_test-sha256.digest    the digest, as ASCII hex
+        ipe_test-sha256.p7s       that digest signed by the fs-verity key
+        ipe_test-sha512.digest    the same pair, over the same module
+        ipe_test-sha512.p7s
 
 One pair per hash in layout.HASH_ALGORITHMS.
 

@@ -6,11 +6,16 @@
         builtin-key.pem       signs IPE policies; its certificate is built
         builtin-cert.pem      into the kernel and signs the dm-verity root
         builtin-cert.der
-        intermediate-*.pem    issued by builtin, in no keyring
-        secondary-*.pem       issued by intermediate, linked at run time
-        revoked-*.pem         self-signed, built into the blacklist
-        untrusted-*.pem       self-signed, in no keyring
-        secureboot-*.pem      enrolled in the UEFI db, so it reaches .platform
+        intermediate-key.pem  issued by builtin, in no keyring
+        intermediate-cert.pem
+        secondary-key.pem     issued by intermediate, linked at run time
+        secondary-cert.pem
+        revoked-key.pem       self-signed, built into the blacklist
+        revoked-cert.pem
+        untrusted-key.pem     self-signed, in no keyring
+        untrusted-cert.pem
+        secureboot-key.pem    enrolled in the UEFI db, so it reaches .platform
+        secureboot-cert.pem
         fsverity-key.pem      signs fs-verity digests; the initramfs adds
         fsverity-cert.pem     its certificate to the .fs-verity keyring
         fsverity-cert.der
