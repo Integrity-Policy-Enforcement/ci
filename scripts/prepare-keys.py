@@ -5,7 +5,6 @@
     build/keys/
         builtin-key.pem       signs IPE policies; its certificate is built
         builtin-cert.pem      into the kernel and signs the dm-verity root
-        builtin-cert.der
         intermediate-key.pem  issued by builtin, in no keyring
         intermediate-cert.pem
         secondary-key.pem     issued by intermediate, linked at run time
@@ -18,7 +17,7 @@
         secureboot-cert.pem
         fsverity-key.pem      signs fs-verity digests; the initramfs adds
         fsverity-cert.pem     its certificate to the .fs-verity keyring
-        fsverity-cert.der
+        fsverity-cert.der     the form keyctl takes, and the only DER made here
         module-signing.pem    key and certificate joined, for the kernel build
 
 Every run creates them afresh, so changing them means rebuilding the
@@ -31,7 +30,8 @@ import layout
 import signing
 from pathlib import Path
 
-
+# The initramfs adds this to the .fs-verity keyring, and keyctl takes DER.
+FSVERITY_CERTIFICATE_DER = layout.build.KEYS / "fsverity-cert.der"
 
 CERTIFICATE_CONFIG = """[req]
 default_bits = 3072
@@ -133,11 +133,10 @@ def main() -> int:
         "Ephemeral Secure Boot signing key",
         LEAF_EXTENSIONS,
     )
-    for certificate, der in (
-        (signing.BUILTIN.certificate, signing.BUILTIN.certificate_der),
-        (signing.FSVERITY.certificate, signing.FSVERITY.certificate_der),
-    ):
-        openssl("x509", "-in", certificate, "-outform", "DER", "-out", der)
+    openssl(
+        "x509", "-in", signing.FSVERITY.certificate, "-outform", "DER",
+        "-out", FSVERITY_CERTIFICATE_DER,
+    )
     signing.MODULE_SIGNING.write_bytes(signing.BUILTIN.key.read_bytes() + signing.BUILTIN.certificate.read_bytes())
     signing.MODULE_SIGNING.chmod(0o600)
     print("    Prepared signing identities")

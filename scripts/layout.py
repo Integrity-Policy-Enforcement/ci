@@ -11,8 +11,7 @@ build: what the build scripts make from it.
     build/
       keys/                       prepare-keys.py
         builtin-key.pem           the CA the kernel trusts
-        builtin-cert.pem
-        builtin-cert.der          the same certificate, built into the kernel
+        builtin-cert.pem          this is what the kernel is built to trust
         module-signing.pem        key and certificate joined, for the kernel
         intermediate-key.pem      issued by builtin, issues secondary
         intermediate-cert.pem
@@ -26,7 +25,7 @@ build: what the build scripts make from it.
         secureboot-cert.pem
         fsverity-key.pem          added to .fs-verity from the initrd
         fsverity-cert.pem
-        fsverity-cert.der         the form keyctl takes
+        fsverity-cert.der         the form keyctl takes, and the only DER here
       kernel/                     build-kernel.py, an in-tree build
       kernel-install/             its modules_install staging
       kernel-module/              build-kernel-module.py

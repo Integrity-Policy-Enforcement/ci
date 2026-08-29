@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """The signing identities prepare-keys.py makes, and the files it writes for each.
 
-An identity called builtin owns build/keys/builtin-key.pem, its certificate
-beside it as builtin-cert.pem, and builtin-cert.der where a keyring wants DER.
-scripts/prepare-keys.py lists every file the seven of them come to.
+An identity called builtin owns build/keys/builtin-key.pem and its certificate
+beside it as builtin-cert.pem.  scripts/prepare-keys.py lists every file the
+seven of them come to.
 """
 
 from dataclasses import dataclass
@@ -23,10 +23,6 @@ class Identity:
     @property
     def certificate(self) -> Path:
         return layout.build.KEYS / f"{self.name}-cert.pem"
-
-    @property
-    def certificate_der(self) -> Path:
-        return layout.build.KEYS / f"{self.name}-cert.der"
 
 
 BUILTIN = Identity("builtin")
