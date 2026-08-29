@@ -11,7 +11,7 @@ from scope import Collection
 def loaded() -> set[str]:
     """Only the test module: the kernel loads its own without asking."""
     present = {line.split()[0] for line in capture("lsmod").splitlines()[1:]}
-    return present & {layout.TEST_MODULE}
+    return present & {layout.guest.TEST_MODULE.stem}
 
 
 def insert(path: Path) -> subprocess.CompletedProcess:

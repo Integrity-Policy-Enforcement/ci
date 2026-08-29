@@ -6,7 +6,7 @@ import layout
 
 def policy(asset: str, name: str) -> ipe.Policy:
     """Build a Policy from its relative path in the policies directory."""
-    return ipe.Policy(ipe.POLICY_ROOT / asset, name)
+    return ipe.Policy(signed=layout.guest.policy_signature(asset), name=name)
 
 
 # The run activates this permissive policy so a case starts from a known floor.
@@ -29,23 +29,36 @@ POLICY_OTHER_NAME = policy("policy/ipe_test_policy-other-name", "ipe_test_policy
 POLICY_MALFORMED = policy("policy/ipe_test_policy-malformed", "ipe_test_policy")
 
 # policy signature cases sign this policy with a key the blacklist holds,
-REVOKED_POLICY = policy(layout.REVOKED_POLICY, "ipe_test_signature_revoked")
-
-# this one with a key no keyring trusts,
-UNTRUSTED_POLICY = policy(layout.UNTRUSTED_POLICY, "ipe_test_signature_untrusted")
-
-# and replace this one's text after signing with a copy claiming a higher version.
-TAMPERED_POLICY = policy(layout.TAMPERED_POLICY, "ipe_test_signature_tampered")
-
-# and this one with a leaf whose issuer must first be linked into a keyring.
-SECONDARY_POLICY = policy(layout.SECONDARY_POLICY, "ipe_test_signature_secondary")
-SECONDARY_KEYRING = "%:.secondary_trusted_keys"
-INTERMEDIATE_CERTIFICATE = (
-    ipe.POLICY_ROOT / layout.SIGNER_CERTIFICATES / "intermediate.der"
+REVOKED_POLICY = ipe.Policy(
+    signed=layout.guest.REVOKED_POLICY_SIGNATURE,
+    name="ipe_test_signature_revoked",
 )
 
+# this one with a key no keyring trusts,
+UNTRUSTED_POLICY = ipe.Policy(
+    signed=layout.guest.UNTRUSTED_POLICY_SIGNATURE,
+    name="ipe_test_signature_untrusted",
+)
+
+# and replace this one's text after signing with a copy claiming a higher version.
+TAMPERED_POLICY = ipe.Policy(
+    signed=layout.guest.TAMPERED_POLICY_SIGNATURE,
+    name="ipe_test_signature_tampered",
+)
+
+# and this one with a leaf whose issuer must first be linked into a keyring.
+SECONDARY_POLICY = ipe.Policy(
+    signed=layout.guest.SECONDARY_POLICY_SIGNATURE,
+    name="ipe_test_signature_secondary",
+)
+SECONDARY_KEYRING = "%:.secondary_trusted_keys"
+INTERMEDIATE_CERTIFICATE = layout.guest.INTERMEDIATE_CERTIFICATE
+
 # and this one with the Secure Boot key the firmware already trusts.
-PLATFORM_POLICY = policy(layout.PLATFORM_POLICY, "ipe_test_signature_platform")
+PLATFORM_POLICY = ipe.Policy(
+    signed=layout.guest.PLATFORM_POLICY_SIGNATURE,
+    name="ipe_test_signature_platform",
+)
 
 # policy text corpus: one policy per parser decision point, all under one name
 # except the one whose name exercises the characters a name may contain.

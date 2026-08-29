@@ -14,7 +14,7 @@ import subprocess
 
 import layout
 
-NAME = layout.TEST_MODULE
+NAME = layout.build.TEST_MODULE.stem
 
 
 def main() -> int:

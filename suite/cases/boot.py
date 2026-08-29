@@ -17,13 +17,15 @@ from model import Batch, Case
 from . import kmodule
 
 TRUE_ALLOW_POLICY = ipe.Policy(
-    layout.initrd.ROOT / "boot-verified-true", "ipe_test_boot_verified"
+    signed=layout.initrd.BOOT_VERIFIED_TRUE_POLICY,
+    name="ipe_test_boot_verified",
 )
 FALSE_DENY_POLICY = ipe.Policy(
-    layout.initrd.ROOT / "boot-verified-false", "ipe_test_boot_verified_false"
+    signed=layout.initrd.BOOT_VERIFIED_FALSE_POLICY,
+    name="ipe_test_boot_verified_false",
 )
-INITRAMFS_MODULE = layout.initrd.ROOT / layout.TEST_MODULE_FILE
-TMPFS_MODULE = layout.initrd.BOOT_TMPFS_DIRECTORY / layout.TEST_MODULE_FILE
+INITRAMFS_MODULE = layout.initrd.TEST_MODULE
+TMPFS_MODULE = layout.initrd.BOOT_TMPFS_MODULE
 
 
 INITRAMFS_CASES = (

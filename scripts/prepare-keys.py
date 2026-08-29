@@ -26,12 +26,10 @@ kernel and the image that trust them.
 
 import shutil
 import subprocess
-import layout
-import signing
 from pathlib import Path
 
-# The initramfs adds this to the .fs-verity keyring, and keyctl takes DER.
-FSVERITY_CERTIFICATE_DER = layout.build.KEYS / "fsverity-cert.der"
+import layout
+import signing
 
 CERTIFICATE_CONFIG = """[req]
 default_bits = 3072
@@ -91,7 +89,10 @@ def main() -> int:
     shutil.rmtree(layout.build.KEYS, ignore_errors=True)
     layout.build.KEYS.mkdir(parents=True)
     generate_certificate(
-        signing.BUILTIN.key, signing.BUILTIN.certificate, "Builtin IPE policy signing key", AUTHORITY_EXTENSIONS
+        signing.BUILTIN.key,
+        signing.BUILTIN.certificate,
+        "Builtin IPE policy signing key",
+        AUTHORITY_EXTENSIONS,
     )
     generate_certificate(
         signing.UNTRUSTED.key,
@@ -135,9 +136,11 @@ def main() -> int:
     )
     openssl(
         "x509", "-in", signing.FSVERITY.certificate, "-outform", "DER",
-        "-out", FSVERITY_CERTIFICATE_DER,
+        "-out", layout.build.FSVERITY_CERTIFICATE,
     )
-    signing.MODULE_SIGNING.write_bytes(signing.BUILTIN.key.read_bytes() + signing.BUILTIN.certificate.read_bytes())
+    signing.MODULE_SIGNING.write_bytes(
+        signing.BUILTIN.key.read_bytes() + signing.BUILTIN.certificate.read_bytes()
+    )
     signing.MODULE_SIGNING.chmod(0o600)
     print("    Prepared signing identities")
     return 0

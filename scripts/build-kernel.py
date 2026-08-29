@@ -7,10 +7,12 @@ import platform
 import shutil
 import subprocess
 import sys
-import layout
-import signing
 from pathlib import Path
 
+import layout
+import signing
+
+KERNEL_MERGE_CONFIG = Path("scripts") / "kconfig" / "merge_config.sh"
 
 
 def run_result(command: list, **kwargs: object) -> subprocess.CompletedProcess:
@@ -52,7 +54,10 @@ def main(argv: list[str] | None = None) -> int:
     shutil.rmtree(layout.build.KERNEL_STAGING, ignore_errors=True)
     layout.build.KERNEL.mkdir(parents=True)
     jobs = os.cpu_count() or 1
-    make = ["make", "-C", source, f"O={layout.build.KERNEL}", f"ARCH={kernel_arch}", f"-j{jobs}"]
+    make = [
+        "make", "-C", source, f"O={layout.build.KERNEL}",
+        f"ARCH={kernel_arch}", f"-j{jobs}",
+    ]
 
     print(f"    Configure {architecture} kernel", flush=True)
     if run_result([*make, defconfig], stdout=subprocess.DEVNULL).returncode:
@@ -72,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
     with merge_log.open("w", encoding="utf-8") as log:
         result = run_result(
             [
-                source / layout.KERNEL_MERGE_CONFIG,
+                source / KERNEL_MERGE_CONFIG,
                 "-O",
                 layout.build.KERNEL,
                 layout.build.KERNEL_CONFIG,

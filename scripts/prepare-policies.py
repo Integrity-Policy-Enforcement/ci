@@ -2,11 +2,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Sign the policies, and fill in what only the build knows.
 
-    build/policies/
-        ipe_test_baseline-0.0.1.pol   the permissive floor a run starts from
-        <group>/<name>.pol            a policy, placeholders replaced
-        <group>/<name>.p7s            it signed, by the builtin key unless
-                                      the group needs another identity
+    build/policies/    the source policy tree, with placeholders filled,
+                       and each .pol signed beside it as .p7s
 
 A policy that names a root hash or a digest cannot carry one, so it
 carries a placeholder that the values under build/ replace.
@@ -16,6 +13,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import hashes
 import layout
 import signing
 
@@ -98,9 +96,9 @@ def shift(hexadecimal: str) -> str:
 def measurements() -> dict[str, str]:
     """Every placeholder and the <algorithm>:<hex> a policy should name."""
     table = {}
-    for algorithm in layout.HASH_ALGORITHMS:
-        root_hash = (layout.build.DMVERITY_ASSETS / layout.guest.root_hash(algorithm)).read_text().strip()
-        digest = (layout.build.FSVERITY_ASSETS / layout.guest.fsverity_digest(algorithm)).read_text().strip()
+    for algorithm in hashes.ALGORITHMS:
+        root_hash = layout.build.root_hash(algorithm).read_text().strip()
+        digest = layout.build.fsverity_digest(algorithm).read_text().strip()
         upper = algorithm.upper()
         table[f"@DMVERITY_ROOTHASH_{upper}@"] = f"{algorithm}:{root_hash}"
         table[f"@DMVERITY_OTHER_ROOTHASH_{upper}@"] = f"{algorithm}:{shift(root_hash)}"
@@ -111,7 +109,7 @@ def measurements() -> dict[str, str]:
 
 def fill_in_measurements() -> None:
     replacements = measurements()
-    for policy in layout.build.POLICIES.rglob(f"*{layout.POLICY_TEXT_SUFFIX}"):
+    for policy in layout.build.POLICIES.rglob("*.pol"):
         text = policy.read_text()
         for placeholder, value in replacements.items():
             text = text.replace(placeholder, value)
@@ -125,56 +123,56 @@ def main() -> int:
     shutil.copytree(layout.source.POLICIES, layout.build.POLICIES)
     fill_in_measurements()
 
-    for policy in layout.build.POLICIES.rglob(f"*{layout.POLICY_TEXT_SUFFIX}"):
-        sign(policy, policy.with_suffix(layout.POLICY_SIGNATURE_SUFFIX))
+    for policy in layout.build.POLICIES.rglob("*.pol"):
+        sign(policy, policy.with_suffix(".p7s"))
 
-    untrusted = layout.build.POLICIES / f"{layout.UNTRUSTED_POLICY}{layout.POLICY_TEXT_SUFFIX}"
+    untrusted = layout.build.UNTRUSTED_POLICY_TEXT
     sign(
         untrusted,
-        untrusted.with_suffix(layout.POLICY_SIGNATURE_SUFFIX),
+        untrusted.with_suffix(".p7s"),
         signing.UNTRUSTED.key,
         signing.UNTRUSTED.certificate,
         signing.UNTRUSTED.certificate,
     )
 
-    secondary = layout.build.POLICIES / f"{layout.SECONDARY_POLICY}{layout.POLICY_TEXT_SUFFIX}"
+    secondary = layout.build.SECONDARY_POLICY_TEXT
     sign(
         secondary,
-        secondary.with_suffix(layout.POLICY_SIGNATURE_SUFFIX),
+        secondary.with_suffix(".p7s"),
         signing.SECONDARY.key,
         signing.SECONDARY.certificate,
         signing.INTERMEDIATE.certificate,
     )
-    signers = layout.build.POLICIES / layout.SIGNER_CERTIFICATES
-    signers.mkdir(parents=True, exist_ok=True)
+    layout.build.SIGNER_CERTIFICATES.mkdir(parents=True, exist_ok=True)
     openssl(
         "x509", "-in", signing.INTERMEDIATE.certificate, "-outform", "DER",
-        "-out", signers / f"{signing.INTERMEDIATE.name}.der",
+        "-out", layout.build.INTERMEDIATE_CERTIFICATE,
     )
 
-    platform = layout.build.POLICIES / f"{layout.PLATFORM_POLICY}{layout.POLICY_TEXT_SUFFIX}"
+    platform = layout.build.PLATFORM_POLICY_TEXT
     sign(
         platform,
-        platform.with_suffix(layout.POLICY_SIGNATURE_SUFFIX),
+        platform.with_suffix(".p7s"),
         signing.SECUREBOOT.key,
         signing.SECUREBOOT.certificate,
         signing.SECUREBOOT.certificate,
     )
 
-    revoked = layout.build.POLICIES / f"{layout.REVOKED_POLICY}{layout.POLICY_TEXT_SUFFIX}"
+    revoked = layout.build.REVOKED_POLICY_TEXT
     sign(
         revoked,
-        revoked.with_suffix(layout.POLICY_SIGNATURE_SUFFIX),
+        revoked.with_suffix(".p7s"),
         signing.REVOKED.key,
         signing.REVOKED.certificate,
         signing.REVOKED.certificate,
     )
 
-    tampered = layout.build.POLICIES / f"{layout.TAMPERED_POLICY}{layout.POLICY_TEXT_SUFFIX}"
+    tampered = layout.build.TAMPERED_POLICY_TEXT
     substitute_signed_content(
-        tampered, tampered.with_suffix(".replacement"), tampered.with_suffix(layout.POLICY_SIGNATURE_SUFFIX)
+        tampered, tampered.with_suffix(".replacement"), tampered.with_suffix(".p7s")
     )
-    print(f"    Prepared {len(tuple(layout.build.POLICIES.rglob(f"*{layout.POLICY_TEXT_SUFFIX}")))} signed policies")
+    count = len(tuple(layout.build.POLICIES.rglob("*.pol")))
+    print(f"    Prepared {count} signed policies")
     return 0
 
 

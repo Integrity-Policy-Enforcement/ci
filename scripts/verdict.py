@@ -7,7 +7,7 @@ import re
 import subprocess
 from pathlib import Path
 
-import layout
+import evidence
 
 PASS = "PASS"
 FAIL = "FAIL"
@@ -33,7 +33,7 @@ def health_failures(path: Path) -> list[str]:
     ):
         for pattern, label in HEALTH_PATTERNS:
             if pattern.search(line):
-                failures.append(f"{layout.output.CONSOLE}:{number} {label}: {line.strip()[:160]}")
+                failures.append(f"{path.name}:{number} {label}: {line.strip()[:160]}")
                 break
     return failures
 
@@ -63,14 +63,14 @@ def tap_failures(path: Path) -> list[str]:
 
 
 def decide(output: Path) -> tuple[str, list[str]]:
-    console = output / layout.output.CONSOLE
+    console = evidence.console(output)
     if not console.is_file():
         return FAIL, ["missing console evidence"]
     try:
-        vm_facts = json.loads((output / layout.output.VM_FACTS).read_text(encoding="utf-8"))
+        vm_facts = json.loads(evidence.vm_facts(output).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return FAIL, ["missing or invalid host metadata"]
-    vm_exit_code = vm_facts.get(layout.output.VM_EXIT_CODE)
+    vm_exit_code = vm_facts.get(evidence.VM_EXIT_CODE)
     if type(vm_exit_code) is not int:
         return FAIL, ["invalid VM exit code in host metadata"]
     if vm_exit_code != 0:
@@ -80,7 +80,7 @@ def decide(output: Path) -> tuple[str, list[str]]:
     if health:
         return FAIL, health
 
-    lines = read_lines(output / layout.output.RESULT)
+    lines = read_lines(evidence.result(output))
     if not lines:
         return FAIL, ["the guest produced no output"]
     if not any(line.startswith("boot") for line in lines):
@@ -88,7 +88,7 @@ def decide(output: Path) -> tuple[str, list[str]]:
     if "noipe" in lines:
         return FAIL, ["IPE is unavailable in securityfs"]
 
-    tap = tap_failures(output / layout.output.RESULT)
+    tap = tap_failures(evidence.result(output))
     if tap:
         return FAIL, tap
 
@@ -110,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     for reason in reasons:
         print(f"  {reason}")
     args.output.mkdir(parents=True, exist_ok=True)
-    (args.output / layout.output.VERDICT).write_text(
+    evidence.verdict(args.output).write_text(
         json.dumps({"verdict": verdict, "reasons": reasons}, indent=2) + "\n",
         encoding="utf-8",
     )

@@ -11,7 +11,7 @@
         dmverity-sha512.roothash
         dmverity-sha512.p7s
 
-One set per hash in layout.HASH_ALGORITHMS, all over the same image.
+One set per hash in hashes.ALGORITHMS, all over the same image.
 
 The guest opens the same image twice per hash, once passing that hash's
 signature and once not, which is the only difference between the two
@@ -22,6 +22,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import hashes
 import layout
 import signing
 
@@ -73,14 +74,18 @@ def main() -> int:
     shutil.rmtree(layout.build.DMVERITY_ASSETS, ignore_errors=True)
     layout.build.DMVERITY_ASSETS.mkdir(parents=True)
 
-    image = layout.build.DMVERITY_ASSETS / layout.guest.SQUASHFS
-    build_squashfs(image)
-    for algorithm in layout.HASH_ALGORITHMS:
-        root_hash = format_hash_tree(image, layout.build.DMVERITY_ASSETS / layout.guest.hash_tree(algorithm), algorithm)
-        (layout.build.DMVERITY_ASSETS / layout.guest.root_hash(algorithm)).write_text(root_hash + "\n")
-        sign_root_hash(root_hash, layout.build.DMVERITY_ASSETS / layout.guest.root_hash_signature(algorithm))
+    build_squashfs(layout.build.SQUASHFS)
+    for algorithm in hashes.ALGORITHMS:
+        root_hash = format_hash_tree(
+            layout.build.SQUASHFS,
+            layout.build.hash_tree(algorithm),
+            algorithm,
+        )
+        layout.build.root_hash(algorithm).write_text(root_hash + "\n")
+        sign_root_hash(root_hash, layout.build.root_hash_signature(algorithm))
 
-    print(f"    Prepared the dm-verity image in {layout.build.DMVERITY_ASSETS.relative_to(layout.source.ROOT)}")
+    relative = layout.build.DMVERITY_ASSETS.relative_to(layout.source.ROOT)
+    print(f"    Prepared the dm-verity image in {relative}")
     return 0
 
 

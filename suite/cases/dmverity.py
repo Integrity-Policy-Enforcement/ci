@@ -2,6 +2,7 @@
 
 from functools import partial
 
+import hashes
 import ipe
 import layout
 import mounts
@@ -16,7 +17,7 @@ from model import Batch
 from . import kmodule
 
 PLAIN = layout.guest.PLAIN_MOUNT
-MODULE = layout.TEST_MODULE_FILE
+MODULE = layout.guest.TEST_MODULE.name
 
 
 def build() -> tuple[Batch, ...]:
@@ -114,10 +115,10 @@ def build() -> tuple[Batch, ...]:
                 partial(ipe.set_enforcement, False),
                 *(
                     partial(mounts.dmverity, algorithm, signed)
-                    for algorithm in layout.HASH_ALGORITHMS
+                    for algorithm in hashes.ALGORITHMS
                     for signed in (True, False)
                 ),
-                partial(mounts.tmpfs, PLAIN, layout.guest.PAYLOAD / MODULE),
+                partial(mounts.tmpfs, PLAIN, layout.guest.TEST_MODULE),
             ),
             scope=partial(runtime.batch.scope, mounts.MOUNTED, mounts.OPENED),
         ),

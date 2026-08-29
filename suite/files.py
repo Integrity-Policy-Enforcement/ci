@@ -23,7 +23,7 @@ def discard(copy: str) -> None:
 def copy_module(target: Path) -> None:
     """Copy the test module from the payload to a new path."""
     target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy(layout.guest.PAYLOAD / layout.TEST_MODULE_FILE, target)
+    shutil.copy(layout.guest.TEST_MODULE, target)
 
 
 def verity_module(target: Path, algorithm: str, signature: Path | None = None) -> None:

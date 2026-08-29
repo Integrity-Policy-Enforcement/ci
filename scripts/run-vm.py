@@ -11,6 +11,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+import evidence
 import layout
 
 
@@ -23,22 +24,32 @@ def restore_owner(path: Path) -> None:
 
 
 def make_payload(output: Path) -> None:
-    if not tuple(layout.build.POLICIES.rglob(f"*{layout.POLICY_SIGNATURE_SUFFIX}")):
+    if not tuple(layout.build.POLICIES.rglob("*.p7s")):
         raise SystemExit("signed policies are missing; run prepare-policies.py")
     with tempfile.TemporaryDirectory() as temporary:
         staging = Path(temporary) / "payload"
         ignored = shutil.ignore_patterns("__pycache__", "*.pyc")
         shutil.copytree(layout.source.SUITE, staging, ignore=ignored)
-        # The suite imports layout, so the payload has to carry it alongside.
+        # The suite imports these siblings, so the payload carries both.
         shutil.copy(layout.source.LAYOUT, staging / layout.source.LAYOUT.name)
+        shutil.copy(layout.source.HASHES, staging / layout.source.HASHES.name)
         shutil.copytree(layout.build.POLICIES, staging / layout.guest.POLICIES.name)
-        shutil.copytree(layout.build.DMVERITY_ASSETS, staging / layout.guest.DMVERITY_ASSETS.name)
-        shutil.copy(layout.build.TEST_MODULE, staging / layout.TEST_MODULE_FILE)
-        shutil.copytree(layout.build.FSVERITY_ASSETS, staging / layout.guest.FSVERITY_ASSETS.name)
+        shutil.copytree(
+            layout.build.DMVERITY_ASSETS,
+            staging / layout.guest.DMVERITY_ASSETS.name,
+        )
+        shutil.copy(layout.build.TEST_MODULE, staging / layout.guest.TEST_MODULE.name)
+        shutil.copytree(
+            layout.build.FSVERITY_ASSETS,
+            staging / layout.guest.FSVERITY_ASSETS.name,
+        )
         with output.open("wb") as stream:
             stream.truncate(48 * 1024 * 1024)
         subprocess.run(
-            ["mkfs.ext4", "-q", "-F", "-O", "verity", "-L", "ipe-payload", "-d", staging, output],
+            [
+                "mkfs.ext4", "-q", "-F", "-O", "verity",
+                "-L", "ipe-payload", "-d", staging, output,
+            ],
             check=True,
         )
 
@@ -61,11 +72,11 @@ def main(argv: list[str] | None = None) -> int:
 
     output.mkdir(parents=True, exist_ok=True)
     atexit.register(restore_owner, output)
-    result = output / layout.output.RESULT
-    console = output / layout.output.CONSOLE
-    payload = output / layout.output.PAYLOAD
-    verdict = output / layout.output.VERDICT
-    vm_facts = output / layout.output.VM_FACTS
+    result = evidence.result(output)
+    console = evidence.console(output)
+    payload = evidence.payload(output)
+    verdict = evidence.verdict(output)
+    vm_facts = evidence.vm_facts(output)
     for path in (result, console, payload, verdict, vm_facts):
         path.unlink(missing_ok=True)
     result.touch()
@@ -111,7 +122,7 @@ def main(argv: list[str] | None = None) -> int:
     temporary_host.write_text(
         json.dumps(
             {
-                layout.output.VM_EXIT_CODE: returncode,
+                evidence.VM_EXIT_CODE: returncode,
                 "acceleration": acceleration,
                 "timeout_seconds": timeout,
             },

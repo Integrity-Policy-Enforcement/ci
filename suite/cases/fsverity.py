@@ -3,6 +3,7 @@
 from functools import partial
 
 import files
+import hashes
 import ipe
 import layout
 import runtime
@@ -12,7 +13,6 @@ from assets import (
     digest_policy,
 )
 from model import Batch
-
 
 from . import kmodule
 
@@ -115,9 +115,9 @@ def build() -> tuple[Batch, ...]:
                         files.verity_module,
                         layout.guest.fsverity_signed_module(algorithm),
                         algorithm,
-                        layout.guest.FSVERITY_ASSETS / layout.guest.fsverity_signature(algorithm),
+                        layout.guest.fsverity_signature(algorithm),
                     )
-                    for algorithm in layout.HASH_ALGORITHMS
+                    for algorithm in hashes.ALGORITHMS
                 ),
                 *(
                     partial(
@@ -125,7 +125,7 @@ def build() -> tuple[Batch, ...]:
                         layout.guest.fsverity_unsigned_module(algorithm),
                         algorithm,
                     )
-                    for algorithm in layout.HASH_ALGORITHMS
+                    for algorithm in hashes.ALGORITHMS
                 ),
                 partial(files.copy_module, layout.guest.FSVERITY_PLAIN_MODULE),
             ),

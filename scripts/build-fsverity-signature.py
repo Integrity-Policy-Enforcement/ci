@@ -8,7 +8,7 @@
         ipe_test-sha512.digest    the same pair, over the same module
         ipe_test-sha512.p7s
 
-One pair per hash in layout.HASH_ALGORITHMS.
+One pair per hash in hashes.ALGORITHMS.
 
 The digest depends on the file alone, so it can be computed here, where
 the key is, and the guest only has to enable fs-verity with the result.
@@ -17,6 +17,7 @@ the key is, and the guest only has to enable fs-verity with the result.
 import shutil
 import subprocess
 
+import hashes
 import layout
 import signing
 
@@ -29,11 +30,11 @@ def main() -> int:
     shutil.rmtree(layout.build.FSVERITY_ASSETS, ignore_errors=True)
     layout.build.FSVERITY_ASSETS.mkdir(parents=True)
 
-    for algorithm in layout.HASH_ALGORITHMS:
+    for algorithm in hashes.ALGORITHMS:
         subprocess.run(
             [
                 "fsverity", "sign", str(layout.build.TEST_MODULE),
-                str(layout.build.FSVERITY_ASSETS / layout.guest.fsverity_signature(algorithm)),
+                str(layout.build.fsverity_signature(algorithm)),
                 f"--key={signing.FSVERITY.key}", f"--cert={signing.FSVERITY.certificate}",
                 f"--hash-alg={algorithm}",
             ],
@@ -47,9 +48,10 @@ def main() -> int:
             text=True,
         ).stdout.split()[0]
         _, _, digest = reported.partition(":")
-        (layout.build.FSVERITY_ASSETS / layout.guest.fsverity_digest(algorithm)).write_text(digest + "\n")
+        layout.build.fsverity_digest(algorithm).write_text(digest + "\n")
 
-    print(f"    Prepared the fs-verity signature in {layout.build.FSVERITY_ASSETS.relative_to(layout.source.ROOT)}")
+    relative = layout.build.FSVERITY_ASSETS.relative_to(layout.source.ROOT)
+    print(f"    Prepared the fs-verity signature in {relative}")
     return 0
 
 

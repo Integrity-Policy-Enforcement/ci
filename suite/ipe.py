@@ -7,26 +7,12 @@ from pathlib import Path
 
 import layout
 
-IPE_ROOT = layout.guest.SECURITYFS
-POLICY_ROOT = layout.guest.POLICIES
-
-
 @dataclass(frozen=True)
 class Policy:
-    """The files prepare-policies.py wrote for one policy, and the name it declares."""
+    """A signed policy and the name it declares."""
 
-    asset: Path
+    signed: Path
     name: str
-
-    @property
-    def text(self) -> Path:
-        """The .pol file beside the asset."""
-        return self.asset.with_name(self.asset.name + layout.POLICY_TEXT_SUFFIX)
-
-    @property
-    def signed(self) -> Path:
-        """The .p7s signature beside the asset."""
-        return self.asset.with_name(self.asset.name + layout.POLICY_SIGNATURE_SUFFIX)
 
 
 class node:
@@ -46,12 +32,16 @@ class node:
 
 def policy_path(name: str) -> Path:
     """The directory the kernel created for this policy under securityfs."""
-    return IPE_ROOT / node.POLICIES / name
+    return layout.guest.SECURITYFS / node.POLICIES / name
 
 
 def node_path(entry: str, policy: Policy | None = None) -> Path:
     """A securityfs path: a root entry, or one under a loaded policy."""
-    return IPE_ROOT / entry if policy is None else policy_path(policy.name) / entry
+    return (
+        layout.guest.SECURITYFS / entry
+        if policy is None
+        else policy_path(policy.name) / entry
+    )
 
 
 def write(path: Path, data: bytes | str) -> None:
@@ -137,11 +127,12 @@ def set_success_audit(enabled: bool) -> None:
 
 def load_baseline(policy: Policy) -> str:
     """Deploy and activate the baseline, or verify the one already loaded matches."""
-    expected = policy.text.read_bytes().rstrip(b"\n")
+    expected_path = policy.signed.with_suffix(".pol")
+    expected = expected_path.read_bytes().rstrip(b"\n")
     if policy_present(policy.name):
         loaded = (policy_path(policy.name) / node.POLICY).read_bytes().rstrip(b"\n")
         if loaded != expected:
-            raise RuntimeError(f"loaded policy {policy.name} differs from {policy.text}")
+            raise RuntimeError(f"loaded policy {policy.name} differs from {expected_path}")
     else:
         try:
             deploy_policy(policy.signed)
