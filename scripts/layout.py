@@ -10,43 +10,41 @@ build: what the build scripts make from it.
 
     build/
       keys/                       prepare-keys.py
-        builtin-key.pem           the CA the kernel trusts
-        builtin-cert.pem          this is what the kernel is built to trust
-        module-signing.pem        key and certificate joined, for the kernel
-        intermediate-key.pem      issued by builtin, issues secondary
-        intermediate-cert.pem
-        secondary-key.pem         trusted only once linked into a keyring
-        secondary-cert.pem
-        revoked-key.pem           on the kernel blacklist
-        revoked-cert.pem
-        untrusted-key.pem         issued by nobody the kernel knows
-        untrusted-cert.pem
-        secureboot-key.pem        enrolled in the UEFI db
-        secureboot-cert.pem
-        fsverity-key.pem          added to .fs-verity from the initrd
-        fsverity-cert.pem
-        fsverity-cert.der         the form keyctl takes, and the only DER here
+        builtin-key.pem           private key that signs policies and root hashes
+        builtin-cert.pem          self-signed CA certificate built into the kernel
+        module-signing.pem        builtin key and certificate joined for the kernel
+        intermediate-key.pem      private key for the intermediate CA
+        intermediate-cert.pem     certificate signed by builtin; issues secondary
+        secondary-key.pem         private key for the secondary identity
+        secondary-cert.pem        certificate signed by intermediate
+        revoked-key.pem           private key for the revoked identity
+        revoked-cert.pem          self-signed certificate built into the blacklist
+        untrusted-key.pem         private key for the untrusted identity
+        untrusted-cert.pem        self-signed certificate in no trusted keyring
+        secureboot-key.pem        private key for the Secure Boot identity
+        secureboot-cert.pem       certificate enrolled in the UEFI db
+        fsverity-key.pem          private key that signs fs-verity digests
+        fsverity-cert.pem         certificate added to .fs-verity by the initrd
+        fsverity-cert.der         DER encoding of fsverity-cert.pem for keyctl
       kernel/                     build-kernel.py, an in-tree build
       kernel-install/             its modules_install staging
       kernel-module/              build-kernel-module.py
-        ipe_test.ko
+        ipe_test.ko               loadable module every KMODULE case attempts
       dmverity/                   build-dmverity-image.py
-        dmverity.squashfs         holds ipe_test.ko, nothing else
-        dmverity-sha256.hash      the Merkle tree veritysetup formatted
-        dmverity-sha256.roothash  its root hash, as ASCII hex
-        dmverity-sha256.p7s       that root hash signed by builtin
-        dmverity-sha512.hash      the same three, over the same image
-        dmverity-sha512.roothash
-        dmverity-sha512.p7s
+        dmverity.squashfs         squashfs containing only ipe_test.ko
+        dmverity-sha256.hash      sha256 Merkle tree over dmverity.squashfs
+        dmverity-sha256.roothash  root of the sha256 tree, as ASCII hex
+        dmverity-sha256.p7s       builtin signature over the sha256 root hash
+        dmverity-sha512.hash      sha512 Merkle tree over dmverity.squashfs
+        dmverity-sha512.roothash  root of the sha512 tree, as ASCII hex
+        dmverity-sha512.p7s       builtin signature over the sha512 root hash
       fsverity/                   build-fsverity-signature.py
-        ipe_test-sha256.digest    the module's digest, as ASCII hex
-        ipe_test-sha256.p7s       that digest signed by fsverity
-        ipe_test-sha512.digest
-        ipe_test-sha512.p7s
-      policies/                   prepare-policies.py, signed and expanded
-        <group>/<name>.pol        the policy, placeholders replaced
-        <group>/<name>.p7s        it signed
-        signers/intermediate.der  the certificate a keyring case links
+        ipe_test-sha256.digest    sha256 digest of ipe_test.ko, as ASCII hex
+        ipe_test-sha256.p7s       fsverity signature over the sha256 digest
+        ipe_test-sha512.digest    sha512 digest of ipe_test.ko, as ASCII hex
+        ipe_test-sha512.p7s       fsverity signature over the sha512 digest
+      policies/                   source policy tree copied, expanded and signed
+        signers/intermediate.der  DER certificate linked by the keyring case
 
 initrd: what boots before the real root, and what it leaves behind.
 
@@ -71,30 +69,30 @@ guest: what the tests find after the switch.
         policies/                         signed copy of the source policy tree
         dmverity/                          dm-verity image and its hashes
             dmverity.squashfs                  the squashfs holding the module
-            dmverity-sha256.hash               its Merkle tree
-            dmverity-sha256.roothash           that tree's root hash (ASCII hex)
-            dmverity-sha256.p7s                that root hash signed
-            dmverity-sha512.hash               the same three, over the same image
-            dmverity-sha512.roothash
-            dmverity-sha512.p7s
+            dmverity-sha256.hash               sha256 Merkle tree
+            dmverity-sha256.roothash           root of the sha256 tree
+            dmverity-sha256.p7s                signature over the sha256 root hash
+            dmverity-sha512.hash               sha512 Merkle tree
+            dmverity-sha512.roothash           root of the sha512 tree
+            dmverity-sha512.p7s                signature over the sha512 root hash
         fsverity/                          fs-verity digests and signatures
-            ipe_test-sha256.digest             the digest, as ASCII hex
-            ipe_test-sha256.p7s                that digest signed
-            ipe_test-sha512.digest
-            ipe_test-sha512.p7s
+            ipe_test-sha256.digest             sha256 digest of ipe_test.ko
+            ipe_test-sha256.p7s                signature over the sha256 digest
+            ipe_test-sha512.digest             sha512 digest of ipe_test.ko
+            ipe_test-sha512.p7s                signature over the sha512 digest
         ipe_test.ko                        the module the copies are made from
         fsverity-modules/                  a batch writes these, a scope removes
-            signed-sha256-ipe_test.ko          fsverity enable --signature
-            unsigned-sha256-ipe_test.ko        fsverity enable, no signature
-            signed-sha512-ipe_test.ko
-            unsigned-sha512-ipe_test.ko
-            plain-ipe_test.ko                  untouched
+            signed-sha256-ipe_test.ko          sha256 fs-verity digest and signature
+            unsigned-sha256-ipe_test.ko        sha256 fs-verity digest, no signature
+            signed-sha512-ipe_test.ko          sha512 fs-verity digest and signature
+            unsigned-sha512-ipe_test.ko        sha512 fs-verity digest, no signature
+            plain-ipe_test.ko                  fs-verity not enabled
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
-        dmverity-sha256-signed/            squashfs via --root-hash-signature
-        dmverity-sha256-unsigned/          same squashfs, no signature argument
-        dmverity-sha512-signed/            the tree the other hash built
-        dmverity-sha512-unsigned/
+        dmverity-sha256-signed/            sha256 tree, signature passed while opening
+        dmverity-sha256-unsigned/          sha256 tree, no signature argument
+        dmverity-sha512-signed/            sha512 tree, signature passed while opening
+        dmverity-sha512-unsigned/          sha512 tree, no signature argument
         plain/                             tmpfs, no block device at all
 """
 

@@ -3,10 +3,10 @@
 """Sign the fs-verity digest of the test module.
 
     build/fsverity/
-        ipe_test-sha256.digest    the digest, as ASCII hex
-        ipe_test-sha256.p7s       that digest signed by the fs-verity key
-        ipe_test-sha512.digest    the same pair, over the same module
-        ipe_test-sha512.p7s
+        ipe_test-sha256.digest    sha256 digest of ipe_test.ko, as ASCII hex
+        ipe_test-sha256.p7s       fsverity signature over the sha256 digest
+        ipe_test-sha512.digest    sha512 digest of ipe_test.ko, as ASCII hex
+        ipe_test-sha512.p7s       fsverity signature over the sha512 digest
 
 One pair per hash in hashes.ALGORITHMS.
 

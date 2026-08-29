@@ -4,12 +4,12 @@
 
     build/dmverity/
         dmverity.squashfs     holds ipe_test.ko, nothing else
-        dmverity-sha256.hash      the Merkle tree veritysetup formatted
-        dmverity-sha256.roothash  its root hash, as ASCII hex
-        dmverity-sha256.p7s       that root hash signed by the builtin key
-        dmverity-sha512.hash      the same three, over the same image
-        dmverity-sha512.roothash
-        dmverity-sha512.p7s
+        dmverity-sha256.hash      sha256 Merkle tree over dmverity.squashfs
+        dmverity-sha256.roothash  root of the sha256 tree, as ASCII hex
+        dmverity-sha256.p7s       builtin signature over the sha256 root hash
+        dmverity-sha512.hash      sha512 Merkle tree over dmverity.squashfs
+        dmverity-sha512.roothash  root of the sha512 tree, as ASCII hex
+        dmverity-sha512.p7s       builtin signature over the sha512 root hash
 
 One set per hash in hashes.ALGORITHMS, all over the same image.
 

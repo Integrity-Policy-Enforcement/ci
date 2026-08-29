@@ -3,22 +3,22 @@
 """Create the signing identities the tests need.
 
     build/keys/
-        builtin-key.pem       signs IPE policies; its certificate is built
-        builtin-cert.pem      into the kernel and signs the dm-verity root
-        intermediate-key.pem  issued by builtin, in no keyring
-        intermediate-cert.pem
-        secondary-key.pem     issued by intermediate, linked at run time
-        secondary-cert.pem
-        revoked-key.pem       self-signed, built into the blacklist
-        revoked-cert.pem
-        untrusted-key.pem     self-signed, in no keyring
-        untrusted-cert.pem
-        secureboot-key.pem    enrolled in the UEFI db, so it reaches .platform
-        secureboot-cert.pem
-        fsverity-key.pem      signs fs-verity digests; the initramfs adds
-        fsverity-cert.pem     its certificate to the .fs-verity keyring
-        fsverity-cert.der     the form keyctl takes, and the only DER made here
-        module-signing.pem    key and certificate joined, for the kernel build
+        builtin-key.pem       private key that signs policies and root hashes
+        builtin-cert.pem      self-signed CA certificate built into the kernel
+        intermediate-key.pem  private key for the intermediate CA
+        intermediate-cert.pem certificate signed by builtin; issues secondary
+        secondary-key.pem     private key for the secondary identity
+        secondary-cert.pem    certificate signed by intermediate
+        revoked-key.pem       private key for the revoked identity
+        revoked-cert.pem      self-signed certificate built into the blacklist
+        untrusted-key.pem     private key for the untrusted identity
+        untrusted-cert.pem    self-signed certificate in no trusted keyring
+        secureboot-key.pem    private key for the Secure Boot identity
+        secureboot-cert.pem   certificate enrolled in the UEFI db
+        fsverity-key.pem      private key that signs fs-verity digests
+        fsverity-cert.pem     certificate added to .fs-verity by the initrd
+        fsverity-cert.der     DER encoding of fsverity-cert.pem for keyctl
+        module-signing.pem    builtin key and certificate joined for the kernel
 
 Every run creates them afresh, so changing them means rebuilding the
 kernel and the image that trust them.
