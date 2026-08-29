@@ -55,15 +55,12 @@ def format_hash_tree(image: Path, hash_tree: Path, algorithm: str) -> str:
     raise SystemExit("veritysetup printed no root hash")
 
 
-def sign_root_hash(root_hash: str, signature: Path) -> None:
-    plain = signature.with_suffix(".txt")
-    plain.write_text(root_hash)
+def sign_root_hash(root_hash: Path, signature: Path) -> None:
     run(
-        "openssl", "cms", "-sign", "-binary", "-in", plain,
+        "openssl", "cms", "-sign", "-binary", "-in", root_hash,
         "-signer", signing.BUILTIN.certificate, "-inkey", signing.BUILTIN.key,
         "-noattr", "-outform", "DER", "-out", signature,
     )
-    plain.unlink()
 
 
 def main() -> int:
@@ -81,8 +78,12 @@ def main() -> int:
             layout.build.hash_tree(algorithm),
             algorithm,
         )
-        layout.build.root_hash(algorithm).write_text(root_hash + "\n")
-        sign_root_hash(root_hash, layout.build.root_hash_signature(algorithm))
+        root_hash_file = layout.build.root_hash(algorithm)
+        root_hash_file.write_text(root_hash)
+        sign_root_hash(
+            root_hash=root_hash_file,
+            signature=layout.build.root_hash_signature(algorithm),
+        )
 
     relative = layout.build.DMVERITY_ASSETS.relative_to(layout.source.ROOT)
     print(f"    Prepared the dm-verity image in {relative}")
