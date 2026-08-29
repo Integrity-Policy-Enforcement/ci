@@ -13,6 +13,7 @@ from operations import KMODULE
 
 
 def case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
+    """A case that loads a module under a policy and checks whether IPE allowed it."""
     return Case(
         id=id,
         setup=(

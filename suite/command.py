@@ -13,6 +13,7 @@ def run(*arguments: object) -> None:
 
 
 def capture(*arguments: object) -> str:
+    """Run a command and return its stdout; raise on failure."""
     return subprocess.run(
         [str(argument) for argument in arguments], capture_output=True, text=True, check=True
     ).stdout

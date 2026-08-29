@@ -15,10 +15,12 @@ def loaded() -> set[str]:
 
 
 def insert(path: Path) -> subprocess.CompletedProcess:
+    """Run insmod; return the result without raising on failure."""
     return subprocess.run(["insmod", str(path)], capture_output=True, text=True)
 
 
 def remove(name: str) -> None:
+    """rmmod the named module."""
     run("rmmod", name)
 
 

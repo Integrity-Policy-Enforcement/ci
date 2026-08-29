@@ -11,11 +11,13 @@ DEVICE_MAPPER = Path("/dev/mapper")
 
 
 def points() -> set[str]:
+    """Mount points under the test media directory; bounded by prefix."""
     live = capture("findmnt", "--noheadings", "--raw", "--output", "TARGET").split()
     return {point for point in live if point.startswith(f"{layout.guest.MEDIA}/")}
 
 
 def umount(point: str) -> None:
+    """Unmount a single mount point."""
     run("umount", point)
 
 
@@ -32,15 +34,18 @@ def devices() -> set[str]:
 
 
 def close(name: str) -> None:
+    """Close a dm-verity device by name."""
     run("veritysetup", "close", name)
 
 
 def mount(device: Path | str, point: Path, *options: str) -> None:
+    """Mount a device at a point, creating the directory if needed."""
     point.mkdir(parents=True, exist_ok=True)
     run("mount", *options, device, point)
 
 
 def dmverity(algorithm: str, signed: bool) -> None:
+    """Open a dm-verity device over the squashfs image and mount it read-only."""
     assets = layout.guest.DMVERITY_ASSETS
     name = layout.guest.dmverity_device(algorithm, signed)
     root_hash = (assets / layout.guest.root_hash(algorithm)).read_text().strip()

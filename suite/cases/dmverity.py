@@ -20,6 +20,7 @@ MODULE = layout.TEST_MODULE_FILE
 
 
 def build() -> tuple[Batch, ...]:
+    """The batches this group contributes."""
     return (
         Batch(
             "dmverity",

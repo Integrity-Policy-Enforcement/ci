@@ -11,6 +11,7 @@ from model import Batch, Case
 
 
 def build() -> tuple[Batch, ...]:
+    """The batches this group contributes."""
     return (Batch(
         "policy_text",
         (

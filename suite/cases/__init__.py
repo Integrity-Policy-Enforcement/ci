@@ -11,6 +11,7 @@ from model import Batch
 
 
 def build() -> tuple[Batch, ...]:
+    """Collect every batch, reject duplicates and cases that assert nothing."""
     batches = []
     for module in (securityfs, policy, policy_signature, policy_text, dmverity, fsverity, boot):
         batches.extend(module.build())

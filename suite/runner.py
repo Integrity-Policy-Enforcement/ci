@@ -16,10 +16,12 @@ CASE_TIMEOUT_SECONDS = 60
 
 
 def clean(text: object) -> str:
+    """Collapse whitespace so a traceback fits on one TAP line."""
     return " ".join(str(text).replace("\r", " ").replace("\n", " ").split())
 
 
 def run_in_child(case: Case) -> dict:
+    """Fork, run collect/setup/trigger in the child, return the result as a dict."""
     read_fd, write_fd = os.pipe()
     child = os.fork()
     if child == 0:
@@ -77,6 +79,7 @@ def test(case: Case) -> tuple[str, str] | None:
 
 
 def run(output: TextIO) -> int:
+    """Run every batch, emitting TAP to the output stream."""
     def emit(line: str) -> None:
         output.write(line.replace("\n", " ").replace("\r", " ") + "\n")
         output.flush()

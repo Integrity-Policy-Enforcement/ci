@@ -16,15 +16,18 @@ def copies() -> set[str]:
 
 
 def discard(copy: str) -> None:
+    """Delete a module copy the batch made."""
     Path(copy).unlink()
 
 
 def copy_module(target: Path) -> None:
+    """Copy the test module from the payload to a new path."""
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(layout.guest.PAYLOAD / layout.TEST_MODULE_FILE, target)
 
 
 def verity_module(target: Path, algorithm: str, signature: Path | None = None) -> None:
+    """Copy the module and enable fs-verity on the copy, optionally with a signature."""
     copy_module(target)
     signed = [f"--signature={signature}"] if signature else []
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)

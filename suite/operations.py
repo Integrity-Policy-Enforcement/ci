@@ -19,11 +19,13 @@ class Operation:
 
 
 def insert_module(path: Path) -> Observation:
+    """Try insmod and return what happened, without raising."""
     finished = modules.insert(path)
     return Observation(finished.returncode, message=finished.stderr.strip())
 
 
 def test_module_loaded() -> bool:
+    """Whether the test module is currently loaded."""
     return bool(modules.loaded())
 
 

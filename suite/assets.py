@@ -5,6 +5,7 @@ import layout
 
 
 def policy(asset: str, name: str) -> ipe.Policy:
+    """Build a Policy from its relative path in the policies directory."""
     return ipe.Policy(ipe.POLICY_ROOT / asset, name)
 
 
@@ -49,6 +50,7 @@ PLATFORM_POLICY = policy(layout.PLATFORM_POLICY, "ipe_test_signature_platform")
 # policy text corpus: one policy per parser decision point, all under one name
 # except the one whose name exercises the characters a name may contain.
 def text_policy(asset: str, name: str = "ipe_test_text") -> ipe.Policy:
+    """A policy from the text corpus, sharing one name unless told otherwise."""
     return policy(f"policy_text/{asset}", name)
 
 
@@ -73,6 +75,7 @@ FSVERITY_SIGNATURE_FALSE_POLICY = policy(
 
 
 def roothash_policy(algorithm: str, matching: bool = True) -> ipe.Policy:
+    """A policy that names a dm-verity root hash, or a value no device has."""
     kind = "" if matching else "mismatch_"
     return policy(
         f"dmverity/kmodule_roothash_{algorithm}_{kind}allow",
@@ -81,6 +84,7 @@ def roothash_policy(algorithm: str, matching: bool = True) -> ipe.Policy:
 
 
 def digest_policy(algorithm: str, matching: bool = True) -> ipe.Policy:
+    """A policy that names an fs-verity digest, or a value no file has."""
     kind = "" if matching else "mismatch_"
     return policy(
         f"fsverity/kmodule_digest_{algorithm}_{kind}allow",

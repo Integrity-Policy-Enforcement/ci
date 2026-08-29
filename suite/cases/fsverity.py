@@ -18,6 +18,7 @@ from . import kmodule
 
 
 def build() -> tuple[Batch, ...]:
+    """The batches this group contributes."""
     return (
         Batch(
             "fsverity",
