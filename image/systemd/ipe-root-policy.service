@@ -10,7 +10,7 @@ RequiresMountsFor=/sys/kernel/security
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-StandardInput=file:/usr/lib/ipe-tests/root-policy.p7s
+StandardInput=file:/usr/lib/ipe/root-policy.p7s
 ExecStart=/usr/bin/tee /sys/kernel/security/ipe/new_policy
 ExecStart=/bin/sh -c 'echo 1 >/sys/kernel/security/ipe/policies/ipe_test_root/active'
 

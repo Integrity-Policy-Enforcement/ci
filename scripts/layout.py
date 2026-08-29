@@ -48,17 +48,19 @@ build: what the build scripts make from it.
 
 initrd: what boots before the real root, and what it leaves behind.
 
-    /usr/lib/ipe-tests/                the suite, layout.py, hashes.py and:
+    /usr/lib/ipe/
+        fsverity-cert.der                  added to .fs-verity, then closed
+    /usr/lib/ipe-tests/                the test suite, layout.py, hashes.py and:
         ipe_test.ko                        the module the cases load
         boot-verified-true.p7s             allow KMODULE when boot_verified
         boot-verified-false.p7s            deny KMODULE when it is false
-        root-policy.p7s                    activated once the root is up
-        fsverity-cert.der                  added to .fs-verity, then closed
     /run/ipe-boot-verified             how each initramfs case came out
     /run/ipe-boot-verified-tmpfs       a mount that is not the initramfs
 
 guest: what the tests find after the switch.
 
+    /usr/lib/ipe/
+        root-policy.p7s                    activated once the verified root is up
     /sys/kernel/security/ipe/          IPE's securityfs tree
     /dev/virtio-ports/ipe-tests-result TAP output collected by scripts/run-vm.py
 
@@ -219,6 +221,9 @@ class build:
 
 
 class guest:
+    IPE = Path("/usr/lib/ipe")
+    ROOT_POLICY = IPE / "root-policy.p7s"
+
     RESULT_CHANNEL = Path("/dev/virtio-ports/ipe-tests-result")
     SECURITYFS = Path("/sys/kernel/security/ipe")
 
@@ -301,13 +306,13 @@ class guest:
 
 
 class initrd:
-    ROOT = Path("/usr/lib/ipe-tests")
+    IPE = Path("/usr/lib/ipe")
+    FSVERITY_CERTIFICATE = IPE / _FSVERITY_CERTIFICATE_NAME
 
-    TEST_MODULE = ROOT / _TEST_MODULE_NAME
-    BOOT_VERIFIED_TRUE_POLICY = ROOT / "boot-verified-true.p7s"
-    BOOT_VERIFIED_FALSE_POLICY = ROOT / "boot-verified-false.p7s"
-    ROOT_POLICY = ROOT / "root-policy.p7s"
-    FSVERITY_CERTIFICATE = ROOT / _FSVERITY_CERTIFICATE_NAME
+    TESTS = Path("/usr/lib/ipe-tests")
+    TEST_MODULE = TESTS / _TEST_MODULE_NAME
+    BOOT_VERIFIED_TRUE_POLICY = TESTS / "boot-verified-true.p7s"
+    BOOT_VERIFIED_FALSE_POLICY = TESTS / "boot-verified-false.p7s"
 
     BOOT_VERIFIED_RECORD = Path("/run/ipe-boot-verified")
     BOOT_TMPFS_DIRECTORY = Path("/run/ipe-boot-verified-tmpfs")

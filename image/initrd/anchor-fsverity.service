@@ -8,6 +8,6 @@ Before=initrd-root-fs.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-StandardInput=file:/usr/lib/ipe-tests/fsverity-cert.der
+StandardInput=file:/usr/lib/ipe/fsverity-cert.der
 ExecStart=/usr/bin/keyctl padd asymmetric "" %%:.fs-verity
 ExecStart=/usr/bin/keyctl restrict_keyring %%:.fs-verity
