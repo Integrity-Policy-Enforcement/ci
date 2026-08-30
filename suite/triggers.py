@@ -6,6 +6,13 @@ import ipe
 from model import Observation
 
 
+def error_observation(error: OSError) -> Observation:
+    """Turn an OS failure with an errno into an observation."""
+    if error.errno is None:
+        raise error
+    return Observation(error.errno)
+
+
 def write_node(entry: str, policy: ipe.Policy | None, data: bytes) -> Observation:
     """Write data to a securityfs node and report the errno."""
     descriptor = os.open(ipe.node_path(entry, policy), os.O_WRONLY)
@@ -13,7 +20,7 @@ def write_node(entry: str, policy: ipe.Policy | None, data: bytes) -> Observatio
         os.write(descriptor, data)
         return Observation(0)
     except OSError as failure:
-        return Observation(failure.errno)
+        return error_observation(failure)
     finally:
         os.close(descriptor)
 
@@ -45,7 +52,7 @@ def read_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Obs
         observed.append(ipe.node_path(entry, policy).read_text().strip())
         return Observation(0, observed=tuple(observed))
     except OSError as failure:
-        return Observation(failure.errno)
+        return error_observation(failure)
 
 
 def read_binary_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
@@ -54,7 +61,7 @@ def read_binary_node(entry: str, policy: ipe.Policy | None, observed: list[str])
         observed.append(ipe.node_path(entry, policy).read_bytes().hex())
         return Observation(0, observed=tuple(observed))
     except OSError as failure:
-        return Observation(failure.errno)
+        return error_observation(failure)
 
 
 def write_opened_file_and_read(
@@ -76,4 +83,4 @@ def write_opened_file(data: bytes, descriptor: list[int]) -> Observation:
         os.write(descriptor[0], data)
         return Observation(0)
     except OSError as failure:
-        return Observation(failure.errno)
+        return error_observation(failure)
