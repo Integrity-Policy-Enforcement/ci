@@ -9,16 +9,16 @@ from command import run
 from scope import collection
 
 
-def copies() -> set[str]:
+def copies() -> set[Path]:
     """The module copies a batch made, which outlive it on the payload."""
     if not layout.guest.FSVERITY_MODULES.is_dir():
         return set()
-    return {str(path) for path in layout.guest.FSVERITY_MODULES.iterdir()}
+    return set(layout.guest.FSVERITY_MODULES.iterdir())
 
 
-def discard(copy: str) -> None:
+def discard(copy: Path) -> None:
     """Delete a module copy the batch made."""
-    Path(copy).unlink()
+    copy.unlink()
 
 
 def copy_module(target: Path) -> None:
