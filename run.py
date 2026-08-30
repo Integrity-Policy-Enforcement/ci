@@ -57,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
     run_checked([PYTHON, SCRIPTS / "prepare-policies.py"])
 
     step("Build guest image")
-    run_checked(sudo + [PYTHON, SCRIPTS / "build-image.py"])
+    run_checked(sudo + ["mkosi", "--directory", HERE / "image", "-f", "build"])
 
     step("Run tests")
     run_checked(sudo + [PYTHON, SCRIPTS / "run-vm.py", output])
