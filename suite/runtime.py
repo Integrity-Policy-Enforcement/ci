@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import ExitStack, contextmanager
 
 import ipe
@@ -8,7 +8,7 @@ from scope import ContextFactory, collection, setting
 
 
 @contextmanager
-def run_scope() -> Iterator[None]:
+def run_scope() -> Generator[None, None, None]:
     """Restore the policy the run activates and remove the one it adds."""
     with ExitStack() as stack:
         stack.enter_context(
@@ -21,7 +21,7 @@ def run_scope() -> Iterator[None]:
 
 
 @contextmanager
-def batch_scope(*extra: ContextFactory) -> Iterator[None]:
+def batch_scope(*extra: ContextFactory) -> Generator[None, None, None]:
     """Restore common batch state and contexts declared by this batch."""
     with ExitStack() as stack:
         stack.enter_context(
@@ -33,7 +33,7 @@ def batch_scope(*extra: ContextFactory) -> Iterator[None]:
 
 
 @contextmanager
-def case_scope(*extra: ContextFactory) -> Iterator[None]:
+def case_scope(*extra: ContextFactory) -> Generator[None, None, None]:
     """Restore common case state and contexts declared by this case."""
     with ExitStack() as stack:
         stack.enter_context(

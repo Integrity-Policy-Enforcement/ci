@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-from collections.abc import Callable, Iterator, Set as AbstractSet
+from collections.abc import Callable, Generator, Set as AbstractSet
 from contextlib import AbstractContextManager, contextmanager
 from typing import Any
 
@@ -12,7 +12,7 @@ def setting(
     *,
     read: Callable[[], Any],
     write: Callable[[Any], None],
-) -> Iterator[None]:
+) -> Generator[None, None, None]:
     """Restore one value when the context exits."""
     captured = read()
     try:
@@ -27,7 +27,7 @@ def collection(
     *,
     members: Callable[[], AbstractSet[Any]],
     discard: Callable[[Any], None],
-) -> Iterator[None]:
+) -> Generator[None, None, None]:
     """Discard every member that appears inside the context."""
     captured = members()
     try:
