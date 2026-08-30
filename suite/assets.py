@@ -51,9 +51,6 @@ SECONDARY_POLICY = ipe.Policy(
     signed=layout.guest.SECONDARY_POLICY_SIGNATURE,
     name="ipe_test_signature_secondary",
 )
-SECONDARY_KEYRING = "%:.secondary_trusted_keys"
-INTERMEDIATE_CERTIFICATE = layout.guest.INTERMEDIATE_CERTIFICATE
-
 # and this one with the Secure Boot key the firmware already trusts.
 PLATFORM_POLICY = ipe.Policy(
     signed=layout.guest.PLATFORM_POLICY_SIGNATURE,

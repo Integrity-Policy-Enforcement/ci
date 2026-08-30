@@ -10,15 +10,15 @@ import layout
 import runtime
 import triggers
 from assets import (
-    INTERMEDIATE_CERTIFICATE,
     PLATFORM_POLICY,
     REVOKED_POLICY,
-    SECONDARY_KEYRING,
     SECONDARY_POLICY,
     TAMPERED_POLICY,
     UNTRUSTED_POLICY,
 )
 from model import Batch, Case
+
+SECONDARY_KEYRING = "%:.secondary_trusted_keys"
 
 
 def tampered_signature() -> bytes:
@@ -52,7 +52,11 @@ def build() -> tuple[Batch, ...]:
         Case(
             id="policy_signature_secondary_linked_ok",
             setup=(
-                partial(keyring.add_certificate, SECONDARY_KEYRING, INTERMEDIATE_CERTIFICATE),
+                partial(
+                    keyring.add_certificate,
+                    SECONDARY_KEYRING,
+                    layout.guest.INTERMEDIATE_CERTIFICATE,
+                ),
             ),
             scope=partial(
                 runtime.case_scope,
