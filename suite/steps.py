@@ -46,9 +46,3 @@ def raise_mac_admin() -> None:
 def drop_mac_admin() -> None:
     """Remove CAP_MAC_ADMIN from both effective and permitted, irrecoverably."""
     capabilities.drop_mac_admin()
-
-
-def activate_policy(policy: ipe.Policy) -> None:
-    """Deploy a signed policy and make it the active one."""
-    ipe.deploy_policy(policy.signed)
-    ipe.activate_policy(policy.name)

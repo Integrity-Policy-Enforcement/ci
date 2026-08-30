@@ -17,7 +17,8 @@ def case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
     return Case(
         id=id,
         setup=(
-            partial(steps.activate_policy, policy),
+            partial(steps.deploy_policy, policy),
+            partial(ipe.activate_policy, policy.name),
             partial(ipe.set_enforcement, True),
         ),
         trigger=partial(KMODULE.attempt, module),
