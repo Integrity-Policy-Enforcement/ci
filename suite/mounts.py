@@ -4,7 +4,6 @@ import shutil
 from contextlib import AbstractContextManager
 from pathlib import Path
 
-import hashes
 import layout
 from command import capture, run
 from scope import collection
@@ -31,6 +30,8 @@ def device_name(algorithm: str, signed: bool) -> str:
 
 def devices() -> set[str]:
     """Only the devices the tests open: the root filesystem has one too."""
+    import hashes
+
     listing = capture("dmsetup", "ls")
     present = {line.split()[0] for line in listing.splitlines() if line[:1].isalnum()}
     ours = {
