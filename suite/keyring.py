@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import subprocess
+from contextlib import AbstractContextManager
 from functools import partial
 from pathlib import Path
 
-from scope import Collection
+from scope import collection
 
 ASYMMETRIC_KEY_TYPE = "asymmetric"
 
@@ -34,9 +35,9 @@ def unlink(key: str, keyring: str) -> None:
     keyctl("unlink", key, keyring)
 
 
-def linked(keyring: str) -> Collection:
-    """A scope collection that tracks keys linked into this keyring."""
-    return Collection(
+def linked_scope(keyring: str) -> AbstractContextManager[None]:
+    """Track keys linked into this keyring inside one context."""
+    return collection(
         members=partial(linked_keys, keyring),
         discard=partial(unlink, keyring=keyring),
     )

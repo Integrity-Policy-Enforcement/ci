@@ -54,7 +54,10 @@ def build() -> tuple[Batch, ...]:
             setup=(
                 partial(keyring.add_certificate, SECONDARY_KEYRING, INTERMEDIATE_CERTIFICATE),
             ),
-            scope=partial(runtime.case.scope, keyring.linked(SECONDARY_KEYRING)),
+            scope=partial(
+                runtime.case_scope,
+                partial(keyring.linked_scope, SECONDARY_KEYRING),
+            ),
             trigger=partial(
                 triggers.write_node,
                 ipe.node.NEW_POLICY,

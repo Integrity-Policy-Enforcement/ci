@@ -120,6 +120,10 @@ def build() -> tuple[Batch, ...]:
                 ),
                 partial(mounts.tmpfs, PLAIN, layout.guest.TEST_MODULE),
             ),
-            scope=partial(runtime.batch.scope, mounts.MOUNTED, mounts.OPENED),
+            scope=partial(
+                runtime.batch_scope,
+                mounts.opened_scope,
+                mounts.mounted_scope,
+            ),
         ),
     )

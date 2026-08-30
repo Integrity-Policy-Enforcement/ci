@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import shutil
+from contextlib import AbstractContextManager
 from pathlib import Path
 
 import layout
 from command import run
-from scope import Collection
+from scope import collection
 
 
 def copies() -> set[str]:
@@ -33,4 +34,6 @@ def verity_module(target: Path, algorithm: str, signature: Path | None = None) -
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)
 
 
-COPIES = Collection(members=copies, discard=discard)
+def copies_scope() -> AbstractContextManager[None]:
+    """Track module copies created inside one context."""
+    return collection(members=copies, discard=discard)

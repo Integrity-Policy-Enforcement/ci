@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import shutil
+from contextlib import AbstractContextManager
 from pathlib import Path
 
 import hashes
 import layout
 from command import capture, run
-from scope import Collection
+from scope import collection
 
 DEVICE_MAPPER = Path("/dev/mapper")
 
@@ -77,5 +78,11 @@ def tmpfs(point: Path, module: Path) -> None:
     shutil.copy(module, point)
 
 
-MOUNTED = Collection(members=points, discard=umount)
-OPENED = Collection(members=devices, discard=close)
+def opened_scope() -> AbstractContextManager[None]:
+    """Track dm-verity devices opened inside one context."""
+    return collection(members=devices, discard=close)
+
+
+def mounted_scope() -> AbstractContextManager[None]:
+    """Track filesystems mounted inside one context."""
+    return collection(members=points, discard=umount)

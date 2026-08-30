@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import subprocess
+from contextlib import AbstractContextManager
 from pathlib import Path
 
 import layout
 from command import capture, run
-from scope import Collection
+from scope import collection
 
 
 def loaded() -> set[str]:
@@ -24,4 +25,6 @@ def remove(name: str) -> None:
     run("rmmod", name)
 
 
-LOADED = Collection(members=loaded, discard=remove)
+def loaded_scope() -> AbstractContextManager[None]:
+    """Track test modules loaded inside one context."""
+    return collection(members=loaded, discard=remove)
