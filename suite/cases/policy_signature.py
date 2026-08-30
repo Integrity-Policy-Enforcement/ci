@@ -6,6 +6,7 @@ from functools import partial
 import checks
 import ipe
 import keyring
+import layout
 import runtime
 import triggers
 from assets import (
@@ -18,6 +19,18 @@ from assets import (
     UNTRUSTED_POLICY,
 )
 from model import Batch, Case
+
+
+def tampered_signature() -> bytes:
+    """Replace the signed text without updating its signature."""
+    original = layout.guest.TAMPERED_POLICY_TEXT.read_bytes()
+    replacement = layout.guest.TAMPERED_POLICY_REPLACEMENT.read_bytes()
+    if len(replacement) != len(original):
+        raise RuntimeError("tampered policy texts differ in length")
+    signed = TAMPERED_POLICY.signed.read_bytes()
+    if signed.count(original) != 1:
+        raise RuntimeError("signed policy does not contain its text exactly once")
+    return signed.replace(original, replacement)
 
 
 def build() -> tuple[Batch, ...]:
@@ -90,7 +103,7 @@ def build() -> tuple[Batch, ...]:
                 triggers.write_node,
                 ipe.node.NEW_POLICY,
                 None,
-                TAMPERED_POLICY.signed.read_bytes(),
+                tampered_signature(),
             ),
             expect=errno.EKEYREJECTED,
             check=partial(checks.policy_present_is, TAMPERED_POLICY, False),

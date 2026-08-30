@@ -78,14 +78,6 @@ def sign(
         raise SystemExit(f"signed content differs from {policy}")
 
 
-def substitute_signed_content(policy: Path, replacement: Path, signature: Path) -> None:
-    signed_text = policy.read_bytes()
-    replacement_text = replacement.read_bytes()
-    if len(replacement_text) != len(signed_text):
-        raise SystemExit(f"{replacement} must be the same length as {policy}")
-    signature.write_bytes(signature.read_bytes().replace(signed_text, replacement_text))
-
-
 def shift(hexadecimal: str) -> str:
     """A well formed value of the same length that nothing here carries."""
     return "".join(
@@ -167,10 +159,6 @@ def main() -> int:
         signing.REVOKED.certificate,
     )
 
-    tampered = layout.build.TAMPERED_POLICY_TEXT
-    substitute_signed_content(
-        tampered, tampered.with_suffix(".replacement"), tampered.with_suffix(".p7s")
-    )
     count = len(tuple(layout.build.POLICIES.rglob("*.pol")))
     print(f"    Prepared {count} signed policies")
     return 0
