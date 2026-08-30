@@ -13,7 +13,7 @@ def deploy_policy(policy: ipe.Policy) -> None:
 
 def open_node(entry: str, policy: ipe.Policy | None, descriptor: list[int]) -> None:
     """Open a securityfs node and stash the fd for a later write."""
-    descriptor[0] = os.open(ipe.node_path(entry, policy), os.O_WRONLY)
+    descriptor.append(os.open(ipe.node_path(entry, policy), os.O_WRONLY))
 
 
 def read_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> None:

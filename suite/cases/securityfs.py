@@ -18,8 +18,8 @@ from model import Batch, Case
 
 def build() -> tuple[Batch, ...]:
     """The batches this group contributes."""
-    opened_file = [None]
-    read_values = []
+    opened_file: list[int] = []
+    read_values: list[str] = []
     truncated_policy = CAPABILITY_POLICY_V1.signed.read_bytes()
     truncated_policy = truncated_policy[: len(truncated_policy) // 2]
     trailing_fragment = CAPABILITY_POLICY_V1.signed.read_bytes()
