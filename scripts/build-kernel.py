@@ -48,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
     if not layout.source.BOOT_POLICY.is_file():
         return fail(f"boot policy is missing: {layout.source.BOOT_POLICY}")
     if not signing.BUILTIN.certificate.is_file() or not signing.MODULE_SIGNING.is_file():
-        return fail("signing keys are missing; run prepare-policies.py")
+        return fail("signing keys are missing; run prepare-keys.py")
 
     shutil.rmtree(layout.build.KERNEL, ignore_errors=True)
     shutil.rmtree(layout.build.KERNEL_STAGING, ignore_errors=True)
