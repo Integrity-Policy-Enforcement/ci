@@ -10,14 +10,14 @@ from scope import collection
 ASYMMETRIC_KEY_TYPE = "asymmetric"
 
 
-def keyctl(*arguments: str, payload: bytes | None = None) -> bytes:
+def keyctl(*arguments: str, payload: bytes | None = None) -> str:
     """Run keyctl with the given arguments and optional stdin payload."""
     return subprocess.run(
         ["keyctl", *arguments],
         input=payload,
         capture_output=True,
         check=True,
-    ).stdout
+    ).stdout.decode()
 
 
 def linked_keys(keyring: str) -> set[str]:
