@@ -1,16 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import json
-from typing import TextIO
 import os
 import signal
 import traceback
+from contextlib import ExitStack
+from dataclasses import replace
+from typing import TextIO
 
 import cases
-from model import Case
-from assets import BASELINE_POLICY
 import ipe
 import runtime
+from assets import BASELINE_POLICY
+from model import Case, CaseState, Observation
 
 CASE_TIMEOUT_SECONDS = 60
 
@@ -20,41 +22,60 @@ def clean(text: object) -> str:
     return " ".join(str(text).replace("\r", " ").replace("\n", " ").split())
 
 
+def error_report(message: str) -> dict:
+    """A complete report for a child that could not produce an observation."""
+    return {
+        "error": message,
+        "errno": None,
+        "returncode": None,
+        "message": "",
+        "observed": [],
+    }
+
+
 def run_in_child(case: Case) -> dict:
-    """Fork, run collect/setup/trigger in the child, return the result as a dict."""
+    """Fork and run all case phases with one fresh state."""
     read_fd, write_fd = os.pipe()
     child = os.fork()
     if child == 0:
         os.close(read_fd)
         signal.alarm(CASE_TIMEOUT_SECONDS)
         try:
-            for step in case.collect:
-                step()
-            for step in case.setup:
-                step()
-            report = {"observed": []}
-            if case.trigger:
-                observation = case.trigger()
-                report = {
-                    "errno": observation.errno,
-                    "message": observation.message,
-                    "observed": list(observation.observed),
-                }
+            with ExitStack() as resources:
+                case_state = CaseState(resources=resources)
+                for step in case.collect:
+                    step(case_state)
+                for step in case.setup:
+                    step(case_state)
+                observation = (
+                    case.trigger(case_state) if case.trigger else Observation()
+                )
+                observation = replace(
+                    observation,
+                    observed=tuple(case_state.observed),
+                )
+            report = {
+                "error": None,
+                "errno": observation.errno,
+                "returncode": observation.returncode,
+                "message": observation.message,
+                "observed": list(observation.observed),
+            }
         except BaseException as failure:
-            report = {"error": f"{type(failure).__name__}: {clean(failure)}"}
+            report = error_report(f"{type(failure).__name__}: {clean(failure)}")
         os.write(write_fd, json.dumps(report).encode())
         os._exit(0)
 
     os.close(write_fd)
-    with os.fdopen(read_fd, "rb") as report:
-        payload = report.read()
+    with os.fdopen(read_fd, "rb") as pipe:
+        payload = pipe.read()
     _, status = os.waitpid(child, 0)
     if os.WIFSIGNALED(status) and os.WTERMSIG(status) == signal.SIGALRM:
-        return {"error": f"case exceeded {CASE_TIMEOUT_SECONDS}s"}
+        return error_report(f"case exceeded {CASE_TIMEOUT_SECONDS}s")
     if not os.WIFEXITED(status):
-        return {"error": f"child terminated abnormally: {status}"}
+        return error_report(f"child terminated abnormally: {status}")
     if not payload:
-        return {"error": "child produced no result"}
+        return error_report("child produced no result")
     return json.loads(payload)
 
 
@@ -63,14 +84,16 @@ def test(case: Case) -> tuple[str, str] | None:
     try:
         with (case.scope or runtime.case_scope)():
             result = run_in_child(case)
-            if "error" in result:
+            if result["error"]:
                 return "error", result["error"]
-            if case.trigger and result["errno"] != case.expect:
-                said = f": {result['message']}" if result["message"] else ""
-                return "failure", f"expected errno {case.expect}, got {result['errno']}{said}"
-            if case.check:
-                problem = case.check(tuple(result["observed"]))
-                if problem:
+            observation = Observation(
+                errno=result["errno"],
+                returncode=result["returncode"],
+                message=result["message"],
+                observed=tuple(result["observed"]),
+            )
+            for check in case.checks:
+                if problem := check(observation):
                     return "failure", problem
             return None
     except Exception as failure:

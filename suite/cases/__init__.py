@@ -20,7 +20,7 @@ def build() -> tuple[Batch, ...]:
         batches.extend(module.build())
     for batch in batches:
         for case in batch.cases:
-            if not case.trigger and not case.check:
+            if not case.checks:
                 raise ValueError(f"case {case.id} asserts nothing")
     ids = [case.id for batch in batches for case in batch.cases]
     if len(ids) != len(set(ids)):

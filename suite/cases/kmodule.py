@@ -18,11 +18,16 @@ def case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
         id=id,
         setup=(
             partial(steps.deploy_policy, policy),
-            partial(ipe.activate_policy, policy.name),
-            partial(ipe.set_enforcement, True),
+            partial(steps.activate_policy, policy.name),
+            partial(steps.set_enforcement, True),
         ),
         trigger=partial(KMODULE.attempt, module),
-        expect=0 if allowed else KMODULE.refused,
-        check=partial(checks.operation_completed_is, KMODULE, allowed),
+        checks=(
+            partial(
+                checks.returncode_is,
+                0 if allowed else KMODULE.refused,
+            ),
+            partial(checks.operation_completed_is, KMODULE, allowed),
+        ),
         scope=partial(runtime.case_scope, modules.loaded_scope),
     )

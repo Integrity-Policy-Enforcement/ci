@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import modules
-from model import Observation
+from model import CaseState, Observation
 
 INSMOD_REFUSED = 1
 
@@ -18,10 +18,13 @@ class Operation:
     completed: Callable
 
 
-def insert_module(path: Path) -> Observation:
+def insert_module(path: Path, _state: CaseState) -> Observation:
     """Try insmod and return what happened, without raising."""
     finished = modules.insert(path)
-    return Observation(finished.returncode, message=finished.stderr.strip())
+    return Observation(
+        returncode=finished.returncode,
+        message=finished.stderr.strip(),
+    )
 
 
 def test_module_loaded() -> bool:

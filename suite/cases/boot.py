@@ -62,7 +62,10 @@ def build() -> tuple[Batch, ...]:
         Batch(
             "boot",
             tuple(
-                Case(id=case.id, check=partial(checks.initramfs_case_passed, case.id))
+                Case(
+                    id=case.id,
+                    checks=(partial(checks.initramfs_case_passed, case.id),),
+                )
                 for case in INITRAMFS_CASES
             ),
         ),

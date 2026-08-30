@@ -3,22 +3,27 @@
 import os
 
 import ipe
-from model import Observation
+from model import CaseState, Observation
 
 
 def error_observation(error: OSError) -> Observation:
     """Turn an OS failure with an errno into an observation."""
     if error.errno is None:
         raise error
-    return Observation(error.errno)
+    return Observation(errno=error.errno)
 
 
-def write_node(entry: str, policy: ipe.Policy | None, data: bytes) -> Observation:
+def write_node(
+    entry: str,
+    policy: ipe.Policy | None,
+    data: bytes,
+    _state: CaseState,
+) -> Observation:
     """Write data to a securityfs node and report the errno."""
     descriptor = os.open(ipe.node_path(entry, policy), os.O_WRONLY)
     try:
         os.write(descriptor, data)
-        return Observation(0)
+        return Observation(errno=0)
     except OSError as failure:
         return error_observation(failure)
     finally:
@@ -26,40 +31,60 @@ def write_node(entry: str, policy: ipe.Policy | None, data: bytes) -> Observatio
 
 
 def write_node_and_read(
-    entry: str, policy: ipe.Policy | None, data: bytes, observed: list[str]
+    entry: str,
+    policy: ipe.Policy | None,
+    data: bytes,
+    state: CaseState,
 ) -> Observation:
-    """Write to a node and read it back in one trigger."""
-    observation = write_node(entry, policy, data)
-    observed.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, observed=tuple(observed))
+    """Write to a node and append its resulting value."""
+    observation = write_node(entry, policy, data, state)
+    state.observed.append(ipe.node_path(entry, policy).read_text().strip())
+    return observation
 
 
-def toggle_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
-    """Flip a boolean node and read back the new value."""
-    if len(observed) != 1:
-        raise RuntimeError(f"expected one read, got {len(observed)}")
-    (current,) = observed
+def toggle_node(
+    entry: str,
+    policy: ipe.Policy | None,
+    state: CaseState,
+) -> Observation:
+    """Flip a boolean node and append its new value."""
+    if len(state.observed) != 1:
+        raise RuntimeError(f"expected one read, got {len(state.observed)}")
+    (current,) = state.observed
     if current not in ("0", "1"):
         raise RuntimeError(f"cannot toggle {current!r}")
-    observation = write_node(entry, policy, b"0" if current == "1" else b"1")
-    observed.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, observed=tuple(observed))
+    observation = write_node(
+        entry,
+        policy,
+        b"0" if current == "1" else b"1",
+        state,
+    )
+    state.observed.append(ipe.node_path(entry, policy).read_text().strip())
+    return observation
 
 
-def read_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
-    """Read a text node and report whether it existed."""
+def read_node(
+    entry: str,
+    policy: ipe.Policy | None,
+    state: CaseState,
+) -> Observation:
+    """Read a text node into this case's observations."""
     try:
-        observed.append(ipe.node_path(entry, policy).read_text().strip())
-        return Observation(0, observed=tuple(observed))
+        state.observed.append(ipe.node_path(entry, policy).read_text().strip())
+        return Observation(errno=0)
     except OSError as failure:
         return error_observation(failure)
 
 
-def read_binary_node(entry: str, policy: ipe.Policy | None, observed: list[str]) -> Observation:
-    """Read a binary node as hex and report whether it existed."""
+def read_binary_node(
+    entry: str,
+    policy: ipe.Policy | None,
+    state: CaseState,
+) -> Observation:
+    """Read a binary node as hex into this case's observations."""
     try:
-        observed.append(ipe.node_path(entry, policy).read_bytes().hex())
-        return Observation(0, observed=tuple(observed))
+        state.observed.append(ipe.node_path(entry, policy).read_bytes().hex())
+        return Observation(errno=0)
     except OSError as failure:
         return error_observation(failure)
 
@@ -68,19 +93,20 @@ def write_opened_file_and_read(
     entry: str,
     policy: ipe.Policy | None,
     data: bytes,
-    descriptor: list[int],
-    observed: list[str],
+    state: CaseState,
 ) -> Observation:
-    """Write through a previously opened fd, then read the node back."""
-    observation = write_opened_file(data, descriptor)
-    observed.append(ipe.node_path(entry, policy).read_text().strip())
-    return Observation(observation.errno, observed=tuple(observed))
+    """Write through this case's open fd, then append the node value."""
+    observation = write_opened_file(data, state)
+    state.observed.append(ipe.node_path(entry, policy).read_text().strip())
+    return observation
 
 
-def write_opened_file(data: bytes, descriptor: list[int]) -> Observation:
-    """Write to an already-opened fd, testing what happens after a late capability change."""
+def write_opened_file(data: bytes, state: CaseState) -> Observation:
+    """Write through the descriptor captured in this case's state."""
+    if state.opened_file is None:
+        raise RuntimeError("case state holds no open file")
     try:
-        os.write(descriptor[0], data)
-        return Observation(0)
+        os.write(state.opened_file, data)
+        return Observation(errno=0)
     except OSError as failure:
         return error_observation(failure)

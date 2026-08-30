@@ -16,9 +16,17 @@ from assets import (
     TAMPERED_POLICY,
     UNTRUSTED_POLICY,
 )
-from model import Batch, Case
+from model import Batch, Case, CaseState
 
 SECONDARY_KEYRING = "%:.secondary_trusted_keys"
+
+
+def link_intermediate(_state: CaseState) -> None:
+    """Link the intermediate certificate for the secondary-keyring case."""
+    keyring.add_certificate(
+        SECONDARY_KEYRING,
+        layout.guest.INTERMEDIATE_CERTIFICATE,
+    )
 
 
 def tampered_signature() -> bytes:
@@ -46,18 +54,14 @@ def build() -> tuple[Batch, ...]:
                 None,
                 UNTRUSTED_POLICY.signed.read_bytes(),
             ),
-            expect=errno.ENOKEY,
-            check=partial(checks.policy_present_is, UNTRUSTED_POLICY, False),
+            checks=(
+                partial(checks.errno_is, errno.ENOKEY),
+                partial(checks.policy_present_is, UNTRUSTED_POLICY, False),
+            ),
         ),
         Case(
             id="policy_signature_secondary_linked_ok",
-            setup=(
-                partial(
-                    keyring.add_certificate,
-                    SECONDARY_KEYRING,
-                    layout.guest.INTERMEDIATE_CERTIFICATE,
-                ),
-            ),
+            setup=(link_intermediate,),
             scope=partial(
                 runtime.case_scope,
                 partial(keyring.linked_scope, SECONDARY_KEYRING),
@@ -68,8 +72,10 @@ def build() -> tuple[Batch, ...]:
                 None,
                 SECONDARY_POLICY.signed.read_bytes(),
             ),
-            expect=0,
-            check=partial(checks.policy_present_is, SECONDARY_POLICY, True),
+            checks=(
+                partial(checks.errno_is, 0),
+                partial(checks.policy_present_is, SECONDARY_POLICY, True),
+            ),
         ),
         Case(
             id="policy_signature_secondary_absent_enokey",
@@ -79,8 +85,10 @@ def build() -> tuple[Batch, ...]:
                 None,
                 SECONDARY_POLICY.signed.read_bytes(),
             ),
-            expect=errno.ENOKEY,
-            check=partial(checks.policy_present_is, SECONDARY_POLICY, False),
+            checks=(
+                partial(checks.errno_is, errno.ENOKEY),
+                partial(checks.policy_present_is, SECONDARY_POLICY, False),
+            ),
         ),
         Case(
             id="policy_signature_platform_ok",
@@ -90,8 +98,10 @@ def build() -> tuple[Batch, ...]:
                 None,
                 PLATFORM_POLICY.signed.read_bytes(),
             ),
-            expect=0,
-            check=partial(checks.policy_present_is, PLATFORM_POLICY, True),
+            checks=(
+                partial(checks.errno_is, 0),
+                partial(checks.policy_present_is, PLATFORM_POLICY, True),
+            ),
         ),
         Case(
             id="policy_signature_revoked_ekeyrejected",
@@ -101,8 +111,10 @@ def build() -> tuple[Batch, ...]:
                 None,
                 REVOKED_POLICY.signed.read_bytes(),
             ),
-            expect=errno.EKEYREJECTED,
-            check=partial(checks.policy_present_is, REVOKED_POLICY, False),
+            checks=(
+                partial(checks.errno_is, errno.EKEYREJECTED),
+                partial(checks.policy_present_is, REVOKED_POLICY, False),
+            ),
         ),
         Case(
             id="policy_signature_tampered_ekeyrejected",
@@ -112,8 +124,10 @@ def build() -> tuple[Batch, ...]:
                 None,
                 tampered_signature(),
             ),
-            expect=errno.EKEYREJECTED,
-            check=partial(checks.policy_present_is, TAMPERED_POLICY, False),
+            checks=(
+                partial(checks.errno_is, errno.EKEYREJECTED),
+                partial(checks.policy_present_is, TAMPERED_POLICY, False),
+            ),
         ),
         ),
     ),)

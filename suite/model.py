@@ -1,26 +1,41 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from contextlib import ExitStack
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
 class Observation:
-    """What the attempt returned, what the tool said, and what the case read."""
+    """Facts one trigger reports to its expectations and postcondition."""
 
-    errno: int
+    errno: int | None = None
+    returncode: int | None = None
     message: str = ""
     observed: tuple[str, ...] = ()
+
+
+@dataclass
+class CaseState:
+    """Mutable state shared by one case's child-process phases."""
+
+    resources: ExitStack
+    observed: list[str] = field(default_factory=list)
+    opened_file: int | None = None
+
+
+CaseStep = Callable[[CaseState], None]
+Trigger = Callable[[CaseState], Observation]
+Check = Callable[[Observation], str | None]
 
 
 @dataclass(frozen=True)
 class Case:
     id: str
-    trigger: Callable | None = None
-    expect: int | None = None
-    collect: tuple[Callable, ...] = ()
-    setup: tuple[Callable, ...] = ()
-    check: Callable | None = None
+    trigger: Trigger | None = None
+    collect: tuple[CaseStep, ...] = ()
+    setup: tuple[CaseStep, ...] = ()
+    checks: tuple[Check, ...] = ()
     scope: Callable | None = None
 
 
