@@ -12,7 +12,7 @@ def run_scope() -> Generator[None, None, None]:
     """Restore the policy the run activates and remove the one it adds."""
     with ExitStack() as stack:
         stack.enter_context(
-            collection(members=ipe.policy_names, discard=ipe.delete_policy)
+            collection(members=ipe.test_policy_names, discard=ipe.delete_policy)
         )
         stack.enter_context(
             setting(read=ipe.active_policy, write=ipe.activate_policy)
@@ -37,7 +37,7 @@ def case_scope(*extra: ContextFactory) -> Generator[None, None, None]:
     """Restore common case state and contexts declared by this case."""
     with ExitStack() as stack:
         stack.enter_context(
-            collection(members=ipe.policy_names, discard=ipe.delete_policy)
+            collection(members=ipe.test_policy_names, discard=ipe.delete_policy)
         )
         stack.enter_context(
             setting(read=ipe.active_policy, write=ipe.activate_policy)

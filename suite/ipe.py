@@ -15,6 +15,11 @@ class Policy:
     name: str
 
 
+# Reserved for this suite. Scope cleanup may delete any policy with this
+# prefix that appears while the tests are running.
+TEST_POLICY_PREFIX = "ipe_test_"
+
+
 class node:
     """The entries IPE puts in securityfs, at its root or under one policy."""
 
@@ -57,6 +62,16 @@ def write(path: Path, data: bytes | str) -> None:
 def policy_names() -> frozenset[str]:
     """Every policy the kernel currently holds, by the name it declared."""
     return frozenset(path.name for path in node_path(node.POLICIES).iterdir() if path.is_dir())
+
+
+def test_policy_names() -> frozenset[str]:
+    """Return policies in the suite-reserved cleanup namespace.
+
+    Unrelated policies must not use TEST_POLICY_PREFIX while the suite runs:
+    a scope may treat a newly appearing name with that prefix as test-owned
+    state and delete it.
+    """
+    return frozenset(name for name in policy_names() if name.startswith(TEST_POLICY_PREFIX))
 
 
 def policy_present(name: str) -> bool:

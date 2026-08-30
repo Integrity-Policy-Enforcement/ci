@@ -13,6 +13,8 @@ The built-in IPE policy denies `EXECUTE` by default. It allows execution when IP
 
 `run.py` creates test keys, signs IPE policies, builds the kernel, checks the final kernel configuration, builds the image, boots it with QEMU, and evaluates the TAP results returned by the guest.
 
+Policy names beginning with `ipe_test_` are reserved for this test suite. Scope cleanup treats any newly appearing policy with that prefix as test-owned and may delete it. Do not load an unrelated policy under that prefix while the suite is running.
+
 ## Usage
 
 Clone the repositories and build the container image:
