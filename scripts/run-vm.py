@@ -118,8 +118,7 @@ def main(argv: list[str] | None = None) -> int:
         f"    VM exit code {returncode}; acceleration={acceleration}; "
         f"timeout={timeout}s; lines={line_count(result)}"
     )
-    temporary_host = vm_facts.with_suffix(".tmp")
-    temporary_host.write_text(
+    vm_facts.write_text(
         json.dumps(
             {
                 evidence.VM_EXIT_CODE: returncode,
@@ -130,7 +129,6 @@ def main(argv: list[str] | None = None) -> int:
         ) + "\n",
         encoding="utf-8",
     )
-    temporary_host.replace(vm_facts)
     return subprocess.run(
         [sys.executable, layout.source.SCRIPTS / "verdict.py", output], check=False
     ).returncode
