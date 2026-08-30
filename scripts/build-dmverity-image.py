@@ -20,6 +20,7 @@ devices it gets.
 
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import hashes
@@ -40,11 +41,11 @@ def capture(*command: object) -> str:
 
 
 def build_squashfs(image: Path) -> None:
-    staging = layout.build.DMVERITY_ASSETS / "tree"
-    staging.mkdir()
-    shutil.copy(layout.build.TEST_MODULE, staging / layout.build.TEST_MODULE.name)
-    run("mksquashfs", staging, image, "-noappend", "-all-root")
-    shutil.rmtree(staging)
+    """Assemble the squashfs root and pack it into an image."""
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        shutil.copy(layout.build.TEST_MODULE, root / layout.build.TEST_MODULE.name)
+        run("mksquashfs", root, image, "-noappend", "-all-root")
 
 
 def format_hash_tree(image: Path, hash_tree: Path, algorithm: str) -> str:
