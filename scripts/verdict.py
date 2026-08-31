@@ -23,6 +23,7 @@ HEALTH_PATTERNS = (
     (re.compile(r"INFO: .* (self-)?detected stall"), "RCU stall"),
     (re.compile(r"INFO: task .* blocked for more than"), "hung task"),
     (re.compile(r"unable to handle (kernel )?pag(e|ing) request"), "invalid memory access"),
+    (re.compile(r"\[FAILED\]\s+Failed to"), "systemd unit failure"),
 )
 
 
