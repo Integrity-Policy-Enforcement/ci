@@ -16,15 +16,15 @@ import layout
 
 
 def main() -> int:
-    if not (layout.build.KERNEL / "Module.symvers").is_file():
+    if not (layout.build.KERNEL_DIR / "Module.symvers").is_file():
         raise SystemExit("the kernel is not built; run build-kernel.py")
-    shutil.rmtree(layout.build.KERNEL_MODULES, ignore_errors=True)
-    shutil.copytree(layout.source.KERNEL_MODULES, layout.build.KERNEL_MODULES)
+    shutil.rmtree(layout.build.KERNEL_MODULES_DIR, ignore_errors=True)
+    shutil.copytree(layout.source.KERNEL_MODULES_DIR, layout.build.KERNEL_MODULES_DIR)
 
     subprocess.run(
         [
-            "make", "-C", str(layout.build.KERNEL),
-            f"M={layout.build.KERNEL_MODULES}",
+            "make", "-C", str(layout.build.KERNEL_DIR),
+            f"M={layout.build.KERNEL_MODULES_DIR}",
             f"-j{os.cpu_count() or 1}",
             "modules",
         ],

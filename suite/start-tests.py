@@ -34,7 +34,7 @@ def log(message: str) -> None:
 def read_node(name: str) -> str:
     """Read an IPE securityfs node, or return ? if it is unavailable."""
     try:
-        return (layout.guest.SECURITYFS / name).read_text().rstrip("\n")
+        return (layout.guest.SECURITYFS_DIR / name).read_text().rstrip("\n")
     except OSError:
         return "?"
 
@@ -46,9 +46,9 @@ def service_main() -> int:
         return 1
     emit(f"boot {os.uname().release}")
 
-    if not layout.guest.SECURITYFS.is_dir():
+    if not layout.guest.SECURITYFS_DIR.is_dir():
         emit("noipe")
-        log(f"{layout.guest.SECURITYFS} does not exist")
+        log(f"{layout.guest.SECURITYFS_DIR} does not exist")
         return 0
 
     emit(f"ipe enforce: {read_node('enforce')}")

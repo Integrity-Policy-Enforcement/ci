@@ -23,8 +23,8 @@ from cases.boot import INITRAMFS_CASES
 
 def main() -> int:
     """Run the initramfs-only cases and leave their outcomes under /run."""
-    with mounts.mounted_scope(directory=layout.initrd.BOOT_TMPFS_DIRECTORY):
-        mounts.tmpfs(layout.initrd.BOOT_TMPFS_DIRECTORY)
+    with mounts.mounted_scope(directory=layout.initrd.BOOT_TMPFS_DIR):
+        mounts.tmpfs(layout.initrd.BOOT_TMPFS_DIR)
         shutil.copy(
             layout.initrd.KMODULE_TEST_BINARY,
             layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY,

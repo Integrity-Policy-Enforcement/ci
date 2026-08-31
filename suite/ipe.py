@@ -35,17 +35,17 @@ class node:
     POLICY = "policy"
 
 
-def policy_path(name: str) -> Path:
+def policy_dir(name: str) -> Path:
     """The directory the kernel created for this policy under securityfs."""
-    return layout.guest.SECURITYFS / node.POLICIES / name
+    return layout.guest.SECURITYFS_DIR / node.POLICIES / name
 
 
 def node_path(entry: str, policy: Policy | None = None) -> Path:
     """A securityfs path: a root entry, or one under a loaded policy."""
     return (
-        layout.guest.SECURITYFS / entry
+        layout.guest.SECURITYFS_DIR / entry
         if policy is None
-        else policy_path(policy.name) / entry
+        else policy_dir(policy.name) / entry
     )
 
 
@@ -66,20 +66,20 @@ def test_policy_names() -> frozenset[str]:
 
 def policy_present(name: str) -> bool:
     """Whether the kernel holds a policy by this name."""
-    return policy_path(name).is_dir()
+    return policy_dir(name).is_dir()
 
 
 def policy_version(name: str) -> str | None:
     """The version string the kernel reports for this policy, or None."""
     try:
-        return (policy_path(name) / node.VERSION).read_text().strip()
+        return (policy_dir(name) / node.VERSION).read_text().strip()
     except OSError:
         return None
 
 
 def policy_active(name: str) -> bool:
     """Whether this policy is the one the kernel enforces."""
-    return (policy_path(name) / node.ACTIVE).read_text().strip() == "1"
+    return (policy_dir(name) / node.ACTIVE).read_text().strip() == "1"
 
 
 def deploy_policy(signed: Path) -> None:
@@ -89,7 +89,7 @@ def deploy_policy(signed: Path) -> None:
 
 def activate_policy(name: str) -> None:
     """Make an already-loaded policy the one the kernel enforces."""
-    active = policy_path(name) / node.ACTIVE
+    active = policy_dir(name) / node.ACTIVE
     if active.read_text().strip() != "1":
         nodeio.write_path(active, "1")
 
@@ -97,7 +97,7 @@ def activate_policy(name: str) -> None:
 def delete_policy(name: str) -> None:
     """Remove a loaded policy and verify it is gone."""
     if policy_present(name):
-        nodeio.write_path(policy_path(name) / node.DELETE, "1")
+        nodeio.write_path(policy_dir(name) / node.DELETE, "1")
     if policy_present(name):
         raise RuntimeError(f"policy {name} was not deleted")
 
@@ -135,7 +135,7 @@ def load_baseline(policy: Policy) -> str:
     expected_path = policy.signed.with_suffix(".pol")
     expected = expected_path.read_bytes().rstrip(b"\n")
     if policy_present(policy.name):
-        loaded = (policy_path(policy.name) / node.POLICY).read_bytes().rstrip(b"\n")
+        loaded = (policy_dir(policy.name) / node.POLICY).read_bytes().rstrip(b"\n")
         if loaded != expected:
             raise RuntimeError(f"loaded policy {policy.name} differs from {expected_path}")
     else:

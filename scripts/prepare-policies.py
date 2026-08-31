@@ -83,7 +83,7 @@ def policies_in(*directories: str) -> tuple[Path, ...]:
     return tuple(
         policy
         for directory in directories
-        for policy in sorted((layout.build.POLICIES / directory).glob("*.pol"))
+        for policy in sorted((layout.build.POLICIES_DIR / directory).glob("*.pol"))
     )
 
 
@@ -120,7 +120,7 @@ def measurements() -> dict[str, str]:
 
 def fill_in_measurements() -> None:
     replacements = measurements()
-    for policy in layout.build.POLICIES.rglob("*.pol"):
+    for policy in layout.build.POLICIES_DIR.rglob("*.pol"):
         text = policy.read_text()
         for placeholder, value in replacements.items():
             text = text.replace(placeholder, value)
@@ -130,14 +130,14 @@ def fill_in_measurements() -> None:
 def main() -> int:
     if not signing.BUILTIN.key.is_file() or not signing.BUILTIN.certificate.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
-    shutil.rmtree(layout.build.POLICIES, ignore_errors=True)
-    shutil.copytree(layout.source.POLICIES, layout.build.POLICIES)
+    shutil.rmtree(layout.build.POLICIES_DIR, ignore_errors=True)
+    shutil.copytree(layout.source.POLICIES_DIR, layout.build.POLICIES_DIR)
     fill_in_measurements()
 
     signing_batches = (
         SigningBatch(
             policies=(
-                *sorted(layout.build.POLICIES.glob("*.pol")),
+                *sorted(layout.build.POLICIES_DIR.glob("*.pol")),
                 *policies_in(
                     "boot",
                     "capability",
@@ -189,28 +189,28 @@ def main() -> int:
 
     policy_paths = {
         policy.with_suffix("")
-        for policy in layout.build.POLICIES.rglob("*.pol")
+        for policy in layout.build.POLICIES_DIR.rglob("*.pol")
     }
     signature_paths = {
         signature.with_suffix("")
-        for signature in layout.build.POLICIES.rglob("*.p7s")
+        for signature in layout.build.POLICIES_DIR.rglob("*.p7s")
     }
     if policy_paths != signature_paths:
         missing = policy_paths - signature_paths
         unexpected = signature_paths - policy_paths
         details = [
             *(
-                f"missing signature: {path.relative_to(layout.build.POLICIES)}"
+                f"missing signature: {path.relative_to(layout.build.POLICIES_DIR)}"
                 for path in sorted(missing)
             ),
             *(
-                f"unexpected signature: {path.relative_to(layout.build.POLICIES)}"
+                f"unexpected signature: {path.relative_to(layout.build.POLICIES_DIR)}"
                 for path in sorted(unexpected)
             ),
         ]
         raise SystemExit("; ".join(details))
 
-    layout.build.SIGNER_CERTIFICATES.mkdir(parents=True, exist_ok=True)
+    layout.build.SIGNER_CERTIFICATES_DIR.mkdir(parents=True, exist_ok=True)
     intermediate = x509.load_pem_x509_certificate(
         signing.INTERMEDIATE.certificate.read_bytes()
     )

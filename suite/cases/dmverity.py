@@ -19,7 +19,7 @@ from . import kmodule
 
 # dm-verity mappings under this prefix are reserved for batch cleanup.
 DMVERITY_DEVICE_PREFIX = "ipe-dmverity-"
-PLAIN = layout.guest.PLAIN_MOUNT
+PLAIN = layout.guest.PLAIN_MOUNT_DIR
 MODULE = layout.guest.KMODULE_TEST_BINARY.name
 
 
@@ -32,13 +32,13 @@ def build() -> tuple[Batch, ...]:
                 kmodule.case(
                     "kmodule_signature_true_signed_ok",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    layout.guest.dmverity_mount("sha256", signed=True) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_signature_true_unsigned_denied",
                     KMODULE_SIGNATURE_TRUE_POLICY,
-                    layout.guest.dmverity_mount("sha256", signed=False) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha256", signed=False) / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
@@ -50,13 +50,13 @@ def build() -> tuple[Batch, ...]:
                 kmodule.case(
                     "kmodule_signature_false_signed_ok",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    layout.guest.dmverity_mount("sha256", signed=True) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_signature_false_unsigned_denied",
                     KMODULE_SIGNATURE_FALSE_POLICY,
-                    layout.guest.dmverity_mount("sha256", signed=False) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha256", signed=False) / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
@@ -68,13 +68,13 @@ def build() -> tuple[Batch, ...]:
                 kmodule.case(
                     "kmodule_roothash_sha256_signed_ok",
                     roothash_policy("sha256"),
-                    layout.guest.dmverity_mount("sha256", signed=True) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha256", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_roothash_sha256_unsigned_ok",
                     roothash_policy("sha256"),
-                    layout.guest.dmverity_mount("sha256", signed=False) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha256", signed=False) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
@@ -86,13 +86,13 @@ def build() -> tuple[Batch, ...]:
                 kmodule.case(
                     "kmodule_roothash_sha512_signed_ok",
                     roothash_policy("sha512"),
-                    layout.guest.dmverity_mount("sha512", signed=True) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha512", signed=True) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_roothash_sha512_unsigned_ok",
                     roothash_policy("sha512"),
-                    layout.guest.dmverity_mount("sha512", signed=False) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha512", signed=False) / MODULE,
                     allowed=True,
                 ),
                 kmodule.case(
@@ -104,13 +104,13 @@ def build() -> tuple[Batch, ...]:
                 kmodule.case(
                     "kmodule_roothash_sha256_mismatch_denied",
                     roothash_policy("sha256", matching=False),
-                    layout.guest.dmverity_mount("sha256", signed=True) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha256", signed=True) / MODULE,
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_roothash_sha512_mismatch_denied",
                     roothash_policy("sha512", matching=False),
-                    layout.guest.dmverity_mount("sha512", signed=True) / MODULE,
+                    layout.guest.dmverity_mount_dir("sha512", signed=True) / MODULE,
                     allowed=False,
                 ),
             ),
@@ -137,7 +137,7 @@ def build() -> tuple[Batch, ...]:
                 ),
                 partial(
                     mounts.mounted_scope,
-                    directory=layout.guest.MEDIA,
+                    directory=layout.guest.MEDIA_DIR,
                 ),
             ),
         ),

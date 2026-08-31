@@ -35,12 +35,12 @@ def main(argv: list[str] | None = None) -> int:
         architecture = "x86_64"
         kernel_arch = "x86"
         defconfig = "x86_64_defconfig"
-        image = layout.build.KERNEL / "arch" / "x86" / "boot" / "bzImage"
+        image = layout.build.KERNEL_DIR / "arch" / "x86" / "boot" / "bzImage"
     elif machine == "aarch64":
         architecture = "arm64"
         kernel_arch = "arm64"
         defconfig = "defconfig"
-        image = layout.build.KERNEL / "arch" / "arm64" / "boot" / "Image"
+        image = layout.build.KERNEL_DIR / "arch" / "arm64" / "boot" / "Image"
     else:
         return fail(f"unsupported build host architecture: {machine}")
     if not (source / "Makefile").is_file():
@@ -50,12 +50,12 @@ def main(argv: list[str] | None = None) -> int:
     if not signing.BUILTIN.certificate.is_file() or not signing.MODULE_SIGNING.is_file():
         return fail("signing keys are missing; run prepare-keys.py")
 
-    shutil.rmtree(layout.build.KERNEL, ignore_errors=True)
-    shutil.rmtree(layout.build.KERNEL_STAGING, ignore_errors=True)
-    layout.build.KERNEL.mkdir(parents=True)
+    shutil.rmtree(layout.build.KERNEL_DIR, ignore_errors=True)
+    shutil.rmtree(layout.build.KERNEL_STAGING_DIR, ignore_errors=True)
+    layout.build.KERNEL_DIR.mkdir(parents=True)
     jobs = os.cpu_count() or 1
     make = [
-        "make", "-C", source, f"O={layout.build.KERNEL}",
+        "make", "-C", source, f"O={layout.build.KERNEL_DIR}",
         f"ARCH={kernel_arch}", f"-j{jobs}",
     ]
 
@@ -63,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     if run_result([*make, defconfig], stdout=subprocess.DEVNULL).returncode:
         return 1
 
-    key_fragment = layout.build.KERNEL / ".signing-key.config"
+    key_fragment = layout.build.KERNEL_DIR / ".signing-key.config"
     key_fragment.write_text(
         f'CONFIG_SYSTEM_TRUSTED_KEYS="{signing.BUILTIN.certificate}"\n'
         f'CONFIG_MODULE_SIG_KEY="{signing.MODULE_SIGNING}"\n'
@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
         f'CONFIG_SYSTEM_REVOCATION_KEYS="{signing.REVOKED.certificate}"\n',
         encoding="utf-8",
     )
-    merge_log = layout.build.KERNEL / "merge.log"
+    merge_log = layout.build.KERNEL_DIR / "merge.log"
     environment = os.environ.copy()
     environment["ARCH"] = kernel_arch
     with merge_log.open("w", encoding="utf-8") as log:
@@ -79,12 +79,12 @@ def main(argv: list[str] | None = None) -> int:
             [
                 source / KERNEL_MERGE_CONFIG,
                 "-O",
-                layout.build.KERNEL,
+                layout.build.KERNEL_DIR,
                 layout.build.KERNEL_CONFIG,
                 layout.source.KERNEL_CONFIG,
                 key_fragment,
             ],
-            cwd=layout.build.KERNEL,
+            cwd=layout.build.KERNEL_DIR,
             env=environment,
             stdout=log,
             stderr=subprocess.STDOUT,
@@ -95,7 +95,7 @@ def main(argv: list[str] | None = None) -> int:
         return result.returncode
 
     print("    Compile kernel", flush=True)
-    build_log = layout.build.KERNEL / "build.log"
+    build_log = layout.build.KERNEL_DIR / "build.log"
     with build_log.open("w", encoding="utf-8") as log:
         result = run_result(make, stdout=log, stderr=subprocess.STDOUT, text=True)
     if result.returncode:
@@ -116,12 +116,12 @@ def main(argv: list[str] | None = None) -> int:
     release = release.stdout.strip()
 
     print("    Install kernel", flush=True)
-    install_log = layout.build.KERNEL / "install.log"
+    install_log = layout.build.KERNEL_DIR / "install.log"
     with install_log.open("w", encoding="utf-8") as log:
         result = run_result(
             [
                 *make,
-                f"INSTALL_MOD_PATH={layout.build.KERNEL_STAGING / 'usr'}",
+                f"INSTALL_MOD_PATH={layout.build.KERNEL_STAGING_DIR / 'usr'}",
                 "INSTALL_MOD_STRIP=1",
                 "modules_install",
             ],
@@ -133,7 +133,7 @@ def main(argv: list[str] | None = None) -> int:
         print(install_log.read_text(encoding="utf-8", errors="replace"), file=sys.stderr)
         return result.returncode
 
-    modules = layout.build.KERNEL_STAGING / "usr" / "lib" / "modules" / release
+    modules = layout.build.KERNEL_STAGING_DIR / "usr" / "lib" / "modules" / release
     if not modules.is_dir():
         return fail(f"kernel modules were not installed: {modules}")
     shutil.copy2(image, modules / "vmlinuz")

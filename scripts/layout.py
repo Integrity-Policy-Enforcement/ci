@@ -68,6 +68,8 @@ guest: what the tests find after the switch.
         run-tests.py                       entry point
         layout.py                          absolute paths in the guest
         hashes.py                          the two measurement algorithms
+        kernel-modules/                    kernel module test binaries
+            ipe_test.ko                        KMODULE test binary
         policies/                         signed copy of the source policy tree
         dmverity/                          dm-verity image and its hashes
             dmverity.squashfs                  the squashfs holding the module
@@ -82,7 +84,6 @@ guest: what the tests find after the switch.
             ipe_test-sha256.p7s                signature over the sha256 digest
             ipe_test-sha512.digest             sha512 digest of ipe_test.ko
             ipe_test-sha512.p7s                signature over the sha512 digest
-        ipe_test.ko                        KMODULE test binary
         fsverity-modules/                  a batch writes these, a scope removes
             signed-sha256-ipe_test.ko          sha256 fs-verity digest and signature
             unsigned-sha256-ipe_test.ko        sha256 fs-verity digest, no signature
@@ -101,10 +102,10 @@ guest: what the tests find after the switch.
 from pathlib import Path
 
 _KMODULE_TEST_BINARY_NAME = "ipe_test.ko"
-_DMVERITY_DIRECTORY = "dmverity"
-_FSVERITY_DIRECTORY = "fsverity"
-_POLICY_DIRECTORY = "policies"
-_SIGNER_DIRECTORY = "signers"
+_DMVERITY_DIR_NAME = "dmverity"
+_FSVERITY_DIR_NAME = "fsverity"
+_POLICIES_DIR_NAME = "policies"
+_SIGNERS_DIR_NAME = "signers"
 _FSVERITY_CERTIFICATE_NAME = "fsverity-cert.der"
 _INTERMEDIATE_CERTIFICATE_NAME = "intermediate.der"
 
@@ -136,188 +137,187 @@ def _fsverity_digest_name(algorithm: str) -> str:
 
 
 class source:
-    ROOT = Path(__file__).resolve().parent.parent
+    ROOT_DIR = Path(__file__).resolve().parent.parent
 
-    SCRIPTS = ROOT / "scripts"
-    LAYOUT = SCRIPTS / "layout.py"
-    HASHES = SCRIPTS / "hashes.py"
-    SUITE = ROOT / "suite"
-    IMAGE = ROOT / "image"
-    POLICIES = ROOT / "policies"
-    KERNEL_MODULES = ROOT / "kernel-modules"
-    KERNEL_CONFIG = ROOT / "config" / "ipe-tests.config"
-    BOOT_POLICY = ROOT / "config" / "boot-policy.pol"
+    SCRIPTS_DIR = ROOT_DIR / "scripts"
+    LAYOUT = SCRIPTS_DIR / "layout.py"
+    HASHES = SCRIPTS_DIR / "hashes.py"
+    SUITE_DIR = ROOT_DIR / "suite"
+    IMAGE_DIR = ROOT_DIR / "image"
+    POLICIES_DIR = ROOT_DIR / "policies"
+    KERNEL_MODULES_DIR = ROOT_DIR / "kernel-modules"
+    KERNEL_CONFIG = ROOT_DIR / "config" / "ipe-tests.config"
+    BOOT_POLICY = ROOT_DIR / "config" / "boot-policy.pol"
 
-    SECONDARY_POLICY_TEXT = POLICIES / _SECONDARY_POLICY
-    PLATFORM_POLICY_TEXT = POLICIES / _PLATFORM_POLICY
-    REVOKED_POLICY_TEXT = POLICIES / _REVOKED_POLICY
-    UNTRUSTED_POLICY_TEXT = POLICIES / _UNTRUSTED_POLICY
-    TAMPERED_POLICY_TEXT = POLICIES / _TAMPERED_POLICY
+    SECONDARY_POLICY_TEXT = POLICIES_DIR / _SECONDARY_POLICY
+    PLATFORM_POLICY_TEXT = POLICIES_DIR / _PLATFORM_POLICY
+    REVOKED_POLICY_TEXT = POLICIES_DIR / _REVOKED_POLICY
+    UNTRUSTED_POLICY_TEXT = POLICIES_DIR / _UNTRUSTED_POLICY
+    TAMPERED_POLICY_TEXT = POLICIES_DIR / _TAMPERED_POLICY
 
 
 class build:
-    ROOT = source.ROOT / "build"
+    ROOT_DIR = source.ROOT_DIR / "build"
 
-    KEYS = ROOT / "keys"
-    FSVERITY_CERTIFICATE = KEYS / _FSVERITY_CERTIFICATE_NAME
+    KEYS_DIR = ROOT_DIR / "keys"
+    FSVERITY_CERTIFICATE = KEYS_DIR / _FSVERITY_CERTIFICATE_NAME
 
-    KERNEL = ROOT / "kernel"
-    KERNEL_STAGING = ROOT / "kernel-install"
-    KERNEL_CONFIG = KERNEL / ".config"
+    KERNEL_DIR = ROOT_DIR / "kernel"
+    KERNEL_STAGING_DIR = ROOT_DIR / "kernel-install"
+    KERNEL_CONFIG = KERNEL_DIR / ".config"
 
-    KERNEL_MODULES = ROOT / "kernel-modules"
-    KMODULE_TEST_BINARY = KERNEL_MODULES / _KMODULE_TEST_BINARY_NAME
+    KERNEL_MODULES_DIR = ROOT_DIR / "kernel-modules"
+    KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
 
-    POLICIES = ROOT / _POLICY_DIRECTORY
+    POLICIES_DIR = ROOT_DIR / _POLICIES_DIR_NAME
     SECONDARY_POLICY_TEXT = (
-        POLICIES / source.SECONDARY_POLICY_TEXT.relative_to(source.POLICIES)
+        POLICIES_DIR / source.SECONDARY_POLICY_TEXT.relative_to(source.POLICIES_DIR)
     )
     PLATFORM_POLICY_TEXT = (
-        POLICIES / source.PLATFORM_POLICY_TEXT.relative_to(source.POLICIES)
+        POLICIES_DIR / source.PLATFORM_POLICY_TEXT.relative_to(source.POLICIES_DIR)
     )
     REVOKED_POLICY_TEXT = (
-        POLICIES / source.REVOKED_POLICY_TEXT.relative_to(source.POLICIES)
+        POLICIES_DIR / source.REVOKED_POLICY_TEXT.relative_to(source.POLICIES_DIR)
     )
     UNTRUSTED_POLICY_TEXT = (
-        POLICIES / source.UNTRUSTED_POLICY_TEXT.relative_to(source.POLICIES)
+        POLICIES_DIR / source.UNTRUSTED_POLICY_TEXT.relative_to(source.POLICIES_DIR)
     )
     TAMPERED_POLICY_TEXT = (
-        POLICIES / source.TAMPERED_POLICY_TEXT.relative_to(source.POLICIES)
+        POLICIES_DIR / source.TAMPERED_POLICY_TEXT.relative_to(source.POLICIES_DIR)
     )
-    SIGNER_CERTIFICATES = POLICIES / _SIGNER_DIRECTORY
-    INTERMEDIATE_CERTIFICATE = SIGNER_CERTIFICATES / _INTERMEDIATE_CERTIFICATE_NAME
+    SIGNER_CERTIFICATES_DIR = POLICIES_DIR / _SIGNERS_DIR_NAME
+    INTERMEDIATE_CERTIFICATE = SIGNER_CERTIFICATES_DIR / _INTERMEDIATE_CERTIFICATE_NAME
 
-    DMVERITY_ASSETS = ROOT / _DMVERITY_DIRECTORY
-    SQUASHFS = DMVERITY_ASSETS / "dmverity.squashfs"
+    DMVERITY_ASSETS_DIR = ROOT_DIR / _DMVERITY_DIR_NAME
+    SQUASHFS = DMVERITY_ASSETS_DIR / "dmverity.squashfs"
 
     @staticmethod
     def hash_tree(algorithm: str) -> Path:
         """The Merkle tree the build made with this hash."""
-        return build.DMVERITY_ASSETS / _hash_tree_name(algorithm)
+        return build.DMVERITY_ASSETS_DIR / _hash_tree_name(algorithm)
 
     @staticmethod
     def root_hash(algorithm: str) -> Path:
         """The root hash for the Merkle tree built with this hash."""
-        return build.DMVERITY_ASSETS / _root_hash_name(algorithm)
+        return build.DMVERITY_ASSETS_DIR / _root_hash_name(algorithm)
 
     @staticmethod
     def root_hash_signature(algorithm: str) -> Path:
         """The builtin identity signature over this root hash."""
-        return build.DMVERITY_ASSETS / _root_hash_signature_name(algorithm)
+        return build.DMVERITY_ASSETS_DIR / _root_hash_signature_name(algorithm)
 
-    FSVERITY_ASSETS = ROOT / _FSVERITY_DIRECTORY
+    FSVERITY_ASSETS_DIR = ROOT_DIR / _FSVERITY_DIR_NAME
 
     @staticmethod
     def fsverity_signature(algorithm: str) -> Path:
         """The fs-verity identity signature over this digest."""
-        return build.FSVERITY_ASSETS / _fsverity_signature_name(algorithm)
+        return build.FSVERITY_ASSETS_DIR / _fsverity_signature_name(algorithm)
 
     @staticmethod
     def fsverity_digest(algorithm: str) -> Path:
         """The test module digest made with this hash."""
-        return build.FSVERITY_ASSETS / _fsverity_digest_name(algorithm)
+        return build.FSVERITY_ASSETS_DIR / _fsverity_digest_name(algorithm)
 
-    GUEST_IMAGE = source.IMAGE / "output" / "ipe-tests.raw"
+    GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
 class guest:
-    IPE = Path("/usr/lib/ipe")
-    ROOT_POLICY = IPE / "root-policy.p7s"
+    IPE_DIR = Path("/usr/lib/ipe")
+    ROOT_POLICY = IPE_DIR / "root-policy.p7s"
 
     RESULT_CHANNEL = Path("/dev/virtio-ports/ipe-tests-result")
-    SECURITYFS = Path("/sys/kernel/security/ipe")
+    SECURITYFS_DIR = Path("/sys/kernel/security/ipe")
 
-    PAYLOAD = Path("/run/ipe-tests")
-    RUNNER = PAYLOAD / "run-tests.py"
-    KMODULE_TEST_BINARY = PAYLOAD / _KMODULE_TEST_BINARY_NAME
+    PAYLOAD_DIR = Path("/run/ipe-tests")
+    RUNNER = PAYLOAD_DIR / "run-tests.py"
+    KERNEL_MODULES_DIR = PAYLOAD_DIR / "kernel-modules"
+    KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
 
-    POLICIES = PAYLOAD / _POLICY_DIRECTORY
+    POLICIES_DIR = PAYLOAD_DIR / _POLICIES_DIR_NAME
 
     @staticmethod
     def policy_text(asset: str) -> Path:
         """The absolute path to a policy's text in the guest."""
-        return guest.POLICIES / f"{asset}.pol"
+        return guest.POLICIES_DIR / f"{asset}.pol"
 
     @staticmethod
     def policy_signature(asset: str) -> Path:
         """The absolute path to a policy's signature in the guest."""
-        return guest.POLICIES / f"{asset}.p7s"
+        return guest.POLICIES_DIR / f"{asset}.p7s"
 
-    SECONDARY_POLICY_SIGNATURE = (POLICIES / _SECONDARY_POLICY).with_suffix(".p7s")
-    PLATFORM_POLICY_SIGNATURE = (POLICIES / _PLATFORM_POLICY).with_suffix(".p7s")
-    REVOKED_POLICY_SIGNATURE = (POLICIES / _REVOKED_POLICY).with_suffix(".p7s")
-    UNTRUSTED_POLICY_SIGNATURE = (POLICIES / _UNTRUSTED_POLICY).with_suffix(".p7s")
-    TAMPERED_POLICY_TEXT = POLICIES / _TAMPERED_POLICY
+    SECONDARY_POLICY_SIGNATURE = (POLICIES_DIR / _SECONDARY_POLICY).with_suffix(".p7s")
+    PLATFORM_POLICY_SIGNATURE = (POLICIES_DIR / _PLATFORM_POLICY).with_suffix(".p7s")
+    REVOKED_POLICY_SIGNATURE = (POLICIES_DIR / _REVOKED_POLICY).with_suffix(".p7s")
+    UNTRUSTED_POLICY_SIGNATURE = (POLICIES_DIR / _UNTRUSTED_POLICY).with_suffix(".p7s")
+    TAMPERED_POLICY_TEXT = POLICIES_DIR / _TAMPERED_POLICY
     TAMPERED_POLICY_SIGNATURE = TAMPERED_POLICY_TEXT.with_suffix(".p7s")
     TAMPERED_POLICY_REPLACEMENT = TAMPERED_POLICY_TEXT.with_suffix(".replacement")
-    SIGNER_CERTIFICATES = POLICIES / _SIGNER_DIRECTORY
-    INTERMEDIATE_CERTIFICATE = SIGNER_CERTIFICATES / _INTERMEDIATE_CERTIFICATE_NAME
+    SIGNER_CERTIFICATES_DIR = POLICIES_DIR / _SIGNERS_DIR_NAME
+    INTERMEDIATE_CERTIFICATE = SIGNER_CERTIFICATES_DIR / _INTERMEDIATE_CERTIFICATE_NAME
 
-    DMVERITY_ASSETS = PAYLOAD / _DMVERITY_DIRECTORY
-    SQUASHFS = DMVERITY_ASSETS / "dmverity.squashfs"
+    DMVERITY_ASSETS_DIR = PAYLOAD_DIR / _DMVERITY_DIR_NAME
+    SQUASHFS = DMVERITY_ASSETS_DIR / "dmverity.squashfs"
 
     @staticmethod
     def hash_tree(algorithm: str) -> Path:
         """The guest path to the Merkle tree built with this hash."""
-        return guest.DMVERITY_ASSETS / _hash_tree_name(algorithm)
+        return guest.DMVERITY_ASSETS_DIR / _hash_tree_name(algorithm)
 
     @staticmethod
     def root_hash(algorithm: str) -> Path:
         """The guest path to the root hash for this Merkle tree."""
-        return guest.DMVERITY_ASSETS / _root_hash_name(algorithm)
+        return guest.DMVERITY_ASSETS_DIR / _root_hash_name(algorithm)
 
     @staticmethod
     def root_hash_signature(algorithm: str) -> Path:
         """The guest path to the signature over this root hash."""
-        return guest.DMVERITY_ASSETS / _root_hash_signature_name(algorithm)
+        return guest.DMVERITY_ASSETS_DIR / _root_hash_signature_name(algorithm)
 
-    FSVERITY_ASSETS = PAYLOAD / _FSVERITY_DIRECTORY
+    FSVERITY_ASSETS_DIR = PAYLOAD_DIR / _FSVERITY_DIR_NAME
 
     @staticmethod
     def fsverity_signature(algorithm: str) -> Path:
         """The guest path to the signature over this digest."""
-        return guest.FSVERITY_ASSETS / _fsverity_signature_name(algorithm)
+        return guest.FSVERITY_ASSETS_DIR / _fsverity_signature_name(algorithm)
 
     @staticmethod
     def fsverity_digest(algorithm: str) -> Path:
         """The guest path to the module digest made with this hash."""
-        return guest.FSVERITY_ASSETS / _fsverity_digest_name(algorithm)
+        return guest.FSVERITY_ASSETS_DIR / _fsverity_digest_name(algorithm)
 
-    FSVERITY_MODULES = PAYLOAD / "fsverity-modules"
-    FSVERITY_PLAIN_MODULE = FSVERITY_MODULES / f"plain-{_KMODULE_TEST_BINARY_NAME}"
+    FSVERITY_MODULES_DIR = PAYLOAD_DIR / "fsverity-modules"
+    FSVERITY_PLAIN_MODULE = FSVERITY_MODULES_DIR / f"plain-{_KMODULE_TEST_BINARY_NAME}"
 
     @staticmethod
     def fsverity_unsigned_module(algorithm: str) -> Path:
         """The copy with fs-verity enabled without a signature."""
-        return guest.FSVERITY_MODULES / f"unsigned-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
+        return guest.FSVERITY_MODULES_DIR / f"unsigned-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
 
     @staticmethod
     def fsverity_signed_module(algorithm: str) -> Path:
         """The copy with fs-verity enabled with a signature."""
-        return guest.FSVERITY_MODULES / f"signed-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
+        return guest.FSVERITY_MODULES_DIR / f"signed-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
 
-    MEDIA = Path("/run/ipe-media")
+    MEDIA_DIR = Path("/run/ipe-media")
 
     @staticmethod
-    def dmverity_mount(algorithm: str, signed: bool) -> Path:
+    def dmverity_mount_dir(algorithm: str, signed: bool) -> Path:
         """The mount point for this hash and signature state."""
         state = "signed" if signed else "unsigned"
-        return guest.MEDIA / f"dmverity-{algorithm}-{state}"
+        return guest.MEDIA_DIR / f"dmverity-{algorithm}-{state}"
 
-    PLAIN_MOUNT = MEDIA / "plain"
+    PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"
 
 
 class initrd:
-    IPE = Path("/usr/lib/ipe")
-    FSVERITY_CERTIFICATE = IPE / _FSVERITY_CERTIFICATE_NAME
+    IPE_DIR = Path("/usr/lib/ipe")
+    FSVERITY_CERTIFICATE = IPE_DIR / _FSVERITY_CERTIFICATE_NAME
 
-    TESTS = Path("/usr/lib/ipe-tests")
-    KMODULE_TEST_BINARY = TESTS / _KMODULE_TEST_BINARY_NAME
-    BOOT_VERIFIED_TRUE_POLICY = TESTS / "boot-verified-true.p7s"
-    BOOT_VERIFIED_FALSE_POLICY = TESTS / "boot-verified-false.p7s"
+    TESTS_DIR = Path("/usr/lib/ipe-tests")
+    KMODULE_TEST_BINARY = TESTS_DIR / _KMODULE_TEST_BINARY_NAME
+    BOOT_VERIFIED_TRUE_POLICY = TESTS_DIR / "boot-verified-true.p7s"
+    BOOT_VERIFIED_FALSE_POLICY = TESTS_DIR / "boot-verified-false.p7s"
 
     BOOT_VERIFIED_RECORD = Path("/run/ipe-boot-verified")
-    BOOT_TMPFS_DIRECTORY = Path("/run/ipe-boot-verified-tmpfs")
-    BOOT_TMPFS_KMODULE_TEST_BINARY = (
-        BOOT_TMPFS_DIRECTORY / _KMODULE_TEST_BINARY_NAME
-    )
+    BOOT_TMPFS_DIR = Path("/run/ipe-boot-verified-tmpfs")
+    BOOT_TMPFS_KMODULE_TEST_BINARY = BOOT_TMPFS_DIR / _KMODULE_TEST_BINARY_NAME

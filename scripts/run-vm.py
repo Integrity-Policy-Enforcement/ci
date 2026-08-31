@@ -24,27 +24,26 @@ def restore_owner(path: Path) -> None:
 
 
 def make_payload(output: Path) -> None:
-    if not tuple(layout.build.POLICIES.rglob("*.p7s")):
+    if not tuple(layout.build.POLICIES_DIR.rglob("*.p7s")):
         raise SystemExit("signed policies are missing; run prepare-policies.py")
     with tempfile.TemporaryDirectory() as temporary:
         staging = Path(temporary) / "payload"
         ignored = shutil.ignore_patterns("__pycache__", "*.pyc")
-        shutil.copytree(layout.source.SUITE, staging, ignore=ignored)
+        shutil.copytree(layout.source.SUITE_DIR, staging, ignore=ignored)
         # The suite imports these siblings, so the payload carries both.
         shutil.copy(layout.source.LAYOUT, staging / layout.source.LAYOUT.name)
         shutil.copy(layout.source.HASHES, staging / layout.source.HASHES.name)
-        shutil.copytree(layout.build.POLICIES, staging / layout.guest.POLICIES.name)
+        shutil.copytree(layout.build.POLICIES_DIR, staging / layout.guest.POLICIES_DIR.name)
         shutil.copytree(
-            layout.build.DMVERITY_ASSETS,
-            staging / layout.guest.DMVERITY_ASSETS.name,
+            layout.build.DMVERITY_ASSETS_DIR,
+            staging / layout.guest.DMVERITY_ASSETS_DIR.name,
         )
-        shutil.copy(
-            layout.build.KMODULE_TEST_BINARY,
-            staging / layout.guest.KMODULE_TEST_BINARY.name,
-        )
+        kernel_modules = staging / layout.guest.KERNEL_MODULES_DIR.name
+        kernel_modules.mkdir()
+        shutil.copy(layout.build.KMODULE_TEST_BINARY, kernel_modules)
         shutil.copytree(
-            layout.build.FSVERITY_ASSETS,
-            staging / layout.guest.FSVERITY_ASSETS.name,
+            layout.build.FSVERITY_ASSETS_DIR,
+            staging / layout.guest.FSVERITY_ASSETS_DIR.name,
         )
         with output.open("wb") as stream:
             stream.truncate(48 * 1024 * 1024)
@@ -93,7 +92,7 @@ def main(argv: list[str] | None = None) -> int:
         timeout,
         args.mkosi,
         "--directory",
-        layout.source.IMAGE,
+        layout.source.IMAGE_DIR,
         f"--kvm={'yes' if kvm else 'no'}",
         f"--machine=ipe-tests-{os.getpid()}",
         "vm",
@@ -133,7 +132,7 @@ def main(argv: list[str] | None = None) -> int:
         encoding="utf-8",
     )
     return subprocess.run(
-        [sys.executable, layout.source.SCRIPTS / "verdict.py", output], check=False
+        [sys.executable, layout.source.SCRIPTS_DIR / "verdict.py", output], check=False
     ).returncode
 
 

@@ -80,8 +80,8 @@ def main() -> int:
         raise SystemExit("signing keys are missing; run prepare-keys.py")
     if not layout.build.KMODULE_TEST_BINARY.is_file():
         raise SystemExit("the test module is missing; run build-kernel-modules.py")
-    shutil.rmtree(layout.build.DMVERITY_ASSETS, ignore_errors=True)
-    layout.build.DMVERITY_ASSETS.mkdir(parents=True)
+    shutil.rmtree(layout.build.DMVERITY_ASSETS_DIR, ignore_errors=True)
+    layout.build.DMVERITY_ASSETS_DIR.mkdir(parents=True)
 
     build_squashfs(layout.build.SQUASHFS)
     for algorithm in hashes.ALGORITHMS:
@@ -98,7 +98,7 @@ def main() -> int:
             signer=signing.BUILTIN,
         )
 
-    relative = layout.build.DMVERITY_ASSETS.relative_to(layout.source.ROOT)
+    relative = layout.build.DMVERITY_ASSETS_DIR.relative_to(layout.source.ROOT_DIR)
     print(f"    Prepared the dm-verity image in {relative}")
     return 0
 

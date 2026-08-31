@@ -91,8 +91,8 @@ def generate_certificate(
 
 
 def main() -> int:
-    shutil.rmtree(layout.build.KEYS, ignore_errors=True)
-    layout.build.KEYS.mkdir(parents=True)
+    shutil.rmtree(layout.build.KEYS_DIR, ignore_errors=True)
+    layout.build.KEYS_DIR.mkdir(parents=True)
     generate_certificate(
         identity=signing.BUILTIN,
         common_name="Builtin IPE policy signing key",

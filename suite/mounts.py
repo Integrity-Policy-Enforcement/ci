@@ -69,7 +69,7 @@ def dmverity(*, prefix: str, algorithm: str, signed: bool) -> None:
         root_hash,
         *signature,
     )
-    mount(DEVICE_MAPPER / name, layout.guest.dmverity_mount(algorithm, signed), "-o", "ro")
+    mount(DEVICE_MAPPER / name, layout.guest.dmverity_mount_dir(algorithm, signed), "-o", "ro")
 
 
 def tmpfs(point: Path) -> None:

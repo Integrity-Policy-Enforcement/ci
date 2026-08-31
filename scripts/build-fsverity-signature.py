@@ -27,8 +27,8 @@ def main() -> int:
         raise SystemExit("signing keys are missing; run prepare-keys.py")
     if not layout.build.KMODULE_TEST_BINARY.is_file():
         raise SystemExit("the test module is missing; run build-kernel-modules.py")
-    shutil.rmtree(layout.build.FSVERITY_ASSETS, ignore_errors=True)
-    layout.build.FSVERITY_ASSETS.mkdir(parents=True)
+    shutil.rmtree(layout.build.FSVERITY_ASSETS_DIR, ignore_errors=True)
+    layout.build.FSVERITY_ASSETS_DIR.mkdir(parents=True)
 
     for algorithm in hashes.ALGORITHMS:
         subprocess.run(
@@ -55,7 +55,7 @@ def main() -> int:
         ).stdout.strip()
         layout.build.fsverity_digest(algorithm).write_text(digest + "\n")
 
-    relative = layout.build.FSVERITY_ASSETS.relative_to(layout.source.ROOT)
+    relative = layout.build.FSVERITY_ASSETS_DIR.relative_to(layout.source.ROOT_DIR)
     print(f"    Prepared the fs-verity signature in {relative}")
     return 0
 
