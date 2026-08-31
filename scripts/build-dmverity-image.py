@@ -59,10 +59,15 @@ def format_hash_tree(
     )
 
 
-def sign_root_hash(root_hash: Path, signature: Path) -> None:
+def sign_root_hash(
+    *,
+    root_hash: Path,
+    signature: Path,
+    signer: signing.Identity,
+) -> None:
     run(
         "openssl", "cms", "-sign", "-binary", "-in", root_hash,
-        "-signer", signing.BUILTIN.certificate, "-inkey", signing.BUILTIN.key,
+        "-signer", signer.certificate, "-inkey", signer.key,
         "-noattr", "-outform", "DER", "-out", signature,
     )
 
@@ -87,6 +92,7 @@ def main() -> int:
         sign_root_hash(
             root_hash=root_hash,
             signature=layout.build.root_hash_signature(algorithm),
+            signer=signing.BUILTIN,
         )
 
     relative = layout.build.DMVERITY_ASSETS.relative_to(layout.source.ROOT)
