@@ -63,7 +63,8 @@ def run_in_child(case: Case) -> dict:
             }
         except BaseException as failure:
             report = error_report(f"{type(failure).__name__}: {clean(failure)}")
-        os.write(write_fd, json.dumps(report).encode())
+        with os.fdopen(write_fd, "w", encoding="utf-8") as pipe:
+            json.dump(report, pipe)
         os._exit(0)
 
     os.close(write_fd)
