@@ -8,7 +8,7 @@ After=ipe-root-policy.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/python3 /run/ipe-tests/start-tests
+ExecStart=/usr/bin/python3 /run/ipe-tests/start-tests.py
 ExecStopPost=/usr/bin/systemctl --force poweroff
 StandardOutput=journal+console
 StandardError=journal+console

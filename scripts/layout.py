@@ -65,7 +65,7 @@ guest: what the tests find after the switch.
     /dev/virtio-ports/ipe-tests-result TAP output collected by scripts/run-vm.py
 
     /run/ipe-tests/                    payload disk (ext4, mounted rw)
-        run-tests                          entry point
+        run-tests.py                       entry point
         layout.py                          absolute paths in the guest
         hashes.py                          the two measurement algorithms
         policies/                         signed copy of the source policy tree
@@ -228,7 +228,7 @@ class guest:
     SECURITYFS = Path("/sys/kernel/security/ipe")
 
     PAYLOAD = Path("/run/ipe-tests")
-    RUNNER = PAYLOAD / "run-tests"
+    RUNNER = PAYLOAD / "run-tests.py"
     TEST_MODULE = PAYLOAD / _TEST_MODULE_NAME
 
     POLICIES = PAYLOAD / _POLICY_DIRECTORY

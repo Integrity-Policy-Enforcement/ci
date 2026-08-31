@@ -3,7 +3,7 @@
 
 IPE evaluates boot_verified for the file being authorized: a file from the
 initramfs matches TRUE, while the same file copied to a separate tmpfs matches
-FALSE. The initrd program image/initrd/boot-verified runs INITRAMFS_CASES
+FALSE. The initrd program image/initrd/boot-verified.py runs INITRAMFS_CASES
 before switch_root and stores their outcomes in /run/ipe-boot-verified.
 
 After switch_root, build() creates reporting-only cases. Each reads one saved

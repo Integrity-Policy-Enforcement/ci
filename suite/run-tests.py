@@ -11,7 +11,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run the suite, appending TAP to the requested result channel."""
     argv = sys.argv[1:] if argv is None else argv
     if len(argv) != 1:
-        print("usage: run-tests <result-channel>", file=sys.stderr)
+        print("usage: run-tests.py <result-channel>", file=sys.stderr)
         return 2
     with Path(argv[0]).open("a", encoding="utf-8") as output:
         return runner.run(output)

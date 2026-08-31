@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
     """Reject command-line arguments and run the service entry point."""
     argv = sys.argv[1:] if argv is None else argv
     if argv:
-        print("usage: start-tests", file=sys.stderr)
+        print("usage: start-tests.py", file=sys.stderr)
         return 2
     return service_main()
 

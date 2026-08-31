@@ -11,4 +11,4 @@ Before=initrd-switch-root.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/lib/ipe-tests/boot-verified
+ExecStart=/usr/lib/ipe-tests/boot-verified.py
