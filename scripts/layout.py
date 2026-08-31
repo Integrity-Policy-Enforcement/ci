@@ -31,7 +31,7 @@ build: what the build scripts make from it.
       kernel-module/              build-kernel-module.py
         ipe_test.ko               loadable module every KMODULE case attempts
       dmverity/                   build-dmverity-image.py
-        dmverity.squashfs         squashfs containing only ipe_test.ko
+        dmverity.squashfs         squashfs used by the dm-verity cases
         dmverity-sha256.hash      sha256 Merkle tree over dmverity.squashfs
         dmverity-sha256.roothash  root of the sha256 tree, as ASCII hex
         dmverity-sha256.p7s       builtin signature over the sha256 root hash
