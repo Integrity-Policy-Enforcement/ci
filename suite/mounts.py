@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-import shutil
 from collections.abc import Generator
 from contextlib import AbstractContextManager, contextmanager
 from functools import partial
@@ -73,10 +72,9 @@ def dmverity(*, prefix: str, algorithm: str, signed: bool) -> None:
     mount(DEVICE_MAPPER / name, layout.guest.dmverity_mount(algorithm, signed), "-o", "ro")
 
 
-def tmpfs(point: Path, module: Path) -> None:
-    """A filesystem with no block device, carrying a copy of the module."""
+def tmpfs(point: Path) -> None:
+    """Mount tmpfs at a directory."""
     mount("tmpfs", point, "-t", "tmpfs")
-    shutil.copy(module, point)
 
 
 def dmverity_scope(*, prefix: str) -> AbstractContextManager[None]:

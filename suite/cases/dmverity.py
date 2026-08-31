@@ -2,6 +2,7 @@
 
 from functools import partial
 
+import files
 import hashes
 import ipe
 import layout
@@ -125,7 +126,8 @@ def build() -> tuple[Batch, ...]:
                     for algorithm in hashes.ALGORITHMS
                     for signed in (True, False)
                 ),
-                partial(mounts.tmpfs, PLAIN, layout.guest.TEST_MODULE),
+                partial(mounts.tmpfs, PLAIN),
+                partial(files.copy_module, PLAIN / MODULE),
             ),
             scope=partial(
                 runtime.batch_scope,

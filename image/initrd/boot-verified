@@ -13,6 +13,7 @@ outcomes as TAP results.
 """
 
 import json
+import shutil
 
 import layout
 import mounts
@@ -23,9 +24,10 @@ from cases.boot import INITRAMFS_CASES
 def main() -> int:
     """Run the initramfs-only cases and leave their outcomes under /run."""
     with mounts.mounted_scope(directory=layout.initrd.BOOT_TMPFS_DIRECTORY):
-        mounts.tmpfs(
-            point=layout.initrd.BOOT_TMPFS_DIRECTORY,
-            module=layout.initrd.TEST_MODULE,
+        mounts.tmpfs(layout.initrd.BOOT_TMPFS_DIRECTORY)
+        shutil.copy(
+            layout.initrd.TEST_MODULE,
+            layout.initrd.BOOT_TMPFS_MODULE,
         )
         outcomes = {case.id: runner.test(case=case) for case in INITRAMFS_CASES}
 
