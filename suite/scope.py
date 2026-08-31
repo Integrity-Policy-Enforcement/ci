@@ -28,7 +28,7 @@ def collection(
     members: Callable[[], AbstractSet[Any]],
     discard: Callable[[Any], None],
 ) -> Generator[None, None, None]:
-    """Discard every member that appears inside the context."""
+    """On exit, remove members that were not present on entry."""
     captured = members()
     try:
         yield
