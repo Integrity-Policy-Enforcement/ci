@@ -38,33 +38,36 @@ def run_in_child(case: Case) -> dict:
     read_fd, write_fd = os.pipe()
     child = os.fork()
     if child == 0:
-        os.close(read_fd)
-        signal.alarm(CASE_TIMEOUT_SECONDS)
         try:
-            with ExitStack() as resources:
-                case_state = CaseState(resources=resources)
-                for step in case.collect:
-                    step(case_state)
-                for step in case.setup:
-                    step(case_state)
-                observation = (
-                    case.trigger(case_state) if case.trigger else Observation()
-                )
-                observation = replace(
-                    observation,
-                    observed=tuple(case_state.observed),
-                )
-            report = {
-                "error": None,
-                "errno": observation.errno,
-                "returncode": observation.returncode,
-                "message": observation.message,
-                "observed": list(observation.observed),
-            }
-        except BaseException as failure:
-            report = error_report(f"{type(failure).__name__}: {clean(failure)}")
-        with os.fdopen(write_fd, "w", encoding="utf-8") as pipe:
-            json.dump(report, pipe)
+            os.close(read_fd)
+            signal.alarm(CASE_TIMEOUT_SECONDS)
+            try:
+                with ExitStack() as resources:
+                    case_state = CaseState(resources=resources)
+                    for step in case.collect:
+                        step(case_state)
+                    for step in case.setup:
+                        step(case_state)
+                    observation = (
+                        case.trigger(case_state) if case.trigger else Observation()
+                    )
+                    observation = replace(
+                        observation,
+                        observed=tuple(case_state.observed),
+                    )
+                report = {
+                    "error": None,
+                    "errno": observation.errno,
+                    "returncode": observation.returncode,
+                    "message": observation.message,
+                    "observed": list(observation.observed),
+                }
+            except BaseException as failure:
+                report = error_report(f"{type(failure).__name__}: {clean(failure)}")
+            with os.fdopen(write_fd, "w", encoding="utf-8") as pipe:
+                json.dump(report, pipe)
+        except BaseException:
+            os._exit(1)
         os._exit(0)
 
     os.close(write_fd)
@@ -75,6 +78,8 @@ def run_in_child(case: Case) -> dict:
         return error_report(f"case exceeded {CASE_TIMEOUT_SECONDS}s")
     if not os.WIFEXITED(status):
         return error_report(f"child terminated abnormally: {status}")
+    if os.WEXITSTATUS(status) != 0:
+        return error_report(f"child exited with status {os.WEXITSTATUS(status)}")
     if not payload:
         return error_report("child produced no result")
     return json.loads(payload)
