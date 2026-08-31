@@ -39,6 +39,7 @@ def run_in_child(case: Case) -> dict:
     child = os.fork()
     if child == 0:
         try:
+            os.setsid()
             os.close(read_fd)
             signal.alarm(CASE_TIMEOUT_SECONDS)
             try:
@@ -74,6 +75,10 @@ def run_in_child(case: Case) -> dict:
     with os.fdopen(read_fd, "rb") as pipe:
         payload = pipe.read()
     _, status = os.waitpid(child, 0)
+    try:
+        os.killpg(child, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
     if os.WIFSIGNALED(status) and os.WTERMSIG(status) == signal.SIGALRM:
         return error_report(f"case exceeded {CASE_TIMEOUT_SECONDS}s")
     if not os.WIFEXITED(status):
