@@ -9,7 +9,7 @@ from scope import ContextFactory, collection, setting
 
 @contextmanager
 def run_scope() -> Generator[None, None, None]:
-    """Restore the policy the run activates and remove the one it adds."""
+    """Restore the original active policy and remove new ipe_test_ policies."""
     with ExitStack() as stack:
         stack.enter_context(
             collection(members=ipe.test_policy_names, discard=ipe.delete_policy)
