@@ -91,7 +91,7 @@ def run_in_child(case: Case) -> dict:
 
 
 def test(case: Case) -> tuple[str, str] | None:
-    """Run one case and put back whatever it disturbed."""
+    """Run one case, check its result, and restore its tracked state."""
     try:
         with (case.scope or runtime.case_scope)():
             result = run_in_child(case)
