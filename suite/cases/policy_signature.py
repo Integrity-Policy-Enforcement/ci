@@ -16,17 +16,9 @@ from assets import (
     TAMPERED_POLICY,
     UNTRUSTED_POLICY,
 )
-from model import Batch, Case, CaseState
+from model import Batch, Case
 
 SECONDARY_KEYRING = "%:.secondary_trusted_keys"
-
-
-def link_intermediate(_state: CaseState) -> None:
-    """Link the intermediate certificate for the secondary-keyring case."""
-    keyring.add_certificate(
-        SECONDARY_KEYRING,
-        layout.guest.INTERMEDIATE_CERTIFICATE,
-    )
 
 
 def tampered_signature() -> bytes:
@@ -61,10 +53,13 @@ def build() -> tuple[Batch, ...]:
         ),
         Case(
             id="policy_signature_secondary_linked_ok",
-            setup=(link_intermediate,),
             scope=partial(
                 runtime.case_scope,
-                partial(keyring.linked_scope, SECONDARY_KEYRING),
+                partial(
+                    keyring.certificates_scope,
+                    keyring=SECONDARY_KEYRING,
+                    certificates=(layout.guest.INTERMEDIATE_CERTIFICATE,),
+                ),
             ),
             trigger=partial(
                 triggers.write_node,
