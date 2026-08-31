@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import errno
-import os
 from dataclasses import dataclass
 from pathlib import Path
 
 import layout
+import nodeio
 
 @dataclass(frozen=True)
 class Policy:
@@ -49,16 +49,6 @@ def node_path(entry: str, policy: Policy | None = None) -> Path:
     )
 
 
-def write(path: Path, data: bytes | str) -> None:
-    """Write to a securityfs node; open/write/close to match the kernel ABI."""
-    payload = data.encode() if isinstance(data, str) else data
-    descriptor = os.open(path, os.O_WRONLY)
-    try:
-        os.write(descriptor, payload)
-    finally:
-        os.close(descriptor)
-
-
 def policy_names() -> frozenset[str]:
     """Every policy the kernel currently holds, by the name it declared."""
     return frozenset(path.name for path in node_path(node.POLICIES).iterdir() if path.is_dir())
@@ -94,20 +84,20 @@ def policy_active(name: str) -> bool:
 
 def deploy_policy(signed: Path) -> None:
     """Write a signed policy into new_policy; the kernel parses and loads it."""
-    write(node_path(node.NEW_POLICY), signed.read_bytes())
+    nodeio.write_path(node_path(node.NEW_POLICY), signed.read_bytes())
 
 
 def activate_policy(name: str) -> None:
     """Make an already-loaded policy the one the kernel enforces."""
     active = policy_path(name) / node.ACTIVE
     if active.read_text().strip() != "1":
-        write(active, "1")
+        nodeio.write_path(active, "1")
 
 
 def delete_policy(name: str) -> None:
     """Remove a loaded policy and verify it is gone."""
     if policy_present(name):
-        write(policy_path(name) / node.DELETE, "1")
+        nodeio.write_path(policy_path(name) / node.DELETE, "1")
     if policy_present(name):
         raise RuntimeError(f"policy {name} was not deleted")
 
@@ -132,12 +122,12 @@ def active_policy() -> str | None:
 
 def set_enforcement(enabled: bool) -> None:
     """Switch IPE between enforcing and permissive."""
-    write(node_path(node.ENFORCE), "1" if enabled else "0")
+    nodeio.write_path(node_path(node.ENFORCE), "1" if enabled else "0")
 
 
 def set_success_audit(enabled: bool) -> None:
     """Toggle whether IPE logs allowed operations."""
-    write(node_path(node.SUCCESS_AUDIT), "1" if enabled else "0")
+    nodeio.write_path(node_path(node.SUCCESS_AUDIT), "1" if enabled else "0")
 
 
 def load_baseline(policy: Policy) -> str:

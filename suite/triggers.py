@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-import os
-
 import ipe
+import nodeio
 from model import CaseState, Observation
 
 
@@ -20,14 +19,11 @@ def write_node(
     _state: CaseState,
 ) -> Observation:
     """Write data to a securityfs node and report the errno."""
-    descriptor = os.open(ipe.node_path(entry, policy), os.O_WRONLY)
     try:
-        os.write(descriptor, data)
+        nodeio.write_path(ipe.node_path(entry, policy), data)
         return Observation(errno=0)
     except OSError as failure:
         return error_observation(failure)
-    finally:
-        os.close(descriptor)
 
 
 def write_node_and_read(
@@ -106,7 +102,7 @@ def write_opened_file(data: bytes, state: CaseState) -> Observation:
     if state.opened_file is None:
         raise RuntimeError("case state holds no open file")
     try:
-        os.write(state.opened_file, data)
+        nodeio.write(state.opened_file, data)
         return Observation(errno=0)
     except OSError as failure:
         return error_observation(failure)
