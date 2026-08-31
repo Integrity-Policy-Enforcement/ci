@@ -2,17 +2,26 @@
 
 import subprocess
 from contextlib import AbstractContextManager
+from functools import partial
 from pathlib import Path
 
-import layout
 from command import capture, run
 from scope import collection
 
 
-def loaded() -> set[str]:
-    """Only the test module: the kernel loads its own without asking."""
-    present = {line.split()[0] for line in capture("lsmod").splitlines()[1:]}
-    return present & {layout.guest.TEST_MODULE.stem}
+def names() -> set[str]:
+    """All module names reported by lsmod."""
+    return {line.split()[0] for line in capture("lsmod").splitlines()[1:]}
+
+
+def loaded(prefix: str) -> set[str]:
+    """Loaded module names beginning with a caller-owned prefix."""
+    return {name for name in names() if name.startswith(prefix)}
+
+
+def is_loaded(name: str) -> bool:
+    """Whether the exact module name is loaded."""
+    return name in names()
 
 
 def insert(path: Path) -> subprocess.CompletedProcess:
@@ -25,6 +34,9 @@ def remove(name: str) -> None:
     run("rmmod", name)
 
 
-def loaded_scope() -> AbstractContextManager[None]:
-    """Track test modules loaded inside one context."""
-    return collection(members=loaded, discard=remove)
+def loaded_scope(*, prefix: str) -> AbstractContextManager[None]:
+    """Track modules loaded under a caller-owned prefix."""
+    return collection(
+        members=partial(loaded, prefix),
+        discard=remove,
+    )

@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import shutil
-from contextlib import AbstractContextManager
+from collections.abc import Generator
+from contextlib import AbstractContextManager, contextmanager
+from functools import partial
 from pathlib import Path
 
 import layout
@@ -11,39 +13,41 @@ from scope import collection
 DEVICE_MAPPER = Path("/dev/mapper")
 
 
-def points() -> set[str]:
-    """Mount points under the test media directory; bounded by prefix."""
-    live = capture("findmnt", "--noheadings", "--raw", "--output", "TARGET").split()
-    return {point for point in live if point.startswith(f"{layout.guest.MEDIA}/")}
+def points(directory: Path) -> set[Path]:
+    """Mount points directly or indirectly below a directory."""
+    live = {
+        Path(point)
+        for point in capture(
+            "findmnt", "--noheadings", "--raw", "--output", "TARGET"
+        ).split()
+    }
+    return {
+        point
+        for point in live
+        if point != directory and point.is_relative_to(directory)
+    }
 
 
-def umount(point: str) -> None:
+def umount(point: Path) -> None:
     """Unmount a single mount point."""
     run("umount", point)
 
 
-def device_name(algorithm: str, signed: bool) -> str:
-    """The device-mapper name for one hash and signature state."""
+def device_name(*, prefix: str, algorithm: str, signed: bool) -> str:
+    """Name one device from its caller-owned prefix and state."""
     state = "signed" if signed else "unsigned"
-    return f"ipe-dmverity-{algorithm}-{state}"
+    return f"{prefix}{algorithm}-{state}"
 
 
-def devices() -> set[str]:
-    """Only the devices the tests open: the root filesystem has one too."""
-    import hashes
-
+def dmverity_devices(prefix: str) -> set[str]:
+    """dm-verity mappings beginning with a caller-owned prefix."""
     listing = capture("dmsetup", "ls")
     present = {line.split()[0] for line in listing.splitlines() if line[:1].isalnum()}
-    ours = {
-        device_name(algorithm, signed)
-        for algorithm in hashes.ALGORITHMS
-        for signed in (True, False)
-    }
-    return present & ours
+    return {name for name in present if name.startswith(prefix)}
 
 
-def close(name: str) -> None:
-    """Close a dm-verity device by name."""
+def close_dmverity(name: str) -> None:
+    """Close a dm-verity mapping by name."""
     run("veritysetup", "close", name)
 
 
@@ -53,9 +57,9 @@ def mount(device: Path | str, point: Path, *options: str) -> None:
     run("mount", *options, device, point)
 
 
-def dmverity(algorithm: str, signed: bool) -> None:
+def dmverity(*, prefix: str, algorithm: str, signed: bool) -> None:
     """Open a dm-verity device over the squashfs image and mount it read-only."""
-    name = device_name(algorithm, signed)
+    name = device_name(prefix=prefix, algorithm=algorithm, signed=signed)
     root_hash = layout.guest.root_hash(algorithm).read_text().strip()
     signature = (
         ["--root-hash-signature", layout.guest.root_hash_signature(algorithm)]
@@ -79,11 +83,27 @@ def tmpfs(point: Path, module: Path) -> None:
     shutil.copy(module, point)
 
 
-def opened_scope() -> AbstractContextManager[None]:
-    """Track dm-verity devices opened inside one context."""
-    return collection(members=devices, discard=close)
+def dmverity_scope(*, prefix: str) -> AbstractContextManager[None]:
+    """Track dm-verity mappings created under a prefix."""
+    return collection(
+        members=partial(dmverity_devices, prefix),
+        discard=close_dmverity,
+    )
 
 
-def mounted_scope() -> AbstractContextManager[None]:
-    """Track filesystems mounted inside one context."""
-    return collection(members=points, discard=umount)
+@contextmanager
+def mounted_scope(*, directory: Path) -> Generator[None, None, None]:
+    """Unmount new mount points below a directory, deepest first."""
+    captured = points(directory)
+    try:
+        yield
+    finally:
+        failures = []
+        created = points(directory) - captured
+        for point in sorted(created, key=lambda path: len(path.parts), reverse=True):
+            try:
+                umount(point)
+            except BaseException as failure:
+                failures.append(failure)
+        if failures:
+            raise BaseExceptionGroup("mount restoration failed", failures)

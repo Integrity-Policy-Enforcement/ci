@@ -2,12 +2,16 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 
+import layout
 import modules
 from model import CaseState, Observation
 
 INSMOD_REFUSED = 1
+# This exact target name also reserves its prefix for case cleanup.
+TEST_MODULE_NAME = layout.guest.TEST_MODULE.stem
 
 
 @dataclass(frozen=True)
@@ -27,14 +31,14 @@ def insert_module(path: Path, _state: CaseState) -> Observation:
     )
 
 
-def test_module_loaded() -> bool:
-    """Whether the test module is currently loaded."""
-    return bool(modules.loaded())
+def test_module_loaded(name: str) -> bool:
+    """Whether the exact test module is currently loaded."""
+    return modules.is_loaded(name)
 
 
 KMODULE = Operation(
     id="kmodule",
     attempt=insert_module,
     refused=INSMOD_REFUSED,
-    completed=test_module_loaded,
+    completed=partial(test_module_loaded, TEST_MODULE_NAME),
 )

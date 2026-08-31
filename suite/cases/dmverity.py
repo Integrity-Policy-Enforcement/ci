@@ -16,6 +16,8 @@ from model import Batch
 
 from . import kmodule
 
+# dm-verity mappings under this prefix are reserved for batch cleanup.
+DMVERITY_DEVICE_PREFIX = "ipe-dmverity-"
 PLAIN = layout.guest.PLAIN_MOUNT
 MODULE = layout.guest.TEST_MODULE.name
 
@@ -114,7 +116,12 @@ def build() -> tuple[Batch, ...]:
             (
                 partial(ipe.set_enforcement, False),
                 *(
-                    partial(mounts.dmverity, algorithm, signed)
+                    partial(
+                        mounts.dmverity,
+                        prefix=DMVERITY_DEVICE_PREFIX,
+                        algorithm=algorithm,
+                        signed=signed,
+                    )
                     for algorithm in hashes.ALGORITHMS
                     for signed in (True, False)
                 ),
@@ -122,8 +129,14 @@ def build() -> tuple[Batch, ...]:
             ),
             scope=partial(
                 runtime.batch_scope,
-                mounts.opened_scope,
-                mounts.mounted_scope,
+                partial(
+                    mounts.dmverity_scope,
+                    prefix=DMVERITY_DEVICE_PREFIX,
+                ),
+                partial(
+                    mounts.mounted_scope,
+                    directory=layout.guest.MEDIA,
+                ),
             ),
         ),
     )

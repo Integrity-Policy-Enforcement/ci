@@ -2,6 +2,7 @@
 
 import shutil
 from contextlib import AbstractContextManager
+from functools import partial
 from pathlib import Path
 
 import layout
@@ -9,11 +10,11 @@ from command import run
 from scope import collection
 
 
-def copies() -> set[Path]:
-    """The module copies a batch made, which outlive it on the payload."""
-    if not layout.guest.FSVERITY_MODULES.is_dir():
+def copies(directory: Path) -> set[Path]:
+    """The files currently present directly under a directory."""
+    if not directory.is_dir():
         return set()
-    return set(layout.guest.FSVERITY_MODULES.iterdir())
+    return {path for path in directory.iterdir() if path.is_file()}
 
 
 def discard(copy: Path) -> None:
@@ -34,6 +35,9 @@ def verity_module(target: Path, algorithm: str, signature: Path | None = None) -
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)
 
 
-def copies_scope() -> AbstractContextManager[None]:
-    """Track module copies created inside one context."""
-    return collection(members=copies, discard=discard)
+def copies_scope(*, directory: Path) -> AbstractContextManager[None]:
+    """Track files created directly under a directory."""
+    return collection(
+        members=partial(copies, directory),
+        discard=discard,
+    )
