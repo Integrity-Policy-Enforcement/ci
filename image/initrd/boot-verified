@@ -1,11 +1,15 @@
 #!/usr/bin/python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Run the cases that need the initramfs, and write down how they came out.
+"""Run the boot_verified cases before switch_root and save their outcomes.
 
-boot_verified is true only while the initramfs is the running root, so these
-cases cannot run once the payload is up.  They are the same Case objects the
-payload runs, driven by the same runner; only the reporting differs, because
-there is no TAP stream yet.
+IPE evaluates boot_verified for the file being authorized: a file from the
+initramfs matches TRUE, while the same file copied to a separate tmpfs matches
+FALSE. The later switch_root removes the initramfs files, so the payload suite
+cannot repeat this comparison.
+
+Run INITRAMFS_CASES with the shared runner and store their outcomes in
+/run/ipe-boot-verified. The payload-side boot batch later reports those saved
+outcomes as TAP results.
 """
 
 import json

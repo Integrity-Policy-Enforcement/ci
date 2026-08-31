@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0-only
-"""What IPE decides about the initramfs, which no case can ask after the switch.
+"""Define the boot_verified cases and expose their saved outcomes to TAP.
 
-boot_verified is true only while the initramfs is the running root.  The cases
-below therefore run in the initramfs, driven by the same runner the payload
-uses; image/initrd/boot-verified writes down how each one came out and the
-batch here reports those outcomes.
+IPE evaluates boot_verified for the file being authorized: a file from the
+initramfs matches TRUE, while the same file copied to a separate tmpfs matches
+FALSE. The initrd program image/initrd/boot-verified runs INITRAMFS_CASES
+before switch_root and stores their outcomes in /run/ipe-boot-verified.
+
+After switch_root, build() creates reporting-only cases. Each reads one saved
+outcome instead of trying to access the removed initramfs files again.
 """
 
 from functools import partial
