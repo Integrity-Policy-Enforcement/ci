@@ -11,7 +11,7 @@ from model import CaseState, Observation
 
 INSMOD_REFUSED = 1
 # This exact target name also reserves its prefix for case cleanup.
-TEST_MODULE_NAME = layout.guest.TEST_MODULE.stem
+KMODULE_TEST_BINARY_NAME = layout.guest.KMODULE_TEST_BINARY.stem
 
 
 @dataclass(frozen=True)
@@ -40,5 +40,5 @@ KMODULE = Operation(
     id="kmodule",
     attempt=insert_module,
     refused=INSMOD_REFUSED,
-    completed=partial(test_module_loaded, TEST_MODULE_NAME),
+    completed=partial(test_module_loaded, KMODULE_TEST_BINARY_NAME),
 )

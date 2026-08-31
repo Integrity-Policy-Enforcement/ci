@@ -9,7 +9,7 @@ import modules
 import runtime
 import steps
 from model import Case
-from operations import KMODULE, TEST_MODULE_NAME
+from operations import KMODULE, KMODULE_TEST_BINARY_NAME
 
 
 def case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
@@ -31,6 +31,6 @@ def case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
         ),
         scope=partial(
             runtime.case_scope,
-            partial(modules.loaded_scope, prefix=TEST_MODULE_NAME),
+            partial(modules.loaded_scope, prefix=KMODULE_TEST_BINARY_NAME),
         ),
     )

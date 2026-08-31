@@ -38,7 +38,10 @@ def make_payload(output: Path) -> None:
             layout.build.DMVERITY_ASSETS,
             staging / layout.guest.DMVERITY_ASSETS.name,
         )
-        shutil.copy(layout.build.TEST_MODULE, staging / layout.guest.TEST_MODULE.name)
+        shutil.copy(
+            layout.build.KMODULE_TEST_BINARY,
+            staging / layout.guest.KMODULE_TEST_BINARY.name,
+        )
         shutil.copytree(
             layout.build.FSVERITY_ASSETS,
             staging / layout.guest.FSVERITY_ASSETS.name,

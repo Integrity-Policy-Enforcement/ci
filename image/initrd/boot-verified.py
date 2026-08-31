@@ -26,8 +26,8 @@ def main() -> int:
     with mounts.mounted_scope(directory=layout.initrd.BOOT_TMPFS_DIRECTORY):
         mounts.tmpfs(layout.initrd.BOOT_TMPFS_DIRECTORY)
         shutil.copy(
-            layout.initrd.TEST_MODULE,
-            layout.initrd.BOOT_TMPFS_MODULE,
+            layout.initrd.KMODULE_TEST_BINARY,
+            layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY,
         )
         outcomes = {case.id: runner.test(case=case) for case in INITRAMFS_CASES}
 

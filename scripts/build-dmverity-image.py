@@ -38,7 +38,10 @@ def build_squashfs(image: Path) -> None:
     """Assemble the squashfs root and pack it into an image."""
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
-        shutil.copy(layout.build.TEST_MODULE, root / layout.build.TEST_MODULE.name)
+        shutil.copy(
+            layout.build.KMODULE_TEST_BINARY,
+            root / layout.build.KMODULE_TEST_BINARY.name,
+        )
         run("mksquashfs", root, image, "-noappend", "-all-root")
 
 
@@ -75,8 +78,8 @@ def sign_root_hash(
 def main() -> int:
     if not signing.BUILTIN.key.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
-    if not layout.build.TEST_MODULE.is_file():
-        raise SystemExit("the test module is missing; run build-kernel-module.py")
+    if not layout.build.KMODULE_TEST_BINARY.is_file():
+        raise SystemExit("the test module is missing; run build-kernel-modules.py")
     shutil.rmtree(layout.build.DMVERITY_ASSETS, ignore_errors=True)
     layout.build.DMVERITY_ASSETS.mkdir(parents=True)
 

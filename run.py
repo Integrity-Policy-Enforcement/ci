@@ -44,8 +44,8 @@ def main(argv: list[str] | None = None) -> int:
     step("Verify kernel configuration")
     run_checked([PYTHON, SCRIPTS / "assert-config.py"])
 
-    step("Build the test kernel module")
-    run_checked([PYTHON, SCRIPTS / "build-kernel-module.py"])
+    step("Build the test kernel modules")
+    run_checked([PYTHON, SCRIPTS / "build-kernel-modules.py"])
 
     step("Prepare the dm-verity image")
     run_checked([PYTHON, SCRIPTS / "build-dmverity-image.py"])

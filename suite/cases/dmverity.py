@@ -20,7 +20,7 @@ from . import kmodule
 # dm-verity mappings under this prefix are reserved for batch cleanup.
 DMVERITY_DEVICE_PREFIX = "ipe-dmverity-"
 PLAIN = layout.guest.PLAIN_MOUNT
-MODULE = layout.guest.TEST_MODULE.name
+MODULE = layout.guest.KMODULE_TEST_BINARY.name
 
 
 def build() -> tuple[Batch, ...]:

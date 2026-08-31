@@ -27,8 +27,8 @@ FALSE_DENY_POLICY = ipe.Policy(
     signed=layout.initrd.BOOT_VERIFIED_FALSE_POLICY,
     name="ipe_test_boot_verified_false",
 )
-INITRAMFS_MODULE = layout.initrd.TEST_MODULE
-TMPFS_MODULE = layout.initrd.BOOT_TMPFS_MODULE
+INITRAMFS_MODULE = layout.initrd.KMODULE_TEST_BINARY
+TMPFS_MODULE = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 
 
 INITRAMFS_CASES = (

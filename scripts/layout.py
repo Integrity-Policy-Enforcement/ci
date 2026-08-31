@@ -28,8 +28,8 @@ build: what the build scripts make from it.
         fsverity-cert.der         DER encoding of fsverity-cert.pem for keyctl
       kernel/                     build-kernel.py, an in-tree build
       kernel-install/             its modules_install staging
-      kernel-module/              build-kernel-module.py
-        ipe_test.ko               loadable module every KMODULE case attempts
+      kernel-modules/             build-kernel-modules.py
+        ipe_test.ko               binary loaded by the KMODULE cases
       dmverity/                   build-dmverity-image.py
         dmverity.squashfs         squashfs used by the dm-verity cases
         dmverity-sha256.hash      sha256 Merkle tree over dmverity.squashfs
@@ -82,7 +82,7 @@ guest: what the tests find after the switch.
             ipe_test-sha256.p7s                signature over the sha256 digest
             ipe_test-sha512.digest             sha512 digest of ipe_test.ko
             ipe_test-sha512.p7s                signature over the sha512 digest
-        ipe_test.ko                        the module the copies are made from
+        ipe_test.ko                        KMODULE test binary
         fsverity-modules/                  a batch writes these, a scope removes
             signed-sha256-ipe_test.ko          sha256 fs-verity digest and signature
             unsigned-sha256-ipe_test.ko        sha256 fs-verity digest, no signature
@@ -100,7 +100,7 @@ guest: what the tests find after the switch.
 
 from pathlib import Path
 
-_TEST_MODULE_NAME = "ipe_test.ko"
+_KMODULE_TEST_BINARY_NAME = "ipe_test.ko"
 _DMVERITY_DIRECTORY = "dmverity"
 _FSVERITY_DIRECTORY = "fsverity"
 _POLICY_DIRECTORY = "policies"
@@ -144,7 +144,7 @@ class source:
     SUITE = ROOT / "suite"
     IMAGE = ROOT / "image"
     POLICIES = ROOT / "policies"
-    KERNEL_MODULE = ROOT / "kernel-module" / "ipe-test-module.c"
+    KERNEL_MODULES = ROOT / "kernel-modules"
     KERNEL_CONFIG = ROOT / "config" / "ipe-tests.config"
     BOOT_POLICY = ROOT / "config" / "boot-policy.pol"
 
@@ -165,8 +165,8 @@ class build:
     KERNEL_STAGING = ROOT / "kernel-install"
     KERNEL_CONFIG = KERNEL / ".config"
 
-    KERNEL_MODULE = ROOT / "kernel-module"
-    TEST_MODULE = KERNEL_MODULE / _TEST_MODULE_NAME
+    KERNEL_MODULES = ROOT / "kernel-modules"
+    KMODULE_TEST_BINARY = KERNEL_MODULES / _KMODULE_TEST_BINARY_NAME
 
     POLICIES = ROOT / _POLICY_DIRECTORY
     SECONDARY_POLICY_TEXT = (
@@ -229,7 +229,7 @@ class guest:
 
     PAYLOAD = Path("/run/ipe-tests")
     RUNNER = PAYLOAD / "run-tests.py"
-    TEST_MODULE = PAYLOAD / _TEST_MODULE_NAME
+    KMODULE_TEST_BINARY = PAYLOAD / _KMODULE_TEST_BINARY_NAME
 
     POLICIES = PAYLOAD / _POLICY_DIRECTORY
 
@@ -284,17 +284,17 @@ class guest:
         return guest.FSVERITY_ASSETS / _fsverity_digest_name(algorithm)
 
     FSVERITY_MODULES = PAYLOAD / "fsverity-modules"
-    FSVERITY_PLAIN_MODULE = FSVERITY_MODULES / f"plain-{_TEST_MODULE_NAME}"
+    FSVERITY_PLAIN_MODULE = FSVERITY_MODULES / f"plain-{_KMODULE_TEST_BINARY_NAME}"
 
     @staticmethod
     def fsverity_unsigned_module(algorithm: str) -> Path:
         """The copy with fs-verity enabled without a signature."""
-        return guest.FSVERITY_MODULES / f"unsigned-{algorithm}-{_TEST_MODULE_NAME}"
+        return guest.FSVERITY_MODULES / f"unsigned-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
 
     @staticmethod
     def fsverity_signed_module(algorithm: str) -> Path:
         """The copy with fs-verity enabled with a signature."""
-        return guest.FSVERITY_MODULES / f"signed-{algorithm}-{_TEST_MODULE_NAME}"
+        return guest.FSVERITY_MODULES / f"signed-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
 
     MEDIA = Path("/run/ipe-media")
 
@@ -312,10 +312,12 @@ class initrd:
     FSVERITY_CERTIFICATE = IPE / _FSVERITY_CERTIFICATE_NAME
 
     TESTS = Path("/usr/lib/ipe-tests")
-    TEST_MODULE = TESTS / _TEST_MODULE_NAME
+    KMODULE_TEST_BINARY = TESTS / _KMODULE_TEST_BINARY_NAME
     BOOT_VERIFIED_TRUE_POLICY = TESTS / "boot-verified-true.p7s"
     BOOT_VERIFIED_FALSE_POLICY = TESTS / "boot-verified-false.p7s"
 
     BOOT_VERIFIED_RECORD = Path("/run/ipe-boot-verified")
     BOOT_TMPFS_DIRECTORY = Path("/run/ipe-boot-verified-tmpfs")
-    BOOT_TMPFS_MODULE = BOOT_TMPFS_DIRECTORY / _TEST_MODULE_NAME
+    BOOT_TMPFS_KMODULE_TEST_BINARY = (
+        BOOT_TMPFS_DIRECTORY / _KMODULE_TEST_BINARY_NAME
+    )

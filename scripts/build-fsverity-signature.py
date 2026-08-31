@@ -25,15 +25,15 @@ import signing
 def main() -> int:
     if not signing.FSVERITY.key.is_file():
         raise SystemExit("signing keys are missing; run prepare-keys.py")
-    if not layout.build.TEST_MODULE.is_file():
-        raise SystemExit("the test module is missing; run build-kernel-module.py")
+    if not layout.build.KMODULE_TEST_BINARY.is_file():
+        raise SystemExit("the test module is missing; run build-kernel-modules.py")
     shutil.rmtree(layout.build.FSVERITY_ASSETS, ignore_errors=True)
     layout.build.FSVERITY_ASSETS.mkdir(parents=True)
 
     for algorithm in hashes.ALGORITHMS:
         subprocess.run(
             [
-                "fsverity", "sign", str(layout.build.TEST_MODULE),
+                "fsverity", "sign", str(layout.build.KMODULE_TEST_BINARY),
                 str(layout.build.fsverity_signature(algorithm)),
                 f"--key={signing.FSVERITY.key}", f"--cert={signing.FSVERITY.certificate}",
                 f"--hash-alg={algorithm}",
@@ -45,7 +45,7 @@ def main() -> int:
             [
                 "fsverity",
                 "digest",
-                str(layout.build.TEST_MODULE),
+                str(layout.build.KMODULE_TEST_BINARY),
                 f"--hash-alg={algorithm}",
                 "--compact",
             ],
