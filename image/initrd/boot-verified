@@ -18,14 +18,13 @@ from cases.boot import INITRAMFS_CASES
 
 def main() -> int:
     """Run the initramfs-only cases and leave their outcomes under /run."""
-    mounts.tmpfs(
-        point=layout.initrd.BOOT_TMPFS_DIRECTORY,
-        module=layout.initrd.TEST_MODULE,
-    )
+    with mounts.mounted_scope(directory=layout.initrd.BOOT_TMPFS_DIRECTORY):
+        mounts.tmpfs(
+            point=layout.initrd.BOOT_TMPFS_DIRECTORY,
+            module=layout.initrd.TEST_MODULE,
+        )
+        outcomes = {case.id: runner.test(case=case) for case in INITRAMFS_CASES}
 
-    outcomes = {case.id: runner.test(case=case) for case in INITRAMFS_CASES}
-
-    mounts.umount(point=layout.initrd.BOOT_TMPFS_DIRECTORY)
     layout.initrd.BOOT_VERIFIED_RECORD.write_text(json.dumps(outcomes) + "\n")
     return 0
 

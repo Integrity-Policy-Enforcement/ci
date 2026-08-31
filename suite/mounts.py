@@ -21,11 +21,7 @@ def points(directory: Path) -> set[Path]:
             "findmnt", "--noheadings", "--raw", "--output", "TARGET"
         ).split()
     }
-    return {
-        point
-        for point in live
-        if point != directory and point.is_relative_to(directory)
-    }
+    return {point for point in live if point.is_relative_to(directory)}
 
 
 def umount(point: Path) -> None:
