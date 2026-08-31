@@ -49,7 +49,7 @@ build: what the build scripts make from it.
 initrd: what boots before the real root, and what it leaves behind.
 
     /usr/lib/ipe/
-        fsverity-cert.der                  added to .fs-verity, then closed
+        fsverity-cert.der                  added before .fs-verity is sealed
     /usr/lib/ipe-tests/                the suite and layout.py; the boot path uses:
         ipe_test.ko                        the module the cases load
         boot-verified-true.p7s             allow KMODULE when boot_verified

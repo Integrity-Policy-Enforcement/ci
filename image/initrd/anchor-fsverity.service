@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 [Unit]
-Description=Anchor the fs-verity keyring and close it
+Description=Load the fs-verity certificate and seal the keyring
 DefaultDependencies=no
 Before=initrd-root-fs.target
 
@@ -10,4 +10,5 @@ Type=oneshot
 RemainAfterExit=yes
 StandardInput=file:/usr/lib/ipe/fsverity-cert.der
 ExecStart=/usr/bin/keyctl padd asymmetric "" %%:.fs-verity
+# With no restriction scheme, restrict_keyring seals .fs-verity against later links.
 ExecStart=/usr/bin/keyctl restrict_keyring %%:.fs-verity
