@@ -58,7 +58,16 @@ def tap_failures(path: Path) -> list[str]:
     )
     if parsed.returncode == 0:
         return []
-    report = [line.strip() for line in parsed.stdout.splitlines() if line.strip()]
+    report = [
+        line.strip()
+        for stream in (parsed.stdout, parsed.stderr)
+        for line in stream.splitlines()
+        if line.strip()
+    ]
+    if not report:
+        return [
+            f"TAP parser exited with code {parsed.returncode} without diagnostics"
+        ]
     return [f"TAP parser: {line}" for line in report[-20:]]
 
 
