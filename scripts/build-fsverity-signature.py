@@ -41,13 +41,18 @@ def main() -> int:
             check=True,
             stdout=subprocess.DEVNULL,
         )
-        reported = subprocess.run(
-            ["fsverity", "digest", str(layout.build.TEST_MODULE), f"--hash-alg={algorithm}"],
+        digest = subprocess.run(
+            [
+                "fsverity",
+                "digest",
+                str(layout.build.TEST_MODULE),
+                f"--hash-alg={algorithm}",
+                "--compact",
+            ],
             check=True,
             capture_output=True,
             text=True,
-        ).stdout.split()[0]
-        _, _, digest = reported.partition(":")
+        ).stdout.strip()
         layout.build.fsverity_digest(algorithm).write_text(digest + "\n")
 
     relative = layout.build.FSVERITY_ASSETS.relative_to(layout.source.ROOT)
