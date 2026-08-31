@@ -34,12 +34,6 @@ def run(*command: object, **kwargs: object) -> subprocess.CompletedProcess:
     )
 
 
-def capture(*command: object) -> str:
-    return subprocess.run(
-        [str(part) for part in command], check=True, capture_output=True, text=True
-    ).stdout
-
-
 def build_squashfs(image: Path) -> None:
     """Assemble the squashfs root and pack it into an image."""
     with tempfile.TemporaryDirectory() as temporary:
@@ -48,12 +42,21 @@ def build_squashfs(image: Path) -> None:
         run("mksquashfs", root, image, "-noappend", "-all-root")
 
 
-def format_hash_tree(image: Path, hash_tree: Path, algorithm: str) -> str:
-    formatted = capture("veritysetup", "format", image, hash_tree, f"--hash={algorithm}")
-    for line in formatted.splitlines():
-        if line.startswith("Root hash:"):
-            return line.split()[-1]
-    raise SystemExit("veritysetup printed no root hash")
+def format_hash_tree(
+    image: Path,
+    hash_tree: Path,
+    root_hash: Path,
+    algorithm: str,
+) -> None:
+    """Build one Merkle tree and write its root hash to a file."""
+    run(
+        "veritysetup",
+        "format",
+        image,
+        hash_tree,
+        f"--hash={algorithm}",
+        f"--root-hash-file={root_hash}",
+    )
 
 
 def sign_root_hash(root_hash: Path, signature: Path) -> None:
@@ -74,15 +77,15 @@ def main() -> int:
 
     build_squashfs(layout.build.SQUASHFS)
     for algorithm in hashes.ALGORITHMS:
-        root_hash = format_hash_tree(
-            layout.build.SQUASHFS,
-            layout.build.hash_tree(algorithm),
-            algorithm,
+        root_hash = layout.build.root_hash(algorithm)
+        format_hash_tree(
+            image=layout.build.SQUASHFS,
+            hash_tree=layout.build.hash_tree(algorithm),
+            root_hash=root_hash,
+            algorithm=algorithm,
         )
-        root_hash_file = layout.build.root_hash(algorithm)
-        root_hash_file.write_text(root_hash)
         sign_root_hash(
-            root_hash=root_hash_file,
+            root_hash=root_hash,
             signature=layout.build.root_hash_signature(algorithm),
         )
 
