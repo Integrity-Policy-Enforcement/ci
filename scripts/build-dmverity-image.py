@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Build the dm-verity image the tests open, signed and unsigned.
+"""Build the dm-verity test image, hash trees, root hashes, and signatures.
 
     build/dmverity/
         dmverity.squashfs     holds ipe_test.ko, nothing else
