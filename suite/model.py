@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class Observation:
-    """Facts one trigger reports to its expectations and postcondition."""
+    """A case's errno, return code, message, and observed values."""
 
     errno: int | None = None
     returncode: int | None = None
