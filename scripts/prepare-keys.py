@@ -26,7 +26,6 @@ kernel and the image that trust them.
 
 import shutil
 import subprocess
-from pathlib import Path
 
 import layout
 import signing
@@ -67,72 +66,69 @@ def openssl(*args: object, **kwargs: object) -> None:
 
 
 def generate_certificate(
-    key: Path,
-    certificate: Path,
+    *,
+    identity: signing.Identity,
     common_name: str,
     extensions: str,
-    issuer: Path | None = None,
-    issuer_key: Path | None = None,
+    issuer: signing.Identity | None = None,
 ) -> None:
-    signer = ["-CA", issuer, "-CAkey", issuer_key] if issuer else []
+    signer = (
+        ["-CA", issuer.certificate, "-CAkey", issuer.key]
+        if issuer
+        else []
+    )
     openssl(
         "req", "-new", "-nodes", "-sha256", "-days", "3", "-batch", "-x509",
-        "-config", "/dev/stdin", "-keyout", key, "-out", certificate, *signer,
+        "-config", "/dev/stdin",
+        "-keyout", identity.key,
+        "-out", identity.certificate,
+        *signer,
         input=CERTIFICATE_CONFIG.format(common_name=common_name, extensions=extensions),
         text=True,
         stderr=subprocess.DEVNULL,
     )
-    key.chmod(0o600)
+    identity.key.chmod(0o600)
 
 
 def main() -> int:
     shutil.rmtree(layout.build.KEYS, ignore_errors=True)
     layout.build.KEYS.mkdir(parents=True)
     generate_certificate(
-        signing.BUILTIN.key,
-        signing.BUILTIN.certificate,
-        "Builtin IPE policy signing key",
-        AUTHORITY_EXTENSIONS,
+        identity=signing.BUILTIN,
+        common_name="Builtin IPE policy signing key",
+        extensions=AUTHORITY_EXTENSIONS,
     )
     generate_certificate(
-        signing.UNTRUSTED.key,
-        signing.UNTRUSTED.certificate,
-        "Untrusted IPE policy signing key",
-        LEAF_EXTENSIONS,
+        identity=signing.UNTRUSTED,
+        common_name="Untrusted IPE policy signing key",
+        extensions=LEAF_EXTENSIONS,
     )
     generate_certificate(
-        signing.INTERMEDIATE.key,
-        signing.INTERMEDIATE.certificate,
-        "Intermediate IPE policy authority",
-        AUTHORITY_EXTENSIONS,
-        signing.BUILTIN.certificate,
-        signing.BUILTIN.key,
+        identity=signing.INTERMEDIATE,
+        common_name="Intermediate IPE policy authority",
+        extensions=AUTHORITY_EXTENSIONS,
+        issuer=signing.BUILTIN,
     )
     generate_certificate(
-        signing.SECONDARY.key,
-        signing.SECONDARY.certificate,
-        "Secondary keyring IPE policy signing key",
-        LEAF_EXTENSIONS,
-        signing.INTERMEDIATE.certificate,
-        signing.INTERMEDIATE.key,
+        identity=signing.SECONDARY,
+        common_name="Secondary keyring IPE policy signing key",
+        extensions=LEAF_EXTENSIONS,
+        issuer=signing.INTERMEDIATE,
     )
     generate_certificate(
-        signing.REVOKED.key,
-        signing.REVOKED.certificate,
-        "Revoked IPE policy signing key",
-        LEAF_EXTENSIONS,
+        identity=signing.REVOKED,
+        common_name="Revoked IPE policy signing key",
+        extensions=LEAF_EXTENSIONS,
     )
     generate_certificate(
-        signing.FSVERITY.key,
-        signing.FSVERITY.certificate,
-        "fs-verity file signing key",
-        LEAF_EXTENSIONS,
+        identity=signing.FSVERITY,
+        common_name="fs-verity file signing key",
+        extensions=LEAF_EXTENSIONS,
     )
     generate_certificate(
-        signing.SECUREBOOT.key,
-        signing.SECUREBOOT.certificate,
-        "Ephemeral Secure Boot signing key",
-        LEAF_EXTENSIONS,
+        identity=signing.SECUREBOOT,
+        common_name="Ephemeral Secure Boot signing key",
+        extensions=LEAF_EXTENSIONS,
     )
     openssl(
         "x509", "-in", signing.FSVERITY.certificate, "-outform", "DER",
