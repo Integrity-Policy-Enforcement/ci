@@ -10,11 +10,11 @@ import layout
 import runtime
 import triggers
 from assets import (
-    PLATFORM_POLICY,
-    REVOKED_POLICY,
-    SECONDARY_POLICY,
-    TAMPERED_POLICY,
-    UNTRUSTED_POLICY,
+    PLATFORM_KEYRING_SIGNATURE_POLICY,
+    REVOKED_SIGNATURE_POLICY,
+    SECONDARY_KEYRING_SIGNATURE_POLICY,
+    TAMPERED_SIGNATURE_POLICY,
+    UNTRUSTED_SIGNATURE_POLICY,
 )
 from model import Batch, Case
 
@@ -27,7 +27,7 @@ def tampered_signature() -> bytes:
     replacement = layout.guest.TAMPERED_POLICY_REPLACEMENT.read_bytes()
     if len(replacement) != len(original):
         raise RuntimeError("tampered policy texts differ in length")
-    signed = TAMPERED_POLICY.signed.read_bytes()
+    signed = TAMPERED_SIGNATURE_POLICY.signed.read_bytes()
     if signed.count(original) != 1:
         raise RuntimeError("signed policy does not contain its text exactly once")
     return signed.replace(original, replacement)
@@ -44,11 +44,11 @@ def build() -> tuple[Batch, ...]:
                 triggers.write_node,
                 ipe.node.NEW_POLICY,
                 None,
-                UNTRUSTED_POLICY.signed.read_bytes(),
+                UNTRUSTED_SIGNATURE_POLICY.signed.read_bytes(),
             ),
             checks=(
                 partial(checks.errno_is, errno.ENOKEY),
-                partial(checks.policy_present_is, UNTRUSTED_POLICY, False),
+                partial(checks.policy_present_is, UNTRUSTED_SIGNATURE_POLICY, False),
             ),
         ),
         Case(
@@ -65,11 +65,11 @@ def build() -> tuple[Batch, ...]:
                 triggers.write_node,
                 ipe.node.NEW_POLICY,
                 None,
-                SECONDARY_POLICY.signed.read_bytes(),
+                SECONDARY_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
             ),
             checks=(
                 partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, SECONDARY_POLICY, True),
+                partial(checks.policy_present_is, SECONDARY_KEYRING_SIGNATURE_POLICY, True),
             ),
         ),
         Case(
@@ -78,11 +78,11 @@ def build() -> tuple[Batch, ...]:
                 triggers.write_node,
                 ipe.node.NEW_POLICY,
                 None,
-                SECONDARY_POLICY.signed.read_bytes(),
+                SECONDARY_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
             ),
             checks=(
                 partial(checks.errno_is, errno.ENOKEY),
-                partial(checks.policy_present_is, SECONDARY_POLICY, False),
+                partial(checks.policy_present_is, SECONDARY_KEYRING_SIGNATURE_POLICY, False),
             ),
         ),
         Case(
@@ -91,11 +91,11 @@ def build() -> tuple[Batch, ...]:
                 triggers.write_node,
                 ipe.node.NEW_POLICY,
                 None,
-                PLATFORM_POLICY.signed.read_bytes(),
+                PLATFORM_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
             ),
             checks=(
                 partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, PLATFORM_POLICY, True),
+                partial(checks.policy_present_is, PLATFORM_KEYRING_SIGNATURE_POLICY, True),
             ),
         ),
         Case(
@@ -104,11 +104,11 @@ def build() -> tuple[Batch, ...]:
                 triggers.write_node,
                 ipe.node.NEW_POLICY,
                 None,
-                REVOKED_POLICY.signed.read_bytes(),
+                REVOKED_SIGNATURE_POLICY.signed.read_bytes(),
             ),
             checks=(
                 partial(checks.errno_is, errno.EKEYREJECTED),
-                partial(checks.policy_present_is, REVOKED_POLICY, False),
+                partial(checks.policy_present_is, REVOKED_SIGNATURE_POLICY, False),
             ),
         ),
         Case(
@@ -121,7 +121,7 @@ def build() -> tuple[Batch, ...]:
             ),
             checks=(
                 partial(checks.errno_is, errno.EKEYREJECTED),
-                partial(checks.policy_present_is, TAMPERED_POLICY, False),
+                partial(checks.policy_present_is, TAMPERED_SIGNATURE_POLICY, False),
             ),
         ),
         ),

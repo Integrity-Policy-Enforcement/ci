@@ -43,31 +43,26 @@ LIFECYCLE_POLICY_MALFORMED = policy(
     "ipe_test_policy_lifecycle",
 )
 
-# policy signature cases sign this policy with a key the blacklist holds,
-REVOKED_POLICY = ipe.Policy(
+REVOKED_SIGNATURE_POLICY = ipe.Policy(
     signed=layout.guest.REVOKED_POLICY_SIGNATURE,
     name="ipe_test_signature_revoked",
 )
 
-# this one with a key no keyring trusts,
-UNTRUSTED_POLICY = ipe.Policy(
+UNTRUSTED_SIGNATURE_POLICY = ipe.Policy(
     signed=layout.guest.UNTRUSTED_POLICY_SIGNATURE,
     name="ipe_test_signature_untrusted",
 )
 
-# and replace this one's text after signing with a copy claiming a higher version.
-TAMPERED_POLICY = ipe.Policy(
+TAMPERED_SIGNATURE_POLICY = ipe.Policy(
     signed=layout.guest.TAMPERED_POLICY_SIGNATURE,
     name="ipe_test_signature_tampered",
 )
 
-# and this one with a leaf whose issuer must first be linked into a keyring.
-SECONDARY_POLICY = ipe.Policy(
+SECONDARY_KEYRING_SIGNATURE_POLICY = ipe.Policy(
     signed=layout.guest.SECONDARY_POLICY_SIGNATURE,
     name="ipe_test_signature_secondary",
 )
-# and this one with the Secure Boot key the firmware already trusts.
-PLATFORM_POLICY = ipe.Policy(
+PLATFORM_KEYRING_SIGNATURE_POLICY = ipe.Policy(
     signed=layout.guest.PLATFORM_POLICY_SIGNATURE,
     name="ipe_test_signature_platform",
 )
