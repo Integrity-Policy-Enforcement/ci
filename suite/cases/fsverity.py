@@ -8,9 +8,9 @@ import ipe
 import layout
 import runtime
 from assets import (
-    FSVERITY_SIGNATURE_FALSE_POLICY,
-    FSVERITY_SIGNATURE_TRUE_POLICY,
-    digest_policy,
+    KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+    KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    kmodule_fsverity_digest_policy,
 )
 from model import Batch
 
@@ -25,86 +25,86 @@ def build() -> tuple[Batch, ...]:
             (
                 kmodule.case(
                     "kmodule_fsverity_signature_true_signed_ok",
-                    FSVERITY_SIGNATURE_TRUE_POLICY,
-                    layout.guest.fsverity_signed_module("sha256"),
+                    KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    layout.guest.fsverity_signed_kmodule_test_binary("sha256"),
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_signature_true_unsigned_denied",
-                    FSVERITY_SIGNATURE_TRUE_POLICY,
-                    layout.guest.fsverity_unsigned_module("sha256"),
+                    KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    layout.guest.fsverity_unsigned_kmodule_test_binary("sha256"),
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_signature_true_plain_denied",
-                    FSVERITY_SIGNATURE_TRUE_POLICY,
-                    layout.guest.FSVERITY_PLAIN_MODULE,
+                    KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_signature_false_signed_ok",
-                    FSVERITY_SIGNATURE_FALSE_POLICY,
-                    layout.guest.fsverity_signed_module("sha256"),
+                    KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    layout.guest.fsverity_signed_kmodule_test_binary("sha256"),
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_signature_false_unsigned_denied",
-                    FSVERITY_SIGNATURE_FALSE_POLICY,
-                    layout.guest.fsverity_unsigned_module("sha256"),
+                    KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    layout.guest.fsverity_unsigned_kmodule_test_binary("sha256"),
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_signature_false_plain_denied",
-                    FSVERITY_SIGNATURE_FALSE_POLICY,
-                    layout.guest.FSVERITY_PLAIN_MODULE,
+                    KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_digest_sha256_signed_ok",
-                    digest_policy("sha256"),
-                    layout.guest.fsverity_signed_module("sha256"),
+                    kmodule_fsverity_digest_policy("sha256"),
+                    layout.guest.fsverity_signed_kmodule_test_binary("sha256"),
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_digest_sha256_unsigned_ok",
-                    digest_policy("sha256"),
-                    layout.guest.fsverity_unsigned_module("sha256"),
+                    kmodule_fsverity_digest_policy("sha256"),
+                    layout.guest.fsverity_unsigned_kmodule_test_binary("sha256"),
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_digest_sha256_plain_denied",
-                    digest_policy("sha256"),
-                    layout.guest.FSVERITY_PLAIN_MODULE,
+                    kmodule_fsverity_digest_policy("sha256"),
+                    layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_digest_sha512_signed_ok",
-                    digest_policy("sha512"),
-                    layout.guest.fsverity_signed_module("sha512"),
+                    kmodule_fsverity_digest_policy("sha512"),
+                    layout.guest.fsverity_signed_kmodule_test_binary("sha512"),
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_digest_sha512_unsigned_ok",
-                    digest_policy("sha512"),
-                    layout.guest.fsverity_unsigned_module("sha512"),
+                    kmodule_fsverity_digest_policy("sha512"),
+                    layout.guest.fsverity_unsigned_kmodule_test_binary("sha512"),
                     allowed=True,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_digest_sha512_plain_denied",
-                    digest_policy("sha512"),
-                    layout.guest.FSVERITY_PLAIN_MODULE,
+                    kmodule_fsverity_digest_policy("sha512"),
+                    layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_digest_sha256_mismatch_denied",
-                    digest_policy("sha256", matching=False),
-                    layout.guest.fsverity_signed_module("sha256"),
+                    kmodule_fsverity_digest_policy("sha256", matching=False),
+                    layout.guest.fsverity_signed_kmodule_test_binary("sha256"),
                     allowed=False,
                 ),
                 kmodule.case(
                     "kmodule_fsverity_digest_sha512_mismatch_denied",
-                    digest_policy("sha512", matching=False),
-                    layout.guest.fsverity_signed_module("sha512"),
+                    kmodule_fsverity_digest_policy("sha512", matching=False),
+                    layout.guest.fsverity_signed_kmodule_test_binary("sha512"),
                     allowed=False,
                 ),
             ),
@@ -112,8 +112,8 @@ def build() -> tuple[Batch, ...]:
                 partial(ipe.set_enforcement, False),
                 *(
                     partial(
-                        files.verity_module,
-                        layout.guest.fsverity_signed_module(algorithm),
+                        files.prepare_fsverity_kmodule_test_binary,
+                        layout.guest.fsverity_signed_kmodule_test_binary(algorithm),
                         algorithm,
                         layout.guest.fsverity_signature(algorithm),
                     )
@@ -121,15 +121,15 @@ def build() -> tuple[Batch, ...]:
                 ),
                 *(
                     partial(
-                        files.verity_module,
-                        layout.guest.fsverity_unsigned_module(algorithm),
+                        files.prepare_fsverity_kmodule_test_binary,
+                        layout.guest.fsverity_unsigned_kmodule_test_binary(algorithm),
                         algorithm,
                     )
                     for algorithm in hashes.ALGORITHMS
                 ),
                 partial(
                     files.copy_kmodule_test_binary,
-                    layout.guest.FSVERITY_PLAIN_MODULE,
+                    layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                 ),
             ),
             scope=partial(

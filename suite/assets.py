@@ -74,11 +74,11 @@ KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
     "dmverity/kmodule_signature_false_deny", "ipe_test_dmverity_kmodule_signature_false"
 )
 
-# fs-verity: one module file with a built-in signature, one without.
-FSVERITY_SIGNATURE_TRUE_POLICY = policy(
+# KMODULE policies for signed, unsigned, and plain fs-verity test binaries.
+KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     "fsverity/kmodule_signature_true_allow", "ipe_test_fsverity_kmodule_signature_true"
 )
-FSVERITY_SIGNATURE_FALSE_POLICY = policy(
+KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
     "fsverity/kmodule_signature_false_deny", "ipe_test_fsverity_kmodule_signature_false"
 )
 
@@ -95,7 +95,10 @@ def kmodule_dmverity_roothash_policy(
     )
 
 
-def digest_policy(algorithm: str, matching: bool = True) -> ipe.Policy:
+def kmodule_fsverity_digest_policy(
+    algorithm: str,
+    matching: bool = True,
+) -> ipe.Policy:
     """A policy that names an fs-verity digest, or a value no file has."""
     kind = "" if matching else "mismatch_"
     return policy(

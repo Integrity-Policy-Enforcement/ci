@@ -28,8 +28,12 @@ def copy_kmodule_test_binary(target: Path) -> None:
     shutil.copy(layout.guest.KMODULE_TEST_BINARY, target)
 
 
-def verity_module(target: Path, algorithm: str, signature: Path | None = None) -> None:
-    """Copy the module and enable fs-verity on the copy, optionally with a signature."""
+def prepare_fsverity_kmodule_test_binary(
+    target: Path,
+    algorithm: str,
+    signature: Path | None = None,
+) -> None:
+    """Copy the KMODULE test binary and enable fs-verity on it."""
     copy_kmodule_test_binary(target)
     signed = [f"--signature={signature}"] if signature else []
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)

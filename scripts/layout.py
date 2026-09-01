@@ -295,17 +295,25 @@ class guest:
         return guest.FSVERITY_ASSETS_DIR / _fsverity_digest_name(algorithm)
 
     FSVERITY_MODULES_DIR = PAYLOAD_DIR / "fsverity-modules"
-    FSVERITY_PLAIN_MODULE = FSVERITY_MODULES_DIR / f"plain-{_KMODULE_TEST_BINARY_NAME}"
+    FSVERITY_PLAIN_KMODULE_TEST_BINARY = (
+        FSVERITY_MODULES_DIR / f"plain-{_KMODULE_TEST_BINARY_NAME}"
+    )
 
     @staticmethod
-    def fsverity_unsigned_module(algorithm: str) -> Path:
-        """The copy with fs-verity enabled without a signature."""
-        return guest.FSVERITY_MODULES_DIR / f"unsigned-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
+    def fsverity_unsigned_kmodule_test_binary(algorithm: str) -> Path:
+        """The KMODULE test binary with unsigned fs-verity enabled."""
+        return (
+            guest.FSVERITY_MODULES_DIR
+            / f"unsigned-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
+        )
 
     @staticmethod
-    def fsverity_signed_module(algorithm: str) -> Path:
-        """The copy with fs-verity enabled with a signature."""
-        return guest.FSVERITY_MODULES_DIR / f"signed-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
+    def fsverity_signed_kmodule_test_binary(algorithm: str) -> Path:
+        """The KMODULE test binary with signed fs-verity enabled."""
+        return (
+            guest.FSVERITY_MODULES_DIR
+            / f"signed-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
+        )
 
     MEDIA_DIR = Path("/run/ipe-media")
 
