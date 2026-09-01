@@ -124,7 +124,8 @@ def run(output: TextIO) -> int:
 
     number = 0
     with runtime.run_scope():
-        ipe.load_baseline(BASELINE_POLICY)
+        ipe.deploy_policy(BASELINE_POLICY.signed)
+        ipe.activate_policy(BASELINE_POLICY.name)
         for batch in batches:
             try:
                 with (batch.scope or runtime.batch_scope)():

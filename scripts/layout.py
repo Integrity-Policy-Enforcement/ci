@@ -246,11 +246,6 @@ class guest:
     POLICIES_DIR = PAYLOAD_DIR / _POLICIES_DIR_NAME
 
     @staticmethod
-    def policy_text(asset: str) -> Path:
-        """The absolute path to a policy's text in the guest."""
-        return guest.POLICIES_DIR / f"{asset}.pol"
-
-    @staticmethod
     def policy_signature(asset: str) -> Path:
         """The absolute path to a policy's signature in the guest."""
         return guest.POLICIES_DIR / f"{asset}.p7s"

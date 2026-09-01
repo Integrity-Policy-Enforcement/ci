@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-import errno
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -128,21 +127,3 @@ def set_enforcement(enabled: bool) -> None:
 def set_success_audit(enabled: bool) -> None:
     """Toggle whether IPE logs allowed operations."""
     nodeio.write_path(node_path(node.SUCCESS_AUDIT), "1" if enabled else "0")
-
-
-def load_baseline(policy: Policy) -> str:
-    """Deploy and activate the baseline, or verify the one already loaded matches."""
-    expected_path = policy.signed.with_suffix(".pol")
-    expected = expected_path.read_bytes().rstrip(b"\n")
-    if policy_present(policy.name):
-        loaded = (policy_dir(policy.name) / node.POLICY).read_bytes().rstrip(b"\n")
-        if loaded != expected:
-            raise RuntimeError(f"loaded policy {policy.name} differs from {expected_path}")
-    else:
-        try:
-            deploy_policy(policy.signed)
-        except OSError as failure:
-            if failure.errno != errno.EEXIST:
-                raise
-    activate_policy(policy.name)
-    return policy.name
