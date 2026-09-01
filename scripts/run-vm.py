@@ -30,7 +30,8 @@ def make_payload(output: Path) -> None:
         staging = Path(temporary) / "payload"
         ignored = shutil.ignore_patterns("__pycache__", "*.pyc")
         shutil.copytree(layout.source.SUITE_DIR, staging, ignore=ignored)
-        # The suite imports these siblings, so the payload carries both.
+        # Guest modules import layout.py and hashes.py from /run/ipe-tests, so
+        # copy both files beside run-tests.py.
         shutil.copy(layout.source.LAYOUT, staging / layout.source.LAYOUT.name)
         shutil.copy(layout.source.HASHES, staging / layout.source.HASHES.name)
         shutil.copytree(layout.build.POLICIES_DIR, staging / layout.guest.POLICIES_DIR.name)
