@@ -12,7 +12,7 @@ ExecStart=/usr/bin/python3 /run/ipe-tests/start-tests.py
 ExecStopPost=/usr/bin/systemctl --force poweroff
 StandardOutput=journal+console
 StandardError=journal+console
-TimeoutStartSec=1800
+TimeoutStartSec=infinity
 
 [Install]
 WantedBy=multi-user.target
