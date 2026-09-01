@@ -229,6 +229,7 @@ class build:
 
 
 class guest:
+    # ipe-root-policy.service reads /usr/lib/ipe/root-policy.p7s directly.
     IPE_DIR = Path("/usr/lib/ipe")
     ROOT_POLICY = IPE_DIR / "root-policy.p7s"
 
