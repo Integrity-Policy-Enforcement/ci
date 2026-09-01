@@ -22,15 +22,15 @@ def discard(copy: Path) -> None:
     copy.unlink()
 
 
-def copy_module(target: Path) -> None:
-    """Copy the test module from the payload to a new path."""
+def copy_kmodule_test_binary(target: Path) -> None:
+    """Copy the KMODULE test binary to a new path."""
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(layout.guest.KMODULE_TEST_BINARY, target)
 
 
 def verity_module(target: Path, algorithm: str, signature: Path | None = None) -> None:
     """Copy the module and enable fs-verity on the copy, optionally with a signature."""
-    copy_module(target)
+    copy_kmodule_test_binary(target)
     signed = [f"--signature={signature}"] if signature else []
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)
 

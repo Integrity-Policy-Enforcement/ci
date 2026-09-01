@@ -136,6 +136,13 @@ def _fsverity_digest_name(algorithm: str) -> str:
     return f"ipe_test-{algorithm}.digest"
 
 
+class test_media:
+    """Paths relative to a test-media root."""
+
+    KERNEL_MODULES_DIR = Path("kernel-modules")
+    KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
+
+
 class source:
     ROOT_DIR = Path(__file__).resolve().parent.parent
 
@@ -166,8 +173,8 @@ class build:
     KERNEL_STAGING_DIR = ROOT_DIR / "kernel-install"
     KERNEL_CONFIG = KERNEL_DIR / ".config"
 
-    KERNEL_MODULES_DIR = ROOT_DIR / "kernel-modules"
-    KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
+    KERNEL_MODULES_DIR = ROOT_DIR / test_media.KERNEL_MODULES_DIR
+    KMODULE_TEST_BINARY = ROOT_DIR / test_media.KMODULE_TEST_BINARY
 
     POLICIES_DIR = ROOT_DIR / _POLICIES_DIR_NAME
     SECONDARY_POLICY_TEXT = (
@@ -232,8 +239,8 @@ class guest:
     RUNNER = PAYLOAD_DIR / "run-tests.py"
     LAYOUT_MODULE = PAYLOAD_DIR / "layout.py"
     HASHES_MODULE = PAYLOAD_DIR / "hashes.py"
-    KERNEL_MODULES_DIR = PAYLOAD_DIR / "kernel-modules"
-    KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
+    KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
+    KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
 
     POLICIES_DIR = PAYLOAD_DIR / _POLICIES_DIR_NAME
 
@@ -308,7 +315,16 @@ class guest:
         state = "signed" if signed else "unsigned"
         return guest.MEDIA_DIR / f"dmverity-{algorithm}-{state}"
 
+    @staticmethod
+    def dmverity_kmodule_test_binary(algorithm: str, signed: bool) -> Path:
+        """The KMODULE test binary on a mounted dm-verity image."""
+        return (
+            guest.dmverity_mount_dir(algorithm, signed)
+            / test_media.KMODULE_TEST_BINARY
+        )
+
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"
+    PLAIN_KMODULE_TEST_BINARY = PLAIN_MOUNT_DIR / test_media.KMODULE_TEST_BINARY
 
 
 class initrd:

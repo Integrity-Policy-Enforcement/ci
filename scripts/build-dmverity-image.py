@@ -34,15 +34,9 @@ def run(*command: object, **kwargs: object) -> subprocess.CompletedProcess:
     )
 
 
-def build_squashfs(image: Path) -> None:
-    """Assemble the squashfs root and pack it into an image."""
-    with tempfile.TemporaryDirectory() as temporary:
-        root = Path(temporary)
-        shutil.copy(
-            layout.build.KMODULE_TEST_BINARY,
-            root / layout.build.KMODULE_TEST_BINARY.name,
-        )
-        run("mksquashfs", root, image, "-noappend", "-all-root")
+def build_squashfs(*, content_dir: Path, image: Path) -> None:
+    """Pack a prepared content directory into a squashfs image."""
+    run("mksquashfs", content_dir, image, "-noappend", "-all-root")
 
 
 def format_hash_tree(
@@ -83,7 +77,13 @@ def main() -> int:
     shutil.rmtree(layout.build.DMVERITY_ASSETS_DIR, ignore_errors=True)
     layout.build.DMVERITY_ASSETS_DIR.mkdir(parents=True)
 
-    build_squashfs(layout.build.SQUASHFS)
+    with tempfile.TemporaryDirectory() as temporary:
+        content_dir = Path(temporary)
+        target = content_dir / layout.test_media.KMODULE_TEST_BINARY
+        target.parent.mkdir(parents=True)
+        shutil.copy(layout.build.KMODULE_TEST_BINARY, target)
+        build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)
+
     for algorithm in hashes.ALGORITHMS:
         root_hash = layout.build.root_hash(algorithm)
         format_hash_tree(

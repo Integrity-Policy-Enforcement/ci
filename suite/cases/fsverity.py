@@ -127,7 +127,10 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.ALGORITHMS
                 ),
-                partial(files.copy_module, layout.guest.FSVERITY_PLAIN_MODULE),
+                partial(
+                    files.copy_kmodule_test_binary,
+                    layout.guest.FSVERITY_PLAIN_MODULE,
+                ),
             ),
             scope=partial(
                 runtime.batch_scope,
