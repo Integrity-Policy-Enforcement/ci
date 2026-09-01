@@ -93,9 +93,6 @@ def decide(output: Path) -> tuple[str, list[str]]:
     lines = read_lines(evidence.result(output))
     if not lines:
         return FAIL, ["the guest produced no output"]
-    if "noipe" in lines:
-        return FAIL, ["IPE is unavailable in securityfs"]
-
     tap = tap_failures(evidence.result(output))
     if tap:
         return FAIL, tap

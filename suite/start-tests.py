@@ -37,7 +37,7 @@ def service_main() -> int:
         sys.stderr.write(f"result channel does not exist: {layout.guest.RESULT_CHANNEL}\n")
         return 1
     if not layout.guest.SECURITYFS_DIR.is_dir():
-        emit("noipe")
+        emit("Bail out! IPE unavailable in securityfs")
         log(f"{layout.guest.SECURITYFS_DIR} does not exist")
         return 0
 
