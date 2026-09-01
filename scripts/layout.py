@@ -140,8 +140,8 @@ class source:
     ROOT_DIR = Path(__file__).resolve().parent.parent
 
     SCRIPTS_DIR = ROOT_DIR / "scripts"
-    LAYOUT = SCRIPTS_DIR / "layout.py"
-    HASHES = SCRIPTS_DIR / "hashes.py"
+    LAYOUT_MODULE = SCRIPTS_DIR / "layout.py"
+    HASHES_MODULE = SCRIPTS_DIR / "hashes.py"
     SUITE_DIR = ROOT_DIR / "suite"
     IMAGE_DIR = ROOT_DIR / "image"
     POLICIES_DIR = ROOT_DIR / "policies"
@@ -230,6 +230,8 @@ class guest:
 
     PAYLOAD_DIR = Path("/run/ipe-tests")
     RUNNER = PAYLOAD_DIR / "run-tests.py"
+    LAYOUT_MODULE = PAYLOAD_DIR / "layout.py"
+    HASHES_MODULE = PAYLOAD_DIR / "hashes.py"
     KERNEL_MODULES_DIR = PAYLOAD_DIR / "kernel-modules"
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
 

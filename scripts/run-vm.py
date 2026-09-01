@@ -27,31 +27,44 @@ def make_payload(output: Path) -> None:
     if not tuple(layout.build.POLICIES_DIR.rglob("*.p7s")):
         raise SystemExit("signed policies are missing; run prepare-policies.py")
     with tempfile.TemporaryDirectory() as temporary:
-        staging = Path(temporary) / "payload"
+        staging_dir = Path(temporary) / "payload"
+
+        def staging_path(guest_path: Path) -> Path:
+            return staging_dir / guest_path.relative_to(layout.guest.PAYLOAD_DIR)
+
         ignored = shutil.ignore_patterns("__pycache__", "*.pyc")
-        shutil.copytree(layout.source.SUITE_DIR, staging, ignore=ignored)
-        # Guest modules import layout.py and hashes.py from /run/ipe-tests, so
-        # copy both files beside run-tests.py.
-        shutil.copy(layout.source.LAYOUT, staging / layout.source.LAYOUT.name)
-        shutil.copy(layout.source.HASHES, staging / layout.source.HASHES.name)
-        shutil.copytree(layout.build.POLICIES_DIR, staging / layout.guest.POLICIES_DIR.name)
+        shutil.copytree(layout.source.SUITE_DIR, staging_dir, ignore=ignored)
+        shutil.copy(
+            layout.source.LAYOUT_MODULE,
+            staging_path(layout.guest.LAYOUT_MODULE),
+        )
+        shutil.copy(
+            layout.source.HASHES_MODULE,
+            staging_path(layout.guest.HASHES_MODULE),
+        )
+        shutil.copytree(
+            layout.build.POLICIES_DIR,
+            staging_path(layout.guest.POLICIES_DIR),
+        )
         shutil.copytree(
             layout.build.DMVERITY_ASSETS_DIR,
-            staging / layout.guest.DMVERITY_ASSETS_DIR.name,
+            staging_path(layout.guest.DMVERITY_ASSETS_DIR),
         )
-        kernel_modules = staging / layout.guest.KERNEL_MODULES_DIR.name
-        kernel_modules.mkdir()
-        shutil.copy(layout.build.KMODULE_TEST_BINARY, kernel_modules)
+        staging_path(layout.guest.KERNEL_MODULES_DIR).mkdir()
+        shutil.copy(
+            layout.build.KMODULE_TEST_BINARY,
+            staging_path(layout.guest.KMODULE_TEST_BINARY),
+        )
         shutil.copytree(
             layout.build.FSVERITY_ASSETS_DIR,
-            staging / layout.guest.FSVERITY_ASSETS_DIR.name,
+            staging_path(layout.guest.FSVERITY_ASSETS_DIR),
         )
         with output.open("wb") as stream:
             stream.truncate(48 * 1024 * 1024)
         subprocess.run(
             [
                 "mkfs.ext4", "-q", "-F", "-O", "verity",
-                "-L", "ipe-payload", "-d", staging, output,
+                "-L", "ipe-payload", "-d", staging_dir, output,
             ],
             check=True,
         )
