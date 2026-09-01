@@ -39,17 +39,6 @@ def health_failures(path: Path) -> list[str]:
     return failures
 
 
-def read_lines(path: Path) -> list[str]:
-    if not path.exists():
-        return []
-    lines = []
-    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        stripped = line.strip().strip("\x00")
-        if stripped:
-            lines.append(stripped)
-    return lines
-
-
 def tap_failures(path: Path) -> list[str]:
     parsed = subprocess.run(
         ["prove", "--exec", "cat", path],
@@ -90,18 +79,9 @@ def decide(output: Path) -> tuple[str, list[str]]:
     if health:
         return FAIL, health
 
-    lines = read_lines(evidence.result(output))
-    if not lines:
-        return FAIL, ["the guest produced no output"]
     tap = tap_failures(evidence.result(output))
     if tap:
         return FAIL, tap
-
-    done = [line for line in lines if line.startswith("done rc=")]
-    if not done:
-        return FAIL, ["the guest stopped before its done marker"]
-    if done[-1] != "done rc=0":
-        return FAIL, [f"the guest runner did not exit cleanly: {done[-1]}"]
 
     return PASS, ["all TAP cases passed"]
 

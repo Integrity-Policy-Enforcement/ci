@@ -7,10 +7,6 @@ import sys
 
 import layout
 
-COMMAND_NOT_EXECUTABLE = 126
-COMMAND_NOT_FOUND = 127
-
-
 def emit(line: str) -> None:
     """Write one marker to the result channel."""
     data = (line.replace("\n", " ").replace("\r", " ") + "\n").encode()
@@ -32,7 +28,7 @@ def log(message: str) -> None:
 
 
 def service_main() -> int:
-    """Check that IPE is present, run the suite and report its exit code."""
+    """Check that IPE is present, then run the suite."""
     if not layout.guest.RESULT_CHANNEL.exists():
         sys.stderr.write(f"result channel does not exist: {layout.guest.RESULT_CHANNEL}\n")
         return 1
@@ -46,11 +42,11 @@ def service_main() -> int:
             [sys.executable, layout.guest.RUNNER, layout.guest.RESULT_CHANNEL],
             check=False,
         ).returncode
-    except PermissionError:
-        runner_rc = COMMAND_NOT_EXECUTABLE
-    except OSError:
-        runner_rc = COMMAND_NOT_FOUND
-    emit(f"done rc={runner_rc}")
+    except OSError as failure:
+        emit(f"Bail out! runner failed to start: {failure}")
+    else:
+        if runner_rc:
+            emit(f"Bail out! runner exited {runner_rc}")
     log("test run complete")
     return 0
 
