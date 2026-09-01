@@ -36,8 +36,6 @@ def service_main() -> int:
     if not layout.guest.RESULT_CHANNEL.exists():
         sys.stderr.write(f"result channel does not exist: {layout.guest.RESULT_CHANNEL}\n")
         return 1
-    emit(f"boot {os.uname().release}")
-
     if not layout.guest.SECURITYFS_DIR.is_dir():
         emit("noipe")
         log(f"{layout.guest.SECURITYFS_DIR} does not exist")

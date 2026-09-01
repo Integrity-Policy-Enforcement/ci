@@ -93,8 +93,6 @@ def decide(output: Path) -> tuple[str, list[str]]:
     lines = read_lines(evidence.result(output))
     if not lines:
         return FAIL, ["the guest produced no output"]
-    if not any(line.startswith("boot") for line in lines):
-        return FAIL, ["missing boot marker"]
     if "noipe" in lines:
         return FAIL, ["IPE is unavailable in securityfs"]
 
