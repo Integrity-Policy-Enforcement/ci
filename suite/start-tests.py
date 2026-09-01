@@ -31,14 +31,6 @@ def log(message: str) -> None:
     print(f"[ipe-tests] {message}", flush=True)
 
 
-def read_node(name: str) -> str:
-    """Read an IPE securityfs node, or return ? if it is unavailable."""
-    try:
-        return (layout.guest.SECURITYFS_DIR / name).read_text().rstrip("\n")
-    except OSError:
-        return "?"
-
-
 def service_main() -> int:
     """Check that IPE is present, run the suite and report its exit code."""
     if not layout.guest.RESULT_CHANNEL.exists():
@@ -50,8 +42,6 @@ def service_main() -> int:
         emit("noipe")
         log(f"{layout.guest.SECURITYFS_DIR} does not exist")
         return 0
-
-    emit(f"ipe enforce: {read_node('enforce')}")
 
     try:
         runner_rc = subprocess.run(
