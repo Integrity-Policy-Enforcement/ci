@@ -327,6 +327,7 @@ class guest:
 
 
 class initrd:
+    # anchor-fsverity.service reads /usr/lib/ipe/fsverity-cert.der directly.
     IPE_DIR = Path("/usr/lib/ipe")
     FSVERITY_CERTIFICATE = IPE_DIR / _FSVERITY_CERTIFICATE_NAME
 
