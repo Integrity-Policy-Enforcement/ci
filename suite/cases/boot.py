@@ -21,11 +21,11 @@ from . import kmodule
 
 KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
-    name="ipe_test_boot_verified",
+    name="ipe_test_kmodule_boot_verified_true",
 )
 KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE,
-    name="ipe_test_boot_verified_false",
+    name="ipe_test_kmodule_boot_verified_false",
 )
 INITRAMFS_KMODULE_TEST_BINARY = layout.initrd.KMODULE_TEST_BINARY
 TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY

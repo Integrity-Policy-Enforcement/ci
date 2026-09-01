@@ -1,4 +1,4 @@
-policy_name=ipe_test_boot_verified_false policy_version=0.0.1
+policy_name=ipe_test_kmodule_boot_verified_false policy_version=0.0.1
 DEFAULT action=ALLOW
 DEFAULT op=EXECUTE action=DENY
 op=EXECUTE boot_verified=TRUE action=ALLOW
