@@ -333,8 +333,12 @@ class initrd:
 
     TESTS_DIR = Path("/usr/lib/ipe-tests")
     KMODULE_TEST_BINARY = TESTS_DIR / _KMODULE_TEST_BINARY_NAME
-    BOOT_VERIFIED_TRUE_POLICY = TESTS_DIR / "boot-verified-true.p7s"
-    BOOT_VERIFIED_FALSE_POLICY = TESTS_DIR / "boot-verified-false.p7s"
+    KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
+        TESTS_DIR / "boot-verified-true.p7s"
+    )
+    KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE = (
+        TESTS_DIR / "boot-verified-false.p7s"
+    )
 
     BOOT_VERIFIED_RECORD = Path("/run/ipe-boot-verified")
     BOOT_TMPFS_DIR = Path("/run/ipe-boot-verified-tmpfs")

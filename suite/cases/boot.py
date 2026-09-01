@@ -19,41 +19,41 @@ from model import Batch, Case
 
 from . import kmodule
 
-TRUE_ALLOW_POLICY = ipe.Policy(
-    signed=layout.initrd.BOOT_VERIFIED_TRUE_POLICY,
+KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
+    signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_boot_verified",
 )
-FALSE_DENY_POLICY = ipe.Policy(
-    signed=layout.initrd.BOOT_VERIFIED_FALSE_POLICY,
+KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
+    signed=layout.initrd.KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE,
     name="ipe_test_boot_verified_false",
 )
-INITRAMFS_MODULE = layout.initrd.KMODULE_TEST_BINARY
-TMPFS_MODULE = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
+INITRAMFS_KMODULE_TEST_BINARY = layout.initrd.KMODULE_TEST_BINARY
+TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 
 
 INITRAMFS_CASES = (
     kmodule.case(
         "kmodule_boot_verified_true_initramfs_ok",
-        TRUE_ALLOW_POLICY,
-        INITRAMFS_MODULE,
+        KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        INITRAMFS_KMODULE_TEST_BINARY,
         allowed=True,
     ),
     kmodule.case(
         "kmodule_boot_verified_true_tmpfs_denied",
-        TRUE_ALLOW_POLICY,
-        TMPFS_MODULE,
+        KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        TMPFS_KMODULE_TEST_BINARY,
         allowed=False,
     ),
     kmodule.case(
         "kmodule_boot_verified_false_initramfs_ok",
-        FALSE_DENY_POLICY,
-        INITRAMFS_MODULE,
+        KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        INITRAMFS_KMODULE_TEST_BINARY,
         allowed=True,
     ),
     kmodule.case(
         "kmodule_boot_verified_false_tmpfs_denied",
-        FALSE_DENY_POLICY,
-        TMPFS_MODULE,
+        KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        TMPFS_KMODULE_TEST_BINARY,
         allowed=False,
     ),
 )
