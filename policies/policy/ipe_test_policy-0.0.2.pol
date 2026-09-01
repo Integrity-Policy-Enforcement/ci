@@ -1,2 +1,2 @@
-policy_name=ipe_test_policy policy_version=0.0.2
+policy_name=ipe_test_policy_lifecycle policy_version=0.0.2
 DEFAULT action=ALLOW

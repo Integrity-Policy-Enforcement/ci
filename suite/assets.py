@@ -18,15 +18,30 @@ CAPABILITY_POLICY_V1_VERSION = "0.0.1"
 CAPABILITY_POLICY_V2 = policy("capability/ipe_test_capability-0.0.2", "ipe_test_capability")
 CAPABILITY_POLICY_V2_VERSION = "0.0.2"
 
-# policy cases use an independent policy so they do not alter capability cases.
-POLICY_V1 = policy("policy/ipe_test_policy-0.0.1", "ipe_test_policy")
-POLICY_V1_VERSION = "0.0.1"
+# Lifecycle cases use an independent policy so they do not alter capability cases.
+LIFECYCLE_POLICY_V1 = policy(
+    "policy/ipe_test_policy-0.0.1",
+    "ipe_test_policy_lifecycle",
+)
+LIFECYCLE_POLICY_V1_VERSION = "0.0.1"
 # Below the baseline version, so activating it must be rejected.
-POLICY_V0 = policy("policy/ipe_test_policy-0.0.0", "ipe_test_policy")
-POLICY_V2 = policy("policy/ipe_test_policy-0.0.2", "ipe_test_policy")
-POLICY_V2_VERSION = "0.0.2"
-POLICY_OTHER_NAME = policy("policy/ipe_test_policy-other-name", "ipe_test_policy_other")
-POLICY_MALFORMED = policy("policy/ipe_test_policy-malformed", "ipe_test_policy")
+LIFECYCLE_POLICY_V0 = policy(
+    "policy/ipe_test_policy-0.0.0",
+    "ipe_test_policy_lifecycle",
+)
+LIFECYCLE_POLICY_V2 = policy(
+    "policy/ipe_test_policy-0.0.2",
+    "ipe_test_policy_lifecycle",
+)
+LIFECYCLE_POLICY_V2_VERSION = "0.0.2"
+LIFECYCLE_POLICY_OTHER_NAME = policy(
+    "policy/ipe_test_policy-other-name",
+    "ipe_test_policy_lifecycle_other",
+)
+LIFECYCLE_POLICY_MALFORMED = policy(
+    "policy/ipe_test_policy-malformed",
+    "ipe_test_policy_lifecycle",
+)
 
 # policy signature cases sign this policy with a key the blacklist holds,
 REVOKED_POLICY = ipe.Policy(
