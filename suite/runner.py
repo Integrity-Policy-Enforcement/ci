@@ -121,7 +121,6 @@ def run(output: TextIO) -> int:
     batches = cases.build()
     planned = [case for batch in batches for case in batch.cases]
     emit("TAP version 13")
-    emit(f"1..{len(planned)}")
 
     failures = 0
     number = 0
@@ -148,4 +147,5 @@ def run(output: TextIO) -> int:
                 emit(f"Bail out! batch {batch.id} failed: {clean(failure)}")
                 return 1
 
+    emit(f"1..{len(planned)}")
     return 1 if failures else 0
