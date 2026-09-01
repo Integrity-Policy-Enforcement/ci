@@ -66,12 +66,11 @@ def text_policy(asset: str, name: str = "ipe_test_text") -> ipe.Policy:
 
 TEXT_SPECIAL_NAME_POLICY = text_policy("special_name_ok", "ipe_test_text$-.+")
 
-# dm-verity: a module on an image whose root hash carries a signature,
-# against a rule written as TRUE allow and as FALSE deny.
-KMODULE_SIGNATURE_TRUE_POLICY = policy(
+# KMODULE policies for signed and unsigned dm-verity media.
+KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     "dmverity/kmodule_signature_true_allow", "ipe_test_dmverity_kmodule_signature_true"
 )
-KMODULE_SIGNATURE_FALSE_POLICY = policy(
+KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
     "dmverity/kmodule_signature_false_deny", "ipe_test_dmverity_kmodule_signature_false"
 )
 
@@ -84,7 +83,10 @@ FSVERITY_SIGNATURE_FALSE_POLICY = policy(
 )
 
 
-def roothash_policy(algorithm: str, matching: bool = True) -> ipe.Policy:
+def kmodule_dmverity_roothash_policy(
+    algorithm: str,
+    matching: bool = True,
+) -> ipe.Policy:
     """A policy that names a dm-verity root hash, or a value no device has."""
     kind = "" if matching else "mismatch_"
     return policy(
