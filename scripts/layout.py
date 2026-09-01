@@ -285,11 +285,6 @@ class guest:
         """The guest path to the signature over this digest."""
         return guest.FSVERITY_ASSETS_DIR / _fsverity_signature_name(algorithm)
 
-    @staticmethod
-    def fsverity_digest(algorithm: str) -> Path:
-        """The guest path to the module digest made with this hash."""
-        return guest.FSVERITY_ASSETS_DIR / _fsverity_digest_name(algorithm)
-
     FSVERITY_MODULES_DIR = PAYLOAD_DIR / "fsverity-modules"
     FSVERITY_PLAIN_KMODULE_TEST_BINARY = (
         FSVERITY_MODULES_DIR / f"plain-{_KMODULE_TEST_BINARY_NAME}"
