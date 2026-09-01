@@ -7,6 +7,7 @@ import sys
 
 import layout
 
+
 def emit(line: str) -> None:
     """Write one marker to the result channel."""
     data = (line.replace("\n", " ").replace("\r", " ") + "\n").encode()
