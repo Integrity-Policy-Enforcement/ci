@@ -45,7 +45,17 @@ def device_name(*, prefix: str, algorithm: str, signed: bool) -> str:
 
 
 def dmverity_devices(prefix: str) -> set[str]:
-    """dm-verity mappings beginning with a caller-owned prefix."""
+    """Return dm-verity mappings with the caller-owned prefix.
+
+    For ``prefix = "ipe-dmverity-"``, dmsetup may return::
+
+        root                                (253:0)
+        ipe-dmverity-sha256-signed          (253:1)
+        ipe-dmverity-sha256-unsigned        (253:2)
+
+    ``split()[0]`` selects each mapping name. ``startswith(prefix)`` filters
+    out ``root`` and keeps the two test mappings.
+    """
     listing = capture("dmsetup", "ls")
     present = {line.split()[0] for line in listing.splitlines() if line[:1].isalnum()}
     return {name for name in present if name.startswith(prefix)}
