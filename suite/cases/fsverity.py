@@ -11,9 +11,52 @@ from assets import (
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     kmodule_fsverity_digest_policy,
 )
-from model import Batch
+from model import Batch, Case
 
 from . import kmodule
+
+
+def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
+    """The fs-verity digest cases for one algorithm."""
+    matching_digest_policy = kmodule_fsverity_digest_policy(
+        algorithm=algorithm, matching=True
+    )
+    mismatching_digest_policy = kmodule_fsverity_digest_policy(
+        algorithm=algorithm, matching=False
+    )
+    signed_kmodule_binary = layout.guest.fsverity_signed_kmodule_test_binary(
+        algorithm=algorithm
+    )
+    unsigned_kmodule_binary = layout.guest.fsverity_unsigned_kmodule_test_binary(
+        algorithm=algorithm
+    )
+    plain_kmodule_binary = layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY
+    return (
+        kmodule.case(
+            id=f"kmodule_fsverity_digest_{algorithm}_signed_ok",
+            policy=matching_digest_policy,
+            binary=signed_kmodule_binary,
+            allowed=True,
+        ),
+        kmodule.case(
+            id=f"kmodule_fsverity_digest_{algorithm}_unsigned_ok",
+            policy=matching_digest_policy,
+            binary=unsigned_kmodule_binary,
+            allowed=True,
+        ),
+        kmodule.case(
+            id=f"kmodule_fsverity_digest_{algorithm}_plain_denied",
+            policy=matching_digest_policy,
+            binary=plain_kmodule_binary,
+            allowed=False,
+        ),
+        kmodule.case(
+            id=f"kmodule_fsverity_digest_{algorithm}_mismatch_denied",
+            policy=mismatching_digest_policy,
+            binary=signed_kmodule_binary,
+            allowed=False,
+        ),
+    )
 
 
 def build() -> tuple[Batch, ...]:
@@ -66,69 +109,10 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
-                kmodule.case(
-                    id="kmodule_fsverity_digest_sha256_signed_ok",
-                    policy=kmodule_fsverity_digest_policy(algorithm="sha256"),
-                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
-                        algorithm="sha256"
-                    ),
-                    allowed=True,
-                ),
-                kmodule.case(
-                    id="kmodule_fsverity_digest_sha256_unsigned_ok",
-                    policy=kmodule_fsverity_digest_policy(algorithm="sha256"),
-                    binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                        algorithm="sha256"
-                    ),
-                    allowed=True,
-                ),
-                kmodule.case(
-                    id="kmodule_fsverity_digest_sha256_plain_denied",
-                    policy=kmodule_fsverity_digest_policy(algorithm="sha256"),
-                    binary=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
-                    allowed=False,
-                ),
-                kmodule.case(
-                    id="kmodule_fsverity_digest_sha512_signed_ok",
-                    policy=kmodule_fsverity_digest_policy(algorithm="sha512"),
-                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
-                        algorithm="sha512"
-                    ),
-                    allowed=True,
-                ),
-                kmodule.case(
-                    id="kmodule_fsverity_digest_sha512_unsigned_ok",
-                    policy=kmodule_fsverity_digest_policy(algorithm="sha512"),
-                    binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                        algorithm="sha512"
-                    ),
-                    allowed=True,
-                ),
-                kmodule.case(
-                    id="kmodule_fsverity_digest_sha512_plain_denied",
-                    policy=kmodule_fsverity_digest_policy(algorithm="sha512"),
-                    binary=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
-                    allowed=False,
-                ),
-                kmodule.case(
-                    id="kmodule_fsverity_digest_sha256_mismatch_denied",
-                    policy=kmodule_fsverity_digest_policy(
-                        algorithm="sha256", matching=False
-                    ),
-                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
-                        algorithm="sha256"
-                    ),
-                    allowed=False,
-                ),
-                kmodule.case(
-                    id="kmodule_fsverity_digest_sha512_mismatch_denied",
-                    policy=kmodule_fsverity_digest_policy(
-                        algorithm="sha512", matching=False
-                    ),
-                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
-                        algorithm="sha512"
-                    ),
-                    allowed=False,
+                *(
+                    test_case
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                    for test_case in digest_cases(algorithm=algorithm)
                 ),
             ),
             setup=(
