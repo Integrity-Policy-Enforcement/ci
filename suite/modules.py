@@ -10,7 +10,15 @@ from scope import collection
 
 
 def names() -> set[str]:
-    """All module names reported by lsmod."""
+    """Return module names from the first column of lsmod output.
+
+    For example::
+
+        Module       Size  Used by
+        ipe_test    12288  0
+
+    ``[1:]`` skips the header and ``split()[0]`` returns ``ipe_test``.
+    """
     return {line.split()[0] for line in capture("lsmod").splitlines()[1:]}
 
 
