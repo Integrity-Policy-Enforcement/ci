@@ -9,6 +9,7 @@ import layout
 import modules
 from model import CaseState, Observation
 
+# insmod reports a failed insertion with process return code 1, not an errno.
 INSMOD_REFUSED = 1
 # This exact target name also reserves its prefix for case cleanup.
 KMODULE_TEST_BINARY_NAME = layout.guest.KMODULE_TEST_BINARY.stem
