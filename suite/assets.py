@@ -43,28 +43,25 @@ LIFECYCLE_POLICY_MALFORMED = policy(
     "ipe_test_policy_lifecycle",
 )
 
-REVOKED_SIGNATURE_POLICY = ipe.Policy(
-    signed=layout.guest.REVOKED_POLICY_SIGNATURE,
-    name="ipe_test_signature_revoked",
+REVOKED_SIGNATURE_POLICY = policy(
+    "policy_signature/revoked",
+    "ipe_test_signature_revoked",
 )
-
-UNTRUSTED_SIGNATURE_POLICY = ipe.Policy(
-    signed=layout.guest.UNTRUSTED_POLICY_SIGNATURE,
-    name="ipe_test_signature_untrusted",
+UNTRUSTED_SIGNATURE_POLICY = policy(
+    "policy_signature/untrusted",
+    "ipe_test_signature_untrusted",
 )
-
-TAMPERED_SIGNATURE_POLICY = ipe.Policy(
-    signed=layout.guest.TAMPERED_POLICY_SIGNATURE,
-    name="ipe_test_signature_tampered",
+TAMPERED_SIGNATURE_POLICY = policy(
+    "policy_signature/tampered",
+    "ipe_test_signature_tampered",
 )
-
-SECONDARY_KEYRING_SIGNATURE_POLICY = ipe.Policy(
-    signed=layout.guest.SECONDARY_POLICY_SIGNATURE,
-    name="ipe_test_signature_secondary",
+SECONDARY_KEYRING_SIGNATURE_POLICY = policy(
+    "policy_signature/secondary",
+    "ipe_test_signature_secondary",
 )
-PLATFORM_KEYRING_SIGNATURE_POLICY = ipe.Policy(
-    signed=layout.guest.PLATFORM_POLICY_SIGNATURE,
-    name="ipe_test_signature_platform",
+PLATFORM_KEYRING_SIGNATURE_POLICY = policy(
+    "policy_signature/platform",
+    "ipe_test_signature_platform",
 )
 
 # policy text corpus: one policy per parser decision point, all under one name
