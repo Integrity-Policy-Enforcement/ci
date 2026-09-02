@@ -12,12 +12,55 @@ from assets import (
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     kmodule_dmverity_roothash_policy,
 )
-from model import Batch
+from model import Batch, Case
 
 from . import kmodule
 
 # dm-verity mappings under this prefix are reserved for batch cleanup.
 DMVERITY_DEVICE_PREFIX = "ipe-dmverity-"
+
+
+def roothash_cases(*, algorithm: str) -> tuple[Case, ...]:
+    """The root-hash cases for one algorithm."""
+    matching_root_hash_policy = kmodule_dmverity_roothash_policy(
+        algorithm=algorithm, matching=True
+    )
+    mismatching_root_hash_policy = kmodule_dmverity_roothash_policy(
+        algorithm=algorithm, matching=False
+    )
+    signed_kmodule_binary = layout.guest.dmverity_kmodule_test_binary(
+        algorithm=algorithm, signed=True
+    )
+    unsigned_kmodule_binary = layout.guest.dmverity_kmodule_test_binary(
+        algorithm=algorithm, signed=False
+    )
+    plain_kmodule_binary = layout.guest.PLAIN_KMODULE_TEST_BINARY
+    return (
+        kmodule.case(
+            id=f"kmodule_dmverity_roothash_{algorithm}_signed_ok",
+            policy=matching_root_hash_policy,
+            binary=signed_kmodule_binary,
+            allowed=True,
+        ),
+        kmodule.case(
+            id=f"kmodule_dmverity_roothash_{algorithm}_unsigned_ok",
+            policy=matching_root_hash_policy,
+            binary=unsigned_kmodule_binary,
+            allowed=True,
+        ),
+        kmodule.case(
+            id=f"kmodule_dmverity_roothash_{algorithm}_plain_denied",
+            policy=matching_root_hash_policy,
+            binary=plain_kmodule_binary,
+            allowed=False,
+        ),
+        kmodule.case(
+            id=f"kmodule_dmverity_roothash_{algorithm}_mismatch_denied",
+            policy=mismatching_root_hash_policy,
+            binary=signed_kmodule_binary,
+            allowed=False,
+        ),
+    )
 
 
 def build() -> tuple[Batch, ...]:
@@ -70,69 +113,10 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
-                kmodule.case(
-                    id="kmodule_dmverity_roothash_sha256_signed_ok",
-                    policy=kmodule_dmverity_roothash_policy(algorithm="sha256"),
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha256", signed=True
-                    ),
-                    allowed=True,
-                ),
-                kmodule.case(
-                    id="kmodule_dmverity_roothash_sha256_unsigned_ok",
-                    policy=kmodule_dmverity_roothash_policy(algorithm="sha256"),
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha256", signed=False
-                    ),
-                    allowed=True,
-                ),
-                kmodule.case(
-                    id="kmodule_dmverity_roothash_sha256_plain_denied",
-                    policy=kmodule_dmverity_roothash_policy(algorithm="sha256"),
-                    binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
-                    allowed=False,
-                ),
-                kmodule.case(
-                    id="kmodule_dmverity_roothash_sha512_signed_ok",
-                    policy=kmodule_dmverity_roothash_policy(algorithm="sha512"),
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha512", signed=True
-                    ),
-                    allowed=True,
-                ),
-                kmodule.case(
-                    id="kmodule_dmverity_roothash_sha512_unsigned_ok",
-                    policy=kmodule_dmverity_roothash_policy(algorithm="sha512"),
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha512", signed=False
-                    ),
-                    allowed=True,
-                ),
-                kmodule.case(
-                    id="kmodule_dmverity_roothash_sha512_plain_denied",
-                    policy=kmodule_dmverity_roothash_policy(algorithm="sha512"),
-                    binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
-                    allowed=False,
-                ),
-                kmodule.case(
-                    id="kmodule_dmverity_roothash_sha256_mismatch_denied",
-                    policy=kmodule_dmverity_roothash_policy(
-                        algorithm="sha256", matching=False
-                    ),
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha256", signed=True
-                    ),
-                    allowed=False,
-                ),
-                kmodule.case(
-                    id="kmodule_dmverity_roothash_sha512_mismatch_denied",
-                    policy=kmodule_dmverity_roothash_policy(
-                        algorithm="sha512", matching=False
-                    ),
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha512", signed=True
-                    ),
-                    allowed=False,
+                *(
+                    test_case
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                    for test_case in roothash_cases(algorithm=algorithm)
                 ),
             ),
             setup=(
