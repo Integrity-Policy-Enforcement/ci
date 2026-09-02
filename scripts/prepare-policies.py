@@ -79,7 +79,7 @@ def sign(
 
 
 def policies_in(*directories: str) -> tuple[Path, ...]:
-    """List policy texts under the named policy directories."""
+    """Recursively list only policies signed with signing.BUILTIN."""
     return tuple(
         policy
         for directory in directories
