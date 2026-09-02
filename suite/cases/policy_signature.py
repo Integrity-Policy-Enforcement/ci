@@ -35,94 +35,120 @@ def tampered_signature() -> bytes:
 
 def build() -> tuple[Batch, ...]:
     """The batches this group contributes."""
-    return (Batch(
-        id="policy_signature",
-        cases=(
-        Case(
-            id="policy_signature_untrusted_enokey",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                UNTRUSTED_SIGNATURE_POLICY.signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.ENOKEY),
-                partial(checks.policy_present_is, UNTRUSTED_SIGNATURE_POLICY, False),
-            ),
-        ),
-        Case(
-            id="policy_signature_secondary_linked_ok",
-            scope=partial(
-                runtime.case_scope,
-                partial(
-                    keyring.certificates_scope,
-                    keyring=SECONDARY_KEYRING,
-                    certificates=(layout.guest.INTERMEDIATE_CERTIFICATE,),
+    return (
+        Batch(
+            id="policy_signature",
+            cases=(
+                Case(
+                    id="policy_signature_untrusted_enokey",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=UNTRUSTED_SIGNATURE_POLICY.signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.ENOKEY),
+                        partial(
+                            checks.policy_present_is,
+                            policy=UNTRUSTED_SIGNATURE_POLICY,
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="policy_signature_secondary_linked_ok",
+                    scope=partial(
+                        runtime.case_scope,
+                        partial(
+                            keyring.certificates_scope,
+                            keyring=SECONDARY_KEYRING,
+                            certificates=(layout.guest.INTERMEDIATE_CERTIFICATE,),
+                        ),
+                    ),
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=SECONDARY_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=SECONDARY_KEYRING_SIGNATURE_POLICY,
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="policy_signature_secondary_absent_enokey",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=SECONDARY_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.ENOKEY),
+                        partial(
+                            checks.policy_present_is,
+                            policy=SECONDARY_KEYRING_SIGNATURE_POLICY,
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="policy_signature_platform_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=PLATFORM_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=PLATFORM_KEYRING_SIGNATURE_POLICY,
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="policy_signature_revoked_ekeyrejected",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=REVOKED_SIGNATURE_POLICY.signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EKEYREJECTED),
+                        partial(
+                            checks.policy_present_is,
+                            policy=REVOKED_SIGNATURE_POLICY,
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="policy_signature_tampered_ekeyrejected",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=tampered_signature(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EKEYREJECTED),
+                        partial(
+                            checks.policy_present_is,
+                            policy=TAMPERED_SIGNATURE_POLICY,
+                            expected=False,
+                        ),
+                    ),
                 ),
             ),
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                SECONDARY_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, SECONDARY_KEYRING_SIGNATURE_POLICY, True),
-            ),
         ),
-        Case(
-            id="policy_signature_secondary_absent_enokey",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                SECONDARY_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.ENOKEY),
-                partial(checks.policy_present_is, SECONDARY_KEYRING_SIGNATURE_POLICY, False),
-            ),
-        ),
-        Case(
-            id="policy_signature_platform_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                PLATFORM_KEYRING_SIGNATURE_POLICY.signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, PLATFORM_KEYRING_SIGNATURE_POLICY, True),
-            ),
-        ),
-        Case(
-            id="policy_signature_revoked_ekeyrejected",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                REVOKED_SIGNATURE_POLICY.signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EKEYREJECTED),
-                partial(checks.policy_present_is, REVOKED_SIGNATURE_POLICY, False),
-            ),
-        ),
-        Case(
-            id="policy_signature_tampered_ekeyrejected",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                tampered_signature(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EKEYREJECTED),
-                partial(checks.policy_present_is, TAMPERED_SIGNATURE_POLICY, False),
-            ),
-        ),
-        ),
-    ),)
+    )

@@ -33,27 +33,27 @@ TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 
 INITRAMFS_CASES = (
     kmodule.case(
-        "kmodule_boot_verified_true_initramfs_ok",
-        KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
-        INITRAMFS_KMODULE_TEST_BINARY,
+        id="kmodule_boot_verified_true_initramfs_ok",
+        policy=KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=INITRAMFS_KMODULE_TEST_BINARY,
         allowed=True,
     ),
     kmodule.case(
-        "kmodule_boot_verified_true_tmpfs_denied",
-        KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
-        TMPFS_KMODULE_TEST_BINARY,
+        id="kmodule_boot_verified_true_tmpfs_denied",
+        policy=KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=TMPFS_KMODULE_TEST_BINARY,
         allowed=False,
     ),
     kmodule.case(
-        "kmodule_boot_verified_false_initramfs_ok",
-        KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
-        INITRAMFS_KMODULE_TEST_BINARY,
+        id="kmodule_boot_verified_false_initramfs_ok",
+        policy=KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=INITRAMFS_KMODULE_TEST_BINARY,
         allowed=True,
     ),
     kmodule.case(
-        "kmodule_boot_verified_false_tmpfs_denied",
-        KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
-        TMPFS_KMODULE_TEST_BINARY,
+        id="kmodule_boot_verified_false_tmpfs_denied",
+        policy=KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=TMPFS_KMODULE_TEST_BINARY,
         allowed=False,
     ),
 )
@@ -67,7 +67,7 @@ def build() -> tuple[Batch, ...]:
             cases=tuple(
                 Case(
                     id=case.id,
-                    checks=(partial(checks.initramfs_case_passed, case.id),),
+                    checks=(partial(checks.initramfs_case_passed, id=case.id),),
                 )
                 for case in INITRAMFS_CASES
             ),

@@ -17,20 +17,20 @@ def case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
     return Case(
         id=id,
         setup=(
-            partial(steps.deploy_policy, policy),
-            partial(steps.activate_policy, policy.name),
-            partial(steps.set_enforcement, True),
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
         ),
-        trigger=partial(KMODULE_INSERT_OPERATION.attempt, binary),
+        trigger=partial(KMODULE_INSERT_OPERATION.attempt, path=binary),
         checks=(
             partial(
                 checks.returncode_is,
-                0 if allowed else KMODULE_INSERT_OPERATION.refused,
+                expected=0 if allowed else KMODULE_INSERT_OPERATION.refused,
             ),
             partial(
                 checks.operation_completed_is,
-                KMODULE_INSERT_OPERATION,
-                allowed,
+                operation=KMODULE_INSERT_OPERATION,
+                expected=allowed,
             ),
         ),
         scope=partial(

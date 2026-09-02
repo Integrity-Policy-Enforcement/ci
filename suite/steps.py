@@ -6,17 +6,17 @@ import ipe
 from model import CaseState
 
 
-def deploy_policy(policy: ipe.Policy, _state: CaseState) -> None:
+def deploy_policy(policy: ipe.Policy, state: CaseState) -> None:
     """Write the signed policy into securityfs so the kernel loads it."""
     ipe.deploy_policy(policy.signed)
 
 
-def activate_policy(name: str, _state: CaseState) -> None:
+def activate_policy(name: str, state: CaseState) -> None:
     """Activate a policy as one case setup step."""
     ipe.activate_policy(name)
 
 
-def set_enforcement(enabled: bool, _state: CaseState) -> None:
+def set_enforcement(enabled: bool, state: CaseState) -> None:
     """Set enforcement as one case setup step."""
     ipe.set_enforcement(enabled)
 
@@ -52,28 +52,28 @@ def read_binary_node(
     state.observed.append(ipe.node_path(entry, policy).read_bytes().hex())
 
 
-def unshare_user_namespace(_state: CaseState) -> None:
+def unshare_user_namespace(state: CaseState) -> None:
     """Enter a child user namespace where init_user_ns capabilities do not apply."""
     # IPE asks for CAP_MAC_ADMIN in init_user_ns.  A capability held in a
     # child user namespace does not apply to its parent; ID maps do not alter it.
     os.unshare(os.CLONE_NEWUSER)
 
 
-def clear_mac_admin(_state: CaseState) -> None:
+def clear_mac_admin(state: CaseState) -> None:
     """Remove CAP_MAC_ADMIN from the effective set, keeping it permitted."""
     import capabilities
 
     capabilities.set_mac_admin_effective(False)
 
 
-def raise_mac_admin(_state: CaseState) -> None:
+def raise_mac_admin(state: CaseState) -> None:
     """Restore CAP_MAC_ADMIN to the effective set from the permitted set."""
     import capabilities
 
     capabilities.set_mac_admin_effective(True)
 
 
-def drop_mac_admin(_state: CaseState) -> None:
+def drop_mac_admin(state: CaseState) -> None:
     """Remove CAP_MAC_ADMIN from both effective and permitted, irrecoverably."""
     import capabilities
 

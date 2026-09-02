@@ -100,7 +100,7 @@ def tmpfs(point: Path) -> None:
 def dmverity_scope(*, prefix: str) -> AbstractContextManager[None]:
     """Track dm-verity mappings created under a prefix."""
     return collection(
-        members=partial(dmverity_devices, prefix),
+        members=partial(dmverity_devices, prefix=prefix),
         discard=close_dmverity,
     )
 

@@ -12,381 +12,507 @@ from model import Batch, Case
 
 def build() -> tuple[Batch, ...]:
     """The batches this group contributes."""
-    return (Batch(
-        id="policy_text",
-        cases=(
-        Case(
-            id="text_header_missing_version_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("header_missing_version").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("header_missing_version"), False),
+    return (
+        Batch(
+            id="policy_text",
+            cases=(
+                Case(
+                    id="text_header_missing_version_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="header_missing_version"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="header_missing_version"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_header_missing_name_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="header_missing_name"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(partial(checks.errno_is, expected=errno.EBADMSG),),
+                ),
+                Case(
+                    id="text_header_swapped_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="header_swapped").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="header_swapped"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_header_extra_field_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="header_extra_field"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="header_extra_field"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_header_unknown_key_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="header_unknown_key"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(partial(checks.errno_is, expected=errno.EBADMSG),),
+                ),
+                Case(
+                    id="text_header_absent_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="header_absent").signed.read_bytes(),
+                    ),
+                    checks=(partial(checks.errno_is, expected=errno.EBADMSG),),
+                ),
+                Case(
+                    id="text_version_one_part_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="version_one_part").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="version_one_part"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_version_two_parts_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="version_two_parts").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="version_two_parts"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_version_four_parts_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="version_four_parts"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="version_four_parts"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_version_empty_part_einval",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="version_empty_part"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EINVAL),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="version_empty_part"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_version_non_numeric_einval",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="version_non_numeric"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EINVAL),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="version_non_numeric"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_version_overflow_erange",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="version_overflow").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.ERANGE),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="version_overflow"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_rule_unknown_op_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="rule_unknown_op").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="rule_unknown_op"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_rule_unknown_property_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="rule_unknown_property"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="rule_unknown_property"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_rule_unknown_action_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="rule_unknown_action"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="rule_unknown_action"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_rule_missing_action_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="rule_missing_action"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="rule_missing_action"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_rule_default_with_property_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="rule_default_with_property"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="rule_default_with_property"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_rule_duplicate_global_default_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="rule_duplicate_global_default"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="rule_duplicate_global_default"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_rule_duplicate_op_default_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="rule_duplicate_op_default"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="rule_duplicate_op_default"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_missing_op_default_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="missing_op_default"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=errno.EBADMSG),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="missing_op_default"),
+                            expected=False,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_empty_ebadmsg",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="empty").signed.read_bytes(),
+                    ),
+                    checks=(partial(checks.errno_is, expected=errno.EBADMSG),),
+                ),
+                Case(
+                    id="text_comment_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="comment_ok").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="comment_ok"),
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_extra_spaces_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="extra_spaces_ok").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="extra_spaces_ok"),
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_blank_lines_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="blank_lines_ok").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="blank_lines_ok"),
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_op_default_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="op_default_ok").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="op_default_ok"),
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_multiple_rules_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(asset="multiple_rules_ok").signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="multiple_rules_ok"),
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_special_name_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=TEXT_SPECIAL_NAME_POLICY.signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=TEXT_SPECIAL_NAME_POLICY,
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_property_digest_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="property_digest_ok"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="property_digest_ok"),
+                            expected=True,
+                        ),
+                    ),
+                ),
+                Case(
+                    id="text_property_boolean_ok",
+                    trigger=partial(
+                        triggers.write_node,
+                        entry=ipe.node.NEW_POLICY,
+                        policy=None,
+                        data=text_policy(
+                            asset="property_boolean_ok"
+                        ).signed.read_bytes(),
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(
+                            checks.policy_present_is,
+                            policy=text_policy(asset="property_boolean_ok"),
+                            expected=True,
+                        ),
+                    ),
+                ),
             ),
         ),
-        Case(
-            id="text_header_missing_name_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("header_missing_name").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-            ),
-        ),
-        Case(
-            id="text_header_swapped_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("header_swapped").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("header_swapped"), False),
-            ),
-        ),
-        Case(
-            id="text_header_extra_field_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("header_extra_field").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("header_extra_field"), False),
-            ),
-        ),
-        Case(
-            id="text_header_unknown_key_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("header_unknown_key").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-            ),
-        ),
-        Case(
-            id="text_header_absent_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("header_absent").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-            ),
-        ),
-        Case(
-            id="text_version_one_part_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("version_one_part").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("version_one_part"), False),
-            ),
-        ),
-        Case(
-            id="text_version_two_parts_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("version_two_parts").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("version_two_parts"), False),
-            ),
-        ),
-        Case(
-            id="text_version_four_parts_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("version_four_parts").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("version_four_parts"), False),
-            ),
-        ),
-        Case(
-            id="text_version_empty_part_einval",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("version_empty_part").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EINVAL),
-                partial(checks.policy_present_is, text_policy("version_empty_part"), False),
-            ),
-        ),
-        Case(
-            id="text_version_non_numeric_einval",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("version_non_numeric").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EINVAL),
-                partial(checks.policy_present_is, text_policy("version_non_numeric"), False),
-            ),
-        ),
-        Case(
-            id="text_version_overflow_erange",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("version_overflow").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.ERANGE),
-                partial(checks.policy_present_is, text_policy("version_overflow"), False),
-            ),
-        ),
-        Case(
-            id="text_rule_unknown_op_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("rule_unknown_op").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("rule_unknown_op"), False),
-            ),
-        ),
-        Case(
-            id="text_rule_unknown_property_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("rule_unknown_property").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("rule_unknown_property"), False),
-            ),
-        ),
-        Case(
-            id="text_rule_unknown_action_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("rule_unknown_action").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("rule_unknown_action"), False),
-            ),
-        ),
-        Case(
-            id="text_rule_missing_action_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("rule_missing_action").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("rule_missing_action"), False),
-            ),
-        ),
-        Case(
-            id="text_rule_default_with_property_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("rule_default_with_property").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("rule_default_with_property"), False),
-            ),
-        ),
-        Case(
-            id="text_rule_duplicate_global_default_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("rule_duplicate_global_default").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("rule_duplicate_global_default"), False),
-            ),
-        ),
-        Case(
-            id="text_rule_duplicate_op_default_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("rule_duplicate_op_default").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("rule_duplicate_op_default"), False),
-            ),
-        ),
-        Case(
-            id="text_missing_op_default_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("missing_op_default").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-                partial(checks.policy_present_is, text_policy("missing_op_default"), False),
-            ),
-        ),
-        Case(
-            id="text_empty_ebadmsg",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("empty").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, errno.EBADMSG),
-            ),
-        ),
-        Case(
-            id="text_comment_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("comment_ok").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, text_policy("comment_ok"), True),
-            ),
-        ),
-        Case(
-            id="text_extra_spaces_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("extra_spaces_ok").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, text_policy("extra_spaces_ok"), True),
-            ),
-        ),
-        Case(
-            id="text_blank_lines_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("blank_lines_ok").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, text_policy("blank_lines_ok"), True),
-            ),
-        ),
-        Case(
-            id="text_op_default_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("op_default_ok").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, text_policy("op_default_ok"), True),
-            ),
-        ),
-        Case(
-            id="text_multiple_rules_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("multiple_rules_ok").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, text_policy("multiple_rules_ok"), True),
-            ),
-        ),
-        Case(
-            id="text_special_name_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                TEXT_SPECIAL_NAME_POLICY.signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, TEXT_SPECIAL_NAME_POLICY, True),
-            ),
-        ),
-        Case(
-            id="text_property_digest_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("property_digest_ok").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, text_policy("property_digest_ok"), True),
-            ),
-        ),
-        Case(
-            id="text_property_boolean_ok",
-            trigger=partial(
-                triggers.write_node,
-                ipe.node.NEW_POLICY,
-                None,
-                text_policy("property_boolean_ok").signed.read_bytes(),
-            ),
-            checks=(
-                partial(checks.errno_is, 0),
-                partial(checks.policy_present_is, text_policy("property_boolean_ok"), True),
-            ),
-        ),
-        ),
-    ),)
+    )

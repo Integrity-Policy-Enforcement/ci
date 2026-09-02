@@ -28,87 +28,111 @@ def build() -> tuple[Batch, ...]:
             id="dmverity",
             cases=(
                 kmodule.case(
-                    "kmodule_dmverity_signature_true_signed_ok",
-                    KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    layout.guest.dmverity_kmodule_test_binary("sha256", signed=True),
+                    id="kmodule_dmverity_signature_true_signed_ok",
+                    policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha256", signed=True
+                    ),
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_signature_true_unsigned_denied",
-                    KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    layout.guest.dmverity_kmodule_test_binary("sha256", signed=False),
+                    id="kmodule_dmverity_signature_true_unsigned_denied",
+                    policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha256", signed=False
+                    ),
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_signature_true_plain_denied",
-                    KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    layout.guest.PLAIN_KMODULE_TEST_BINARY,
+                    id="kmodule_dmverity_signature_true_plain_denied",
+                    policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_signature_false_signed_ok",
-                    KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    layout.guest.dmverity_kmodule_test_binary("sha256", signed=True),
+                    id="kmodule_dmverity_signature_false_signed_ok",
+                    policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha256", signed=True
+                    ),
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_signature_false_unsigned_denied",
-                    KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    layout.guest.dmverity_kmodule_test_binary("sha256", signed=False),
+                    id="kmodule_dmverity_signature_false_unsigned_denied",
+                    policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha256", signed=False
+                    ),
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_signature_false_plain_denied",
-                    KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    layout.guest.PLAIN_KMODULE_TEST_BINARY,
+                    id="kmodule_dmverity_signature_false_plain_denied",
+                    policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_roothash_sha256_signed_ok",
-                    kmodule_dmverity_roothash_policy("sha256"),
-                    layout.guest.dmverity_kmodule_test_binary("sha256", signed=True),
+                    id="kmodule_dmverity_roothash_sha256_signed_ok",
+                    policy=kmodule_dmverity_roothash_policy(algorithm="sha256"),
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha256", signed=True
+                    ),
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_roothash_sha256_unsigned_ok",
-                    kmodule_dmverity_roothash_policy("sha256"),
-                    layout.guest.dmverity_kmodule_test_binary("sha256", signed=False),
+                    id="kmodule_dmverity_roothash_sha256_unsigned_ok",
+                    policy=kmodule_dmverity_roothash_policy(algorithm="sha256"),
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha256", signed=False
+                    ),
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_roothash_sha256_plain_denied",
-                    kmodule_dmverity_roothash_policy("sha256"),
-                    layout.guest.PLAIN_KMODULE_TEST_BINARY,
+                    id="kmodule_dmverity_roothash_sha256_plain_denied",
+                    policy=kmodule_dmverity_roothash_policy(algorithm="sha256"),
+                    binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_roothash_sha512_signed_ok",
-                    kmodule_dmverity_roothash_policy("sha512"),
-                    layout.guest.dmverity_kmodule_test_binary("sha512", signed=True),
+                    id="kmodule_dmverity_roothash_sha512_signed_ok",
+                    policy=kmodule_dmverity_roothash_policy(algorithm="sha512"),
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha512", signed=True
+                    ),
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_roothash_sha512_unsigned_ok",
-                    kmodule_dmverity_roothash_policy("sha512"),
-                    layout.guest.dmverity_kmodule_test_binary("sha512", signed=False),
+                    id="kmodule_dmverity_roothash_sha512_unsigned_ok",
+                    policy=kmodule_dmverity_roothash_policy(algorithm="sha512"),
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha512", signed=False
+                    ),
                     allowed=True,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_roothash_sha512_plain_denied",
-                    kmodule_dmverity_roothash_policy("sha512"),
-                    layout.guest.PLAIN_KMODULE_TEST_BINARY,
+                    id="kmodule_dmverity_roothash_sha512_plain_denied",
+                    policy=kmodule_dmverity_roothash_policy(algorithm="sha512"),
+                    binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_roothash_sha256_mismatch_denied",
-                    kmodule_dmverity_roothash_policy("sha256", matching=False),
-                    layout.guest.dmverity_kmodule_test_binary("sha256", signed=True),
+                    id="kmodule_dmverity_roothash_sha256_mismatch_denied",
+                    policy=kmodule_dmverity_roothash_policy(
+                        algorithm="sha256", matching=False
+                    ),
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha256", signed=True
+                    ),
                     allowed=False,
                 ),
                 kmodule.case(
-                    "kmodule_dmverity_roothash_sha512_mismatch_denied",
-                    kmodule_dmverity_roothash_policy("sha512", matching=False),
-                    layout.guest.dmverity_kmodule_test_binary("sha512", signed=True),
+                    id="kmodule_dmverity_roothash_sha512_mismatch_denied",
+                    policy=kmodule_dmverity_roothash_policy(
+                        algorithm="sha512", matching=False
+                    ),
+                    binary=layout.guest.dmverity_kmodule_test_binary(
+                        algorithm="sha512", signed=True
+                    ),
                     allowed=False,
                 ),
             ),

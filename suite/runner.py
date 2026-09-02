@@ -41,11 +41,11 @@ def run_in_child(case: Case) -> dict:
                 with ExitStack() as resources:
                     case_state = CaseState(resources=resources)
                     for step in case.collect:
-                        step(case_state)
+                        step(state=case_state)
                     for step in case.setup:
-                        step(case_state)
+                        step(state=case_state)
                     observation = (
-                        case.trigger(case_state) if case.trigger else Observation()
+                        case.trigger(state=case_state) if case.trigger else Observation()
                     )
                     observation = replace(
                         observation,
@@ -99,7 +99,7 @@ def test(case: Case) -> tuple[str, str] | None:
                 observed=tuple(result["observed"]),
             )
             for check in case.checks:
-                if problem := check(observation):
+                if problem := check(observation=observation):
                     return "failure", problem
             return None
     except Exception as failure:

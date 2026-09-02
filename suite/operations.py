@@ -23,7 +23,7 @@ class Operation:
     completed: Callable
 
 
-def insert_module(path: Path, _state: CaseState) -> Observation:
+def insert_module(path: Path, state: CaseState) -> Observation:
     """Try insmod and return what happened, without raising."""
     finished = modules.insert(path)
     return Observation(
@@ -41,5 +41,5 @@ KMODULE_INSERT_OPERATION = Operation(
     id="kmodule",
     attempt=insert_module,
     refused=INSMOD_REFUSED,
-    completed=partial(test_module_loaded, KMODULE_TEST_BINARY_NAME),
+    completed=partial(test_module_loaded, name=KMODULE_TEST_BINARY_NAME),
 )

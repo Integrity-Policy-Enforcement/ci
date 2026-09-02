@@ -48,7 +48,7 @@ def two_values_differ(observation: Observation) -> str | None:
 
 
 def policy_version_is(
-    policy: ipe.Policy, expected: str, _observation: Observation
+    policy: ipe.Policy, expected: str, observation: Observation
 ) -> str | None:
     """The policy carries the expected version."""
     actual = ipe.policy_version(policy.name)
@@ -58,7 +58,7 @@ def policy_version_is(
 
 
 def policy_active_is(
-    policy: ipe.Policy, expected: bool, _observation: Observation
+    policy: ipe.Policy, expected: bool, observation: Observation
 ) -> str | None:
     """The policy is or is not the active one."""
     actual = ipe.policy_active(policy.name)
@@ -68,7 +68,7 @@ def policy_active_is(
 
 
 def node_value_is(
-    entry: str, expected: str, _observation: Observation
+    entry: str, expected: str, observation: Observation
 ) -> str | None:
     """A securityfs node holds the expected value."""
     actual = ipe.node_path(entry).read_text().strip()
@@ -78,7 +78,7 @@ def node_value_is(
 
 
 def policy_present_is(
-    policy: ipe.Policy, expected: bool, _observation: Observation
+    policy: ipe.Policy, expected: bool, observation: Observation
 ) -> str | None:
     """The policy is or is not loaded."""
     actual = ipe.policy_present(policy.name)
@@ -88,7 +88,7 @@ def policy_present_is(
 
 
 def operation_completed_is(
-    operation: Operation, expected: bool, _observation: Observation
+    operation: Operation, expected: bool, observation: Observation
 ) -> str | None:
     """The operation left evidence of running, or did not."""
     actual = operation.completed()
@@ -97,7 +97,7 @@ def operation_completed_is(
     return None
 
 
-def initramfs_case_passed(id: str, _observation: Observation) -> str | None:
+def initramfs_case_passed(id: str, observation: Observation) -> str | None:
     """The saved outcome is None for a pass or [kind, message] for a problem."""
     outcome = json.loads(layout.initrd.BOOT_VERIFIED_RECORD.read_text())[id]
     if outcome is not None:

@@ -16,7 +16,7 @@ def write_node(
     entry: str,
     policy: ipe.Policy | None,
     data: bytes,
-    _state: CaseState,
+    state: CaseState,
 ) -> Observation:
     """Write data to a securityfs node and report the errno."""
     try:

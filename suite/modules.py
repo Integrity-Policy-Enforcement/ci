@@ -45,6 +45,6 @@ def remove(name: str) -> None:
 def loaded_scope(*, prefix: str) -> AbstractContextManager[None]:
     """Track modules loaded under a caller-owned prefix."""
     return collection(
-        members=partial(loaded, prefix),
+        members=partial(loaded, prefix=prefix),
         discard=remove,
     )
