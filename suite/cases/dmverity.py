@@ -113,7 +113,7 @@ def build() -> tuple[Batch, ...]:
                 ),
             ),
             setup=(
-                partial(ipe.set_enforcement, False),
+                partial(ipe.set_enforcement, enabled=False),
                 *(
                     partial(
                         mounts.dmverity,
@@ -124,10 +124,10 @@ def build() -> tuple[Batch, ...]:
                     for algorithm in hashes.ALGORITHMS
                     for signed in (True, False)
                 ),
-                partial(mounts.tmpfs, layout.guest.PLAIN_MOUNT_DIR),
+                partial(mounts.tmpfs, point=layout.guest.PLAIN_MOUNT_DIR),
                 partial(
                     files.copy_kmodule_test_binary,
-                    layout.guest.PLAIN_KMODULE_TEST_BINARY,
+                    target=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                 ),
             ),
             scope=partial(

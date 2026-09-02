@@ -109,27 +109,27 @@ def build() -> tuple[Batch, ...]:
                 ),
             ),
             setup=(
-                partial(ipe.set_enforcement, False),
+                partial(ipe.set_enforcement, enabled=False),
                 *(
                     partial(
                         files.prepare_fsverity_kmodule_test_binary,
-                        layout.guest.fsverity_signed_kmodule_test_binary(algorithm),
-                        algorithm,
-                        layout.guest.fsverity_signature(algorithm),
+                        target=layout.guest.fsverity_signed_kmodule_test_binary(algorithm),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_signature(algorithm),
                     )
                     for algorithm in hashes.ALGORITHMS
                 ),
                 *(
                     partial(
                         files.prepare_fsverity_kmodule_test_binary,
-                        layout.guest.fsverity_unsigned_kmodule_test_binary(algorithm),
-                        algorithm,
+                        target=layout.guest.fsverity_unsigned_kmodule_test_binary(algorithm),
+                        algorithm=algorithm,
                     )
                     for algorithm in hashes.ALGORITHMS
                 ),
                 partial(
                     files.copy_kmodule_test_binary,
-                    layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
+                    target=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                 ),
             ),
             scope=partial(
