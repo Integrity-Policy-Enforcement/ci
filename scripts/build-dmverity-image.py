@@ -62,7 +62,7 @@ def sign_root_hash(
     run(
         "openssl", "cms", "-sign", "-binary", "-in", root_hash,
         "-signer", signer.certificate, "-inkey", signer.key,
-        "-noattr", "-outform", "DER", "-out", signature,
+        "-md", "sha256", "-noattr", "-outform", "DER", "-out", signature,
     )
 
 
