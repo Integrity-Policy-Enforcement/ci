@@ -13,7 +13,17 @@ DEVICE_MAPPER = Path("/dev/mapper")
 
 
 def points(directory: Path) -> set[Path]:
-    """Mount points directly or indirectly below a directory."""
+    """Return mount points at or below a directory.
+
+    For ``directory = Path("/run/ipe-media")``, findmnt may return::
+
+        /
+        /run/ipe-media/plain
+        /run/ipe-media/dmverity-sha256-signed
+
+    ``is_relative_to()`` filters out mount points outside ``directory``, so
+    only the last two paths are returned.
+    """
     live = {
         Path(point)
         for point in capture(
