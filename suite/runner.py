@@ -89,7 +89,7 @@ def run_in_child(case: Case) -> dict:
 def test(case: Case) -> tuple[str, str] | None:
     """Run one case, check its result, and restore its tracked state."""
     try:
-        with (case.scope or runtime.case_scope)():
+        with runtime.case_scope(*case.extra_scopes):
             result = run_in_child(case)
             if result["error"]:
                 return "error", result["error"]
@@ -124,7 +124,7 @@ def run(output: TextIO) -> int:
         ipe.activate_policy(BASELINE_POLICY.name)
         for batch in batches:
             try:
-                with (batch.scope or runtime.batch_scope)():
+                with runtime.batch_scope(*batch.extra_scopes):
                     for step in batch.setup:
                         step()
                     for case in batch.cases:

@@ -6,7 +6,6 @@ import files
 import hashes
 import ipe
 import layout
-import runtime
 from assets import (
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -160,8 +159,7 @@ def build() -> tuple[Batch, ...]:
                     target=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                 ),
             ),
-            scope=partial(
-                runtime.batch_scope,
+            extra_scopes=(
                 partial(
                     files.directory_scope,
                     directory=layout.guest.FSVERITY_MODULES_DIR,

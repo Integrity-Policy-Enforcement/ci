@@ -4,6 +4,8 @@ from collections.abc import Callable
 from contextlib import ExitStack
 from dataclasses import dataclass, field
 
+from scope import ContextFactory
+
 
 @dataclass(frozen=True)
 class Observation:
@@ -36,7 +38,7 @@ class Case:
     collect: tuple[CaseStep, ...] = ()
     setup: tuple[CaseStep, ...] = ()
     checks: tuple[Check, ...] = ()
-    scope: Callable | None = None
+    extra_scopes: tuple[ContextFactory, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -44,4 +46,4 @@ class Batch:
     id: str
     cases: tuple[Case, ...]
     setup: tuple[Callable, ...] = ()
-    scope: Callable | None = None
+    extra_scopes: tuple[ContextFactory, ...] = ()

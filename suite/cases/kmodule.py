@@ -6,7 +6,6 @@ from pathlib import Path
 import checks
 import ipe
 import modules
-import runtime
 import steps
 from model import Case
 from operations import KMODULE_INSERT_OPERATION, KMODULE_TEST_BINARY_NAME
@@ -33,8 +32,7 @@ def case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
                 expected=allowed,
             ),
         ),
-        scope=partial(
-            runtime.case_scope,
+        extra_scopes=(
             partial(modules.loaded_scope, prefix=KMODULE_TEST_BINARY_NAME),
         ),
     )

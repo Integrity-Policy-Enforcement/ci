@@ -7,7 +7,6 @@ import checks
 import ipe
 import keyring
 import layout
-import runtime
 import triggers
 from assets import (
     PLATFORM_KEYRING_SIGNATURE_POLICY,
@@ -58,8 +57,7 @@ def build() -> tuple[Batch, ...]:
                 ),
                 Case(
                     id="policy_signature_secondary_linked_ok",
-                    scope=partial(
-                        runtime.case_scope,
+                    extra_scopes=(
                         partial(
                             keyring.certificates_scope,
                             keyring=SECONDARY_KEYRING,
