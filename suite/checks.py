@@ -98,7 +98,7 @@ def operation_completed_is(
 
 
 def initramfs_case_passed(id: str, _observation: Observation) -> str | None:
-    """The initramfs wrote down a pass for this case."""
+    """The saved outcome is None for a pass or [kind, message] for a problem."""
     outcome = json.loads(layout.initrd.BOOT_VERIFIED_RECORD.read_text())[id]
     if outcome is not None:
         kind, message = outcome
