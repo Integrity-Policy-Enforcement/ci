@@ -135,7 +135,7 @@ def build() -> tuple[Batch, ...]:
             scope=partial(
                 runtime.batch_scope,
                 partial(
-                    files.copies_scope,
+                    files.directory_scope,
                     directory=layout.guest.FSVERITY_MODULES_DIR,
                 ),
             ),

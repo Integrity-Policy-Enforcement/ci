@@ -15,7 +15,7 @@ The built-in IPE policy denies `EXECUTE` by default. It allows execution when IP
 
 Policy names beginning with `ipe_test_` are reserved for this test suite. Scope cleanup treats any newly appearing policy with that prefix as test-owned and may delete it. Do not load an unrelated policy under that prefix while the suite is running.
 
-Runtime cleanup also reserves files directly under `/run/ipe-tests/fsverity-modules`, mount points below `/run/ipe-media`, dm-verity mapping names beginning with `ipe-dmverity-`, and module names beginning with `ipe_test`. While the suite runs, unrelated software must not create resources inside those boundaries; newly appearing resources may be deleted, unmounted, closed, or unloaded.
+Runtime cleanup also reserves the tree rooted at `/run/ipe-tests/fsverity-modules`, mount points below `/run/ipe-media`, dm-verity mapping names beginning with `ipe-dmverity-`, and module names beginning with `ipe_test`. While the suite runs, unrelated software must not create resources inside those boundaries; newly appearing resources may be deleted, unmounted, closed, or unloaded.
 
 ## Usage
 

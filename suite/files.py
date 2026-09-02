@@ -1,25 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import shutil
-from contextlib import AbstractContextManager
-from functools import partial
+from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 
 import layout
 from command import run
-from scope import collection
-
-
-def copies(directory: Path) -> set[Path]:
-    """The files currently present directly under a directory."""
-    if not directory.is_dir():
-        return set()
-    return {path for path in directory.iterdir() if path.is_file()}
-
-
-def discard(copy: Path) -> None:
-    """Delete a module copy the batch made."""
-    copy.unlink()
 
 
 def copy_kmodule_test_binary(target: Path) -> None:
@@ -39,9 +26,13 @@ def prepare_fsverity_kmodule_test_binary(
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)
 
 
-def copies_scope(*, directory: Path) -> AbstractContextManager[None]:
-    """Track files created directly under a directory."""
-    return collection(
-        members=partial(copies, directory),
-        discard=discard,
-    )
+@contextmanager
+def directory_scope(*, directory: Path) -> Generator[None, None, None]:
+    """Remove a test-owned directory when the scope exits."""
+    try:
+        yield
+    finally:
+        try:
+            shutil.rmtree(directory)
+        except FileNotFoundError:
+            pass
