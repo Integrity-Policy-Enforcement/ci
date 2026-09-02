@@ -3,15 +3,12 @@
 """Build the dm-verity test image, hash trees, root hashes, and signatures.
 
     build/dmverity/
-        dmverity.squashfs         squashfs used by the dm-verity cases
-        dmverity-sha256.hash      sha256 Merkle tree over dmverity.squashfs
-        dmverity-sha256.roothash  root of the sha256 tree, as ASCII hex
-        dmverity-sha256.p7s       builtin signature over the sha256 root hash
-        dmverity-sha512.hash      sha512 Merkle tree over dmverity.squashfs
-        dmverity-sha512.roothash  root of the sha512 tree, as ASCII hex
-        dmverity-sha512.p7s       builtin signature over the sha512 root hash
+        dmverity.squashfs            squashfs used by the dm-verity cases
+        dmverity-<algorithm>.hash     Merkle tree over dmverity.squashfs
+        dmverity-<algorithm>.roothash root hash as ASCII hex
+        dmverity-<algorithm>.p7s      builtin signature over the root hash
 
-One set per hash in hashes.ALGORITHMS, all over the same image.
+One set per hash in hashes.DMVERITY_ALGORITHMS, all over the same image.
 
 The guest opens the same image twice per hash, once passing that hash's
 signature and once not, which is the only difference between the two
@@ -84,7 +81,7 @@ def main() -> int:
         shutil.copy(layout.build.KMODULE_TEST_BINARY, target)
         build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)
 
-    for algorithm in hashes.ALGORITHMS:
+    for algorithm in hashes.DMVERITY_ALGORITHMS:
         root_hash = layout.build.root_hash(algorithm)
         format_hash_tree(
             image=layout.build.SQUASHFS,

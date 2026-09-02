@@ -32,12 +32,9 @@ build: what the build scripts make from it.
         ipe_test.ko               binary loaded by the KMODULE cases
       dmverity/                   build-dmverity-image.py
         dmverity.squashfs         squashfs used by the dm-verity cases
-        dmverity-sha256.hash      sha256 Merkle tree over dmverity.squashfs
-        dmverity-sha256.roothash  root of the sha256 tree, as ASCII hex
-        dmverity-sha256.p7s       builtin signature over the sha256 root hash
-        dmverity-sha512.hash      sha512 Merkle tree over dmverity.squashfs
-        dmverity-sha512.roothash  root of the sha512 tree, as ASCII hex
-        dmverity-sha512.p7s       builtin signature over the sha512 root hash
+        dmverity-<hash>.hash      Merkle tree over dmverity.squashfs
+        dmverity-<hash>.roothash  root hash as ASCII hex
+        dmverity-<hash>.p7s       builtin signature over the root hash
       fsverity/                   build-fsverity-signature.py
         ipe_test-sha256.digest    sha256 digest of ipe_test.ko, as ASCII hex
         ipe_test-sha256.p7s       fsverity signature over the sha256 digest
@@ -67,18 +64,15 @@ guest: what the tests find after the switch.
     /run/ipe-tests/                    payload disk (ext4, mounted rw)
         run-tests.py                       entry point
         layout.py                          absolute paths in the guest
-        hashes.py                          the two measurement algorithms
+        hashes.py                          the dm-verity and fs-verity algorithm lists
         kernel-modules/                    kernel module test binaries
             ipe_test.ko                        KMODULE test binary
         policies/                         signed copy of the source policy tree
         dmverity/                          dm-verity image and its hashes
             dmverity.squashfs                  the squashfs holding the module
-            dmverity-sha256.hash               sha256 Merkle tree
-            dmverity-sha256.roothash           root of the sha256 tree
-            dmverity-sha256.p7s                signature over the sha256 root hash
-            dmverity-sha512.hash               sha512 Merkle tree
-            dmverity-sha512.roothash           root of the sha512 tree
-            dmverity-sha512.p7s                signature over the sha512 root hash
+            dmverity-<hash>.hash               Merkle tree
+            dmverity-<hash>.roothash           root hash
+            dmverity-<hash>.p7s                signature over the root hash
         fsverity/                          fs-verity digests and signatures
             ipe_test-sha256.digest             sha256 digest of ipe_test.ko
             ipe_test-sha256.p7s                signature over the sha256 digest
@@ -92,10 +86,8 @@ guest: what the tests find after the switch.
             plain-ipe_test.ko                  fs-verity not enabled
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
-        dmverity-sha256-signed/            sha256 tree, signature passed while opening
-        dmverity-sha256-unsigned/          sha256 tree, no signature argument
-        dmverity-sha512-signed/            sha512 tree, signature passed while opening
-        dmverity-sha512-unsigned/          sha512 tree, no signature argument
+        dmverity-<hash>-signed/            signature passed while opening
+        dmverity-<hash>-unsigned/          no signature argument
         plain/                             tmpfs, no block device at all
 """
 

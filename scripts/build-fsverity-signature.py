@@ -8,7 +8,7 @@
         ipe_test-sha512.digest    sha512 digest of ipe_test.ko, as ASCII hex
         ipe_test-sha512.p7s       fsverity signature over the sha512 digest
 
-One pair per hash in hashes.ALGORITHMS.
+One pair per hash in hashes.FSVERITY_ALGORITHMS.
 
 The digest depends on the file alone, so it can be computed here, where
 the key is, and the guest only has to enable fs-verity with the result.
@@ -30,7 +30,7 @@ def main() -> int:
     shutil.rmtree(layout.build.FSVERITY_ASSETS_DIR, ignore_errors=True)
     layout.build.FSVERITY_ASSETS_DIR.mkdir(parents=True)
 
-    for algorithm in hashes.ALGORITHMS:
+    for algorithm in hashes.FSVERITY_ALGORITHMS:
         subprocess.run(
             [
                 "fsverity", "sign", str(layout.build.KMODULE_TEST_BINARY),

@@ -111,12 +111,14 @@ def shift(hexadecimal: str) -> str:
 def measurements() -> dict[str, str]:
     """Every placeholder and the <algorithm>:<hex> a policy should name."""
     table = {}
-    for algorithm in hashes.ALGORITHMS:
+    for algorithm in hashes.DMVERITY_ALGORITHMS:
         root_hash = layout.build.root_hash(algorithm).read_text().strip()
-        digest = layout.build.fsverity_digest(algorithm).read_text().strip()
         upper = algorithm.upper()
         table[f"@DMVERITY_ROOTHASH_{upper}@"] = f"{algorithm}:{root_hash}"
         table[f"@DMVERITY_OTHER_ROOTHASH_{upper}@"] = f"{algorithm}:{shift(root_hash)}"
+    for algorithm in hashes.FSVERITY_ALGORITHMS:
+        digest = layout.build.fsverity_digest(algorithm).read_text().strip()
+        upper = algorithm.upper()
         table[f"@FSVERITY_DIGEST_{upper}@"] = f"{algorithm}:{digest}"
         table[f"@FSVERITY_OTHER_DIGEST_{upper}@"] = f"{algorithm}:{shift(digest)}"
     return table

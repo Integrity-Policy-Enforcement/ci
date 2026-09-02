@@ -142,7 +142,7 @@ def build() -> tuple[Batch, ...]:
                         algorithm=algorithm,
                         signature=layout.guest.fsverity_signature(algorithm=algorithm),
                     )
-                    for algorithm in hashes.ALGORITHMS
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 *(
                     partial(
@@ -152,7 +152,7 @@ def build() -> tuple[Batch, ...]:
                         ),
                         algorithm=algorithm,
                     )
-                    for algorithm in hashes.ALGORITHMS
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 partial(
                     files.copy_kmodule_test_binary,

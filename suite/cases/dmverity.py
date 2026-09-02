@@ -144,7 +144,7 @@ def build() -> tuple[Batch, ...]:
                         algorithm=algorithm,
                         signed=signed,
                     )
-                    for algorithm in hashes.ALGORITHMS
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                     for signed in (True, False)
                 ),
                 partial(mounts.tmpfs, point=layout.guest.PLAIN_MOUNT_DIR),
