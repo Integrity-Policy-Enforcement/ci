@@ -13,8 +13,8 @@ from model import Batch, Case
 def build() -> tuple[Batch, ...]:
     """The batches this group contributes."""
     return (Batch(
-        "policy_text",
-        (
+        id="policy_text",
+        cases=(
         Case(
             id="text_header_missing_version_ebadmsg",
             trigger=partial(

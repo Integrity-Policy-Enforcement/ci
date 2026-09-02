@@ -63,8 +63,8 @@ def build() -> tuple[Batch, ...]:
     """The batches this group contributes."""
     return (
         Batch(
-            "boot",
-            tuple(
+            id="boot",
+            cases=tuple(
                 Case(
                     id=case.id,
                     checks=(partial(checks.initramfs_case_passed, case.id),),

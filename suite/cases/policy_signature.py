@@ -36,8 +36,8 @@ def tampered_signature() -> bytes:
 def build() -> tuple[Batch, ...]:
     """The batches this group contributes."""
     return (Batch(
-        "policy_signature",
-        (
+        id="policy_signature",
+        cases=(
         Case(
             id="policy_signature_untrusted_enokey",
             trigger=partial(

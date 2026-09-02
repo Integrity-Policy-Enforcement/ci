@@ -24,8 +24,8 @@ def build() -> tuple[Batch, ...]:
     trailing_fragment = trailing_fragment[len(trailing_fragment) // 2 :]
 
     return (Batch(
-        "securityfs",
-        (
+        id="securityfs",
+        cases=(
         Case(
             id="cap_update_nocap_eperm",
             setup=(

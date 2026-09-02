@@ -21,8 +21,8 @@ def build() -> tuple[Batch, ...]:
     """The batches this group contributes."""
     return (
         Batch(
-            "fsverity",
-            (
+            id="fsverity",
+            cases=(
                 kmodule.case(
                     "kmodule_fsverity_signature_true_signed_ok",
                     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -108,7 +108,7 @@ def build() -> tuple[Batch, ...]:
                     allowed=False,
                 ),
             ),
-            (
+            setup=(
                 partial(ipe.set_enforcement, False),
                 *(
                     partial(

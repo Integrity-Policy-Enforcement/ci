@@ -25,8 +25,8 @@ def build() -> tuple[Batch, ...]:
     """The batches this group contributes."""
     return (
         Batch(
-            "dmverity",
-            (
+            id="dmverity",
+            cases=(
                 kmodule.case(
                     "kmodule_dmverity_signature_true_signed_ok",
                     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -112,7 +112,7 @@ def build() -> tuple[Batch, ...]:
                     allowed=False,
                 ),
             ),
-            (
+            setup=(
                 partial(ipe.set_enforcement, False),
                 *(
                     partial(
