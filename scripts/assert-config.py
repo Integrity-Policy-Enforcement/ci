@@ -11,7 +11,22 @@ UNSET = re.compile(r"^# (CONFIG_[A-Z0-9_]+) is not set$")
 
 
 def read_config(path: Path) -> dict[str, str | None]:
-    """Parse set and explicitly unset Kconfig values from a config file."""
+    """Parse explicitly set and unset Kconfig values.
+
+    For input::
+
+        CONFIG_SECURITY_IPE=y
+        # CONFIG_DEBUG_INFO is not set
+
+    return::
+
+        {
+            "CONFIG_SECURITY_IPE": "y",
+            "CONFIG_DEBUG_INFO": None,
+        }
+
+    Blank lines and unrelated comments are ignored.
+    """
     values = {}
     for line in path.read_text().splitlines():
         if match := SETTING.match(line):
