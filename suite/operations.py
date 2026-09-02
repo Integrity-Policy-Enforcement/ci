@@ -36,7 +36,7 @@ def test_module_loaded(name: str) -> bool:
     return modules.is_loaded(name)
 
 
-KMODULE = Operation(
+KMODULE_INSERT_OPERATION = Operation(
     id="kmodule",
     attempt=insert_module,
     refused=INSMOD_REFUSED,

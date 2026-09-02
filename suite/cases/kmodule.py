@@ -9,11 +9,11 @@ import modules
 import runtime
 import steps
 from model import Case
-from operations import KMODULE, KMODULE_TEST_BINARY_NAME
+from operations import KMODULE_INSERT_OPERATION, KMODULE_TEST_BINARY_NAME
 
 
-def case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
-    """A case that loads a module under a policy and checks whether IPE allowed it."""
+def case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
+    """Load a kernel module binary and check whether IPE allowed it."""
     return Case(
         id=id,
         setup=(
@@ -21,13 +21,17 @@ def case(id: str, policy: ipe.Policy, module: Path, allowed: bool) -> Case:
             partial(steps.activate_policy, policy.name),
             partial(steps.set_enforcement, True),
         ),
-        trigger=partial(KMODULE.attempt, module),
+        trigger=partial(KMODULE_INSERT_OPERATION.attempt, binary),
         checks=(
             partial(
                 checks.returncode_is,
-                0 if allowed else KMODULE.refused,
+                0 if allowed else KMODULE_INSERT_OPERATION.refused,
             ),
-            partial(checks.operation_completed_is, KMODULE, allowed),
+            partial(
+                checks.operation_completed_is,
+                KMODULE_INSERT_OPERATION,
+                allowed,
+            ),
         ),
         scope=partial(
             runtime.case_scope,
