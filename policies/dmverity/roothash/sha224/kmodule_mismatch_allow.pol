@@ -1,0 +1,4 @@
+policy_name=ipe_test_dmverity_kmodule_roothash_sha224_mismatch policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=KMODULE action=DENY
+op=KMODULE dmverity_roothash=@DMVERITY_OTHER_ROOTHASH_SHA224@ action=ALLOW

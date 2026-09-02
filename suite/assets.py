@@ -103,12 +103,12 @@ KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
 
 def kmodule_dmverity_roothash_policy(
     algorithm: str,
-    matching: bool = True,
+    matching: bool,
 ) -> ipe.Policy:
     """A policy that names a dm-verity root hash, or a value no device has."""
     kind = "" if matching else "mismatch_"
     return policy(
-        asset=f"dmverity/kmodule_roothash_{algorithm}_{kind}allow",
+        asset=f"dmverity/roothash/{algorithm}/kmodule_{kind}allow",
         name=f"ipe_test_dmverity_kmodule_roothash_{algorithm}"
         + ("" if matching else "_mismatch"),
     )
@@ -116,7 +116,7 @@ def kmodule_dmverity_roothash_policy(
 
 def kmodule_fsverity_digest_policy(
     algorithm: str,
-    matching: bool = True,
+    matching: bool,
 ) -> ipe.Policy:
     """A policy that names an fs-verity digest, or a value no file has."""
     kind = "" if matching else "mismatch_"

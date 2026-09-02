@@ -1,0 +1,4 @@
+policy_name=ipe_test_dmverity_kmodule_roothash_blake2b-512 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=KMODULE action=DENY
+op=KMODULE dmverity_roothash=@DMVERITY_ROOTHASH_BLAKE2B-512@ action=ALLOW

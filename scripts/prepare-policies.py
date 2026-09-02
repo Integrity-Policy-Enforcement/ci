@@ -79,11 +79,11 @@ def sign(
 
 
 def policies_in(*directories: str) -> tuple[Path, ...]:
-    """List policy texts directly under the named policy directories."""
+    """List policy texts under the named policy directories."""
     return tuple(
         policy
         for directory in directories
-        for policy in sorted((layout.build.POLICIES_DIR / directory).glob("*.pol"))
+        for policy in sorted((layout.build.POLICIES_DIR / directory).rglob("*.pol"))
     )
 
 
