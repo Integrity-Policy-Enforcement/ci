@@ -69,13 +69,16 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
-                kmodule.case(
-                    id="kmodule_dmverity_signature_true_signed_ok",
-                    policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha256", signed=True
-                    ),
-                    allowed=True,
+                *(
+                    kmodule.case(
+                        id=f"kmodule_dmverity_signature_true_{algorithm}_signed_ok",
+                        policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_kmodule_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        allowed=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 kmodule.case(
                     id="kmodule_dmverity_signature_true_unsigned_denied",
