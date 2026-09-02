@@ -34,6 +34,7 @@ def run_in_child(case: Case) -> dict:
     child = os.fork()
     if child == 0:
         try:
+            # Give this case its own process group so the parent can kill leftover descendants.
             os.setsid()
             os.close(read_fd)
             signal.alarm(CASE_TIMEOUT_SECONDS)
