@@ -19,7 +19,15 @@ def keyctl(*arguments: str, payload: bytes | None = None) -> str:
 
 
 def linked_keys(keyring: str) -> set[str]:
-    """The key serial numbers currently linked into this keyring."""
+    """Return key serials linked into a keyring.
+
+    For keyctl rlist output::
+
+        22 23 41
+
+    ``split()`` produces ``["22", "23", "41"]`` and ``set()`` removes
+    duplicate serials. The strings are passed directly back to keyctl unlink.
+    """
     return set(keyctl("rlist", keyring).split())
 
 
