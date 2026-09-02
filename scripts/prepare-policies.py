@@ -98,7 +98,11 @@ class SigningBatch:
 
 
 def shift(hexadecimal: str) -> str:
-    """A well formed value of the same length that nothing here carries."""
+    """Return a same-length hexadecimal mismatch for negative cases.
+
+    For example, ``shift("09af")`` returns ``"1ab0"``: each digit advances
+    by one and ``f`` wraps to ``0``.
+    """
     return "".join(
         HEX_DIGITS[(HEX_DIGITS.index(digit) + 1) % len(HEX_DIGITS)] for digit in hexadecimal
     )
