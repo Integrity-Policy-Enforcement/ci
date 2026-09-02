@@ -17,11 +17,6 @@ from model import Case, CaseState, Observation
 CASE_TIMEOUT_SECONDS = 60
 
 
-def clean(text: object) -> str:
-    """Collapse whitespace so a traceback fits on one TAP line."""
-    return " ".join(str(text).replace("\r", " ").replace("\n", " ").split())
-
-
 def error_report(message: str) -> dict:
     """A complete report for a child that could not produce an observation."""
     return {
@@ -64,7 +59,7 @@ def run_in_child(case: Case) -> dict:
                     "observed": list(observation.observed),
                 }
             except BaseException as failure:
-                report = error_report(f"{type(failure).__name__}: {clean(failure)}")
+                report = error_report(f"{type(failure).__name__}: {failure}")
             with os.fdopen(write_fd, "w", encoding="utf-8") as pipe:
                 json.dump(report, pipe)
         except BaseException:
@@ -109,7 +104,7 @@ def test(case: Case) -> tuple[str, str] | None:
             return None
     except Exception as failure:
         traceback.print_exc()
-        return "error", f"{type(failure).__name__}: {clean(failure)}"
+        return "error", f"{type(failure).__name__}: {failure}"
 
 
 def run(output: TextIO) -> int:
@@ -140,10 +135,10 @@ def run(output: TextIO) -> int:
                         else:
                             kind, message = outcome
                             prefix = "error " if kind == "error" else ""
-                            emit(f"not ok {number} {case.id} # {prefix}{clean(message)}")
+                            emit(f"not ok {number} {case.id} # {prefix}{message}")
             except Exception as failure:
                 traceback.print_exc()
-                emit(f"Bail out! batch {batch.id} failed: {clean(failure)}")
+                emit(f"Bail out! batch {batch.id} failed: {failure}")
                 return 0
 
     emit(f"1..{len(planned)}")
