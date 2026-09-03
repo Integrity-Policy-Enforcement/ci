@@ -41,7 +41,10 @@ jobs:
 
           upstream_sha=$(git -C kernel-source rev-parse origin/master)
           ipe_sha=$(git -C kernel-source rev-parse HEAD)
-          git -C kernel-source rebase origin/master
+          git -C kernel-source \
+              -c user.name='IPE CI' \
+              -c user.email='ipe-ci@localhost' \
+              rebase origin/master
 
           printf 'upstream master: %s\nipe next:        %s\n' \
               "$upstream_sha" "$ipe_sha"
