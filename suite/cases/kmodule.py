@@ -8,10 +8,10 @@ import ipe
 import modules
 import steps
 from model import Case
-from operations import KMODULE_INSERT_OPERATION, KMODULE_TEST_BINARY_NAME
+from operations import KMODULE_KERNEL_READ_INSMOD_OPERATION, KMODULE_TEST_BINARY_NAME
 
 
-def case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
+def insmod_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
     """Load a kernel module binary and check whether IPE allowed it."""
     return Case(
         id=id,
@@ -20,15 +20,15 @@ def case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
             partial(steps.activate_policy, name=policy.name),
             partial(steps.set_enforcement, enabled=True),
         ),
-        trigger=partial(KMODULE_INSERT_OPERATION.attempt, path=binary),
+        trigger=partial(KMODULE_KERNEL_READ_INSMOD_OPERATION.attempt, binary=binary),
         checks=(
             partial(
                 checks.returncode_is,
-                expected=0 if allowed else KMODULE_INSERT_OPERATION.refused,
+                expected=0 if allowed else KMODULE_KERNEL_READ_INSMOD_OPERATION.refused,
             ),
             partial(
                 checks.operation_completed_is,
-                operation=KMODULE_INSERT_OPERATION,
+                operation=KMODULE_KERNEL_READ_INSMOD_OPERATION,
                 expected=allowed,
             ),
         ),

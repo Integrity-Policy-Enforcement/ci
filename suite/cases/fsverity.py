@@ -32,26 +32,26 @@ def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
     )
     plain_kmodule_binary = layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY
     return (
-        kmodule.case(
-            id=f"kmodule_fsverity_digest_{algorithm}_signed_ok",
+        kmodule.insmod_case(
+            id=f"kmodule_kernel_read_insmod_fsverity_digest_{algorithm}_signed_ok",
             policy=matching_digest_policy,
             binary=signed_kmodule_binary,
             allowed=True,
         ),
-        kmodule.case(
-            id=f"kmodule_fsverity_digest_{algorithm}_unsigned_ok",
+        kmodule.insmod_case(
+            id=f"kmodule_kernel_read_insmod_fsverity_digest_{algorithm}_unsigned_ok",
             policy=matching_digest_policy,
             binary=unsigned_kmodule_binary,
             allowed=True,
         ),
-        kmodule.case(
-            id=f"kmodule_fsverity_digest_{algorithm}_plain_denied",
+        kmodule.insmod_case(
+            id=f"kmodule_kernel_read_insmod_fsverity_digest_{algorithm}_plain_denied",
             policy=matching_digest_policy,
             binary=plain_kmodule_binary,
             allowed=False,
         ),
-        kmodule.case(
-            id=f"kmodule_fsverity_digest_{algorithm}_mismatch_denied",
+        kmodule.insmod_case(
+            id=f"kmodule_kernel_read_insmod_fsverity_digest_{algorithm}_mismatch_denied",
             policy=mismatching_digest_policy,
             binary=signed_kmodule_binary,
             allowed=False,
@@ -65,46 +65,46 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="fsverity",
             cases=(
-                kmodule.case(
-                    id="kmodule_fsverity_signature_true_signed_ok",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_fsverity_signature_true_signed_ok",
                     policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     binary=layout.guest.fsverity_signed_kmodule_test_binary(
                         algorithm="sha256"
                     ),
                     allowed=True,
                 ),
-                kmodule.case(
-                    id="kmodule_fsverity_signature_true_unsigned_denied",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_fsverity_signature_true_unsigned_denied",
                     policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
                         algorithm="sha256"
                     ),
                     allowed=False,
                 ),
-                kmodule.case(
-                    id="kmodule_fsverity_signature_true_plain_denied",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_fsverity_signature_true_plain_denied",
                     policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     binary=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
-                kmodule.case(
-                    id="kmodule_fsverity_signature_false_signed_ok",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_fsverity_signature_false_signed_ok",
                     policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
                     binary=layout.guest.fsverity_signed_kmodule_test_binary(
                         algorithm="sha256"
                     ),
                     allowed=True,
                 ),
-                kmodule.case(
-                    id="kmodule_fsverity_signature_false_unsigned_denied",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_fsverity_signature_false_unsigned_denied",
                     policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
                     binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
                         algorithm="sha256"
                     ),
                     allowed=False,
                 ),
-                kmodule.case(
-                    id="kmodule_fsverity_signature_false_plain_denied",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_fsverity_signature_false_plain_denied",
                     policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
                     binary=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,

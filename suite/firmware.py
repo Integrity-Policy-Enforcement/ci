@@ -29,7 +29,7 @@ def set_search_path(directory: str | Path) -> None:
     nodeio.write_path(FIRMWARE_SEARCH_PATH_NODE, str(directory))
 
 
-def request(binary: Path, state: CaseState) -> Observation:
+def request_firmware(binary: Path, state: CaseState) -> Observation:
     """Request a firmware binary and report the resulting errno."""
     set_search_path(binary.parent)
     try:
@@ -39,12 +39,12 @@ def request(binary: Path, state: CaseState) -> Observation:
         return error_observation(failure)
 
 
-def loaded_binary_is(expected: Path) -> bool:
+def requested_firmware_matches(expected: Path) -> bool:
     """Whether test_firmware retained the expected binary."""
     return FIRMWARE_CONTENT_NODE.read_bytes() == expected.read_bytes()
 
 
-def clear_loaded_binary() -> None:
+def clear_requested_firmware() -> None:
     """Request a missing name so test_firmware releases its retained binary."""
     set_search_path(layout.guest.FIRMWARE_DIR)
     try:
@@ -57,10 +57,10 @@ def clear_loaded_binary() -> None:
 
 
 @contextmanager
-def request_scope() -> Generator[None, None, None]:
+def request_firmware_scope() -> Generator[None, None, None]:
     """Restore the search path and release the requested firmware binary."""
     with setting(read=search_path, write=set_search_path):
         try:
             yield
         finally:
-            clear_loaded_binary()
+            clear_requested_firmware()

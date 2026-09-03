@@ -32,26 +32,26 @@ TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 
 
 INITRAMFS_CASES = (
-    kmodule.case(
-        id="kmodule_boot_verified_true_initramfs_ok",
+    kmodule.insmod_case(
+        id="kmodule_kernel_read_insmod_boot_verified_true_initramfs_ok",
         policy=KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
         binary=INITRAMFS_KMODULE_TEST_BINARY,
         allowed=True,
     ),
-    kmodule.case(
-        id="kmodule_boot_verified_true_tmpfs_denied",
+    kmodule.insmod_case(
+        id="kmodule_kernel_read_insmod_boot_verified_true_tmpfs_denied",
         policy=KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
         binary=TMPFS_KMODULE_TEST_BINARY,
         allowed=False,
     ),
-    kmodule.case(
-        id="kmodule_boot_verified_false_initramfs_ok",
+    kmodule.insmod_case(
+        id="kmodule_kernel_read_insmod_boot_verified_false_initramfs_ok",
         policy=KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
         binary=INITRAMFS_KMODULE_TEST_BINARY,
         allowed=True,
     ),
-    kmodule.case(
-        id="kmodule_boot_verified_false_tmpfs_denied",
+    kmodule.insmod_case(
+        id="kmodule_kernel_read_insmod_boot_verified_false_tmpfs_denied",
         policy=KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
         binary=TMPFS_KMODULE_TEST_BINARY,
         allowed=False,

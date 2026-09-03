@@ -8,10 +8,10 @@ import firmware
 import ipe
 import steps
 from model import Case
-from operations import FIRMWARE_REQUEST_OPERATION
+from operations import FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION
 
 
-def case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
+def request_firmware_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
     """Request a firmware binary and check whether IPE allowed it."""
     return Case(
         id=id,
@@ -20,17 +20,17 @@ def case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
             partial(steps.activate_policy, name=policy.name),
             partial(steps.set_enforcement, enabled=True),
         ),
-        trigger=partial(FIRMWARE_REQUEST_OPERATION.attempt, binary=binary),
+        trigger=partial(FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION.attempt, binary=binary),
         checks=(
             partial(
                 checks.errno_is,
-                expected=0 if allowed else FIRMWARE_REQUEST_OPERATION.refused,
+                expected=0 if allowed else FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION.refused,
             ),
             partial(
                 checks.operation_completed_is,
-                operation=FIRMWARE_REQUEST_OPERATION,
+                operation=FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION,
                 expected=allowed,
             ),
         ),
-        extra_scopes=(firmware.request_scope,),
+        extra_scopes=(firmware.request_firmware_scope,),
     )

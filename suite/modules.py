@@ -32,9 +32,9 @@ def is_loaded(name: str) -> bool:
     return name in names()
 
 
-def insert(path: Path) -> subprocess.CompletedProcess:
+def insmod(binary: Path) -> subprocess.CompletedProcess:
     """Run insmod; return the result without raising on failure."""
-    return subprocess.run(["insmod", str(path)], capture_output=True, text=True)
+    return subprocess.run(["insmod", str(binary)], capture_output=True, text=True)
 
 
 def remove(name: str) -> None:

@@ -37,26 +37,26 @@ def roothash_cases(*, algorithm: str) -> tuple[Case, ...]:
     )
     plain_kmodule_binary = layout.guest.PLAIN_KMODULE_TEST_BINARY
     return (
-        kmodule.case(
-            id=f"kmodule_dmverity_roothash_{algorithm}_signed_ok",
+        kmodule.insmod_case(
+            id=f"kmodule_kernel_read_insmod_dmverity_roothash_{algorithm}_signed_ok",
             policy=matching_root_hash_policy,
             binary=signed_kmodule_binary,
             allowed=True,
         ),
-        kmodule.case(
-            id=f"kmodule_dmverity_roothash_{algorithm}_unsigned_ok",
+        kmodule.insmod_case(
+            id=f"kmodule_kernel_read_insmod_dmverity_roothash_{algorithm}_unsigned_ok",
             policy=matching_root_hash_policy,
             binary=unsigned_kmodule_binary,
             allowed=True,
         ),
-        kmodule.case(
-            id=f"kmodule_dmverity_roothash_{algorithm}_plain_denied",
+        kmodule.insmod_case(
+            id=f"kmodule_kernel_read_insmod_dmverity_roothash_{algorithm}_plain_denied",
             policy=matching_root_hash_policy,
             binary=plain_kmodule_binary,
             allowed=False,
         ),
-        kmodule.case(
-            id=f"kmodule_dmverity_roothash_{algorithm}_mismatch_denied",
+        kmodule.insmod_case(
+            id=f"kmodule_kernel_read_insmod_dmverity_roothash_{algorithm}_mismatch_denied",
             policy=mismatching_root_hash_policy,
             binary=signed_kmodule_binary,
             allowed=False,
@@ -70,8 +70,11 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
-                firmware.case(
-                    id="firmware_dmverity_signature_true_sha256_signed_ok",
+                firmware.request_firmware_case(
+                    id=(
+                        "firmware_kernel_read_request_firmware_"
+                        "dmverity_signature_true_sha256_signed_ok"
+                    ),
                     policy=FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     binary=layout.guest.dmverity_firmware_test_binary(
                         algorithm="sha256", signed=True
@@ -79,8 +82,11 @@ def build() -> tuple[Batch, ...]:
                     allowed=True,
                 ),
                 *(
-                    kmodule.case(
-                        id=f"kmodule_dmverity_signature_true_{algorithm}_signed_ok",
+                    kmodule.insmod_case(
+                        id=(
+                            "kmodule_kernel_read_insmod_dmverity_signature_true_"
+                            f"{algorithm}_signed_ok"
+                        ),
                         policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                         binary=layout.guest.dmverity_kmodule_test_binary(
                             algorithm=algorithm, signed=True
@@ -89,38 +95,38 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
-                kmodule.case(
-                    id="kmodule_dmverity_signature_true_unsigned_denied",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_dmverity_signature_true_unsigned_denied",
                     policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     binary=layout.guest.dmverity_kmodule_test_binary(
                         algorithm="sha256", signed=False
                     ),
                     allowed=False,
                 ),
-                kmodule.case(
-                    id="kmodule_dmverity_signature_true_plain_denied",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_dmverity_signature_true_plain_denied",
                     policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
                 ),
-                kmodule.case(
-                    id="kmodule_dmverity_signature_false_signed_ok",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_dmverity_signature_false_signed_ok",
                     policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
                     binary=layout.guest.dmverity_kmodule_test_binary(
                         algorithm="sha256", signed=True
                     ),
                     allowed=True,
                 ),
-                kmodule.case(
-                    id="kmodule_dmverity_signature_false_unsigned_denied",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_dmverity_signature_false_unsigned_denied",
                     policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
                     binary=layout.guest.dmverity_kmodule_test_binary(
                         algorithm="sha256", signed=False
                     ),
                     allowed=False,
                 ),
-                kmodule.case(
-                    id="kmodule_dmverity_signature_false_plain_denied",
+                kmodule.insmod_case(
+                    id="kmodule_kernel_read_insmod_dmverity_signature_false_plain_denied",
                     policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
                     binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                     allowed=False,
