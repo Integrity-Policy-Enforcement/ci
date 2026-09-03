@@ -42,6 +42,11 @@ def make_payload(output: Path) -> None:
             layout.source.HASHES_MODULE,
             staging_path(layout.guest.HASHES_MODULE),
         )
+        staging_path(layout.guest.FIRMWARE_TEST_BINARY).parent.mkdir()
+        shutil.copy(
+            layout.source.FIRMWARE_TEST_BINARY,
+            staging_path(layout.guest.FIRMWARE_TEST_BINARY),
+        )
         shutil.copytree(
             layout.build.POLICIES_DIR,
             staging_path(layout.guest.POLICIES_DIR),

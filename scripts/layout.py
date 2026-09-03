@@ -65,11 +65,13 @@ guest: what the tests find after the switch.
         run-tests.py                       entry point
         layout.py                          absolute paths in the guest
         hashes.py                          the dm-verity and fs-verity algorithm lists
+        firmware/
+            ipe_test.fw                        FIRMWARE test binary
         kernel-modules/                    kernel module test binaries
             ipe_test.ko                        KMODULE test binary
         policies/                         signed copy of the source policy tree
         dmverity/                          dm-verity image and its hashes
-            dmverity.squashfs                  the squashfs holding the module
+            dmverity.squashfs                  holds ipe_test.ko and ipe_test.fw
             dmverity-<hash>.hash               Merkle tree
             dmverity-<hash>.roothash           root hash
             dmverity-<hash>.p7s                signature over the root hash
@@ -94,6 +96,7 @@ guest: what the tests find after the switch.
 from pathlib import Path
 
 _KMODULE_TEST_BINARY_NAME = "ipe_test.ko"
+_FIRMWARE_TEST_BINARY_NAME = "ipe_test.fw"
 _DMVERITY_DIR_NAME = "dmverity"
 _FSVERITY_DIR_NAME = "fsverity"
 _POLICIES_DIR_NAME = "policies"
@@ -131,6 +134,8 @@ def _fsverity_digest_name(algorithm: str) -> str:
 class test_media:
     """Paths relative to a test-media root."""
 
+    FIRMWARE_DIR = Path("firmware")
+    FIRMWARE_TEST_BINARY = FIRMWARE_DIR / _FIRMWARE_TEST_BINARY_NAME
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
 
@@ -144,6 +149,8 @@ class source:
     SUITE_DIR = ROOT_DIR / "suite"
     IMAGE_DIR = ROOT_DIR / "image"
     POLICIES_DIR = ROOT_DIR / "policies"
+    TEST_MEDIA_DIR = ROOT_DIR / "test-media"
+    FIRMWARE_TEST_BINARY = TEST_MEDIA_DIR / test_media.FIRMWARE_TEST_BINARY
     KERNEL_MODULES_DIR = ROOT_DIR / "kernel-modules"
     KERNEL_CONFIG = ROOT_DIR / "config" / "ipe-tests.config"
     BOOT_POLICY = ROOT_DIR / "config" / "boot-policy.pol"
@@ -232,6 +239,8 @@ class guest:
     RUNNER = PAYLOAD_DIR / "run-tests.py"
     LAYOUT_MODULE = PAYLOAD_DIR / "layout.py"
     HASHES_MODULE = PAYLOAD_DIR / "hashes.py"
+    FIRMWARE_DIR = PAYLOAD_DIR / test_media.FIRMWARE_DIR
+    FIRMWARE_TEST_BINARY = PAYLOAD_DIR / test_media.FIRMWARE_TEST_BINARY
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
 
@@ -307,6 +316,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm, signed)
             / test_media.KMODULE_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_firmware_test_binary(algorithm: str, signed: bool) -> Path:
+        """The FIRMWARE test binary on a mounted dm-verity image."""
+        return (
+            guest.dmverity_mount_dir(algorithm, signed)
+            / test_media.FIRMWARE_TEST_BINARY
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"

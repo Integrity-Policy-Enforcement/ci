@@ -1,0 +1,4 @@
+policy_name=ipe_test_dmverity_firmware_signature_true policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=FIRMWARE action=DENY
+op=FIRMWARE dmverity_signature=TRUE action=ALLOW

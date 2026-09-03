@@ -76,9 +76,12 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory() as temporary:
         content_dir = Path(temporary)
-        target = content_dir / layout.test_media.KMODULE_TEST_BINARY
-        target.parent.mkdir(parents=True)
-        shutil.copy(layout.build.KMODULE_TEST_BINARY, target)
+        kmodule_target = content_dir / layout.test_media.KMODULE_TEST_BINARY
+        firmware_target = content_dir / layout.test_media.FIRMWARE_TEST_BINARY
+        kmodule_target.parent.mkdir(parents=True)
+        firmware_target.parent.mkdir(parents=True)
+        shutil.copy(layout.build.KMODULE_TEST_BINARY, kmodule_target)
+        shutil.copy(layout.source.FIRMWARE_TEST_BINARY, firmware_target)
         build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)
 
     for algorithm in hashes.DMVERITY_ALGORITHMS:

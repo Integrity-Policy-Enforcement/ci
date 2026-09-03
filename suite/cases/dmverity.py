@@ -8,13 +8,14 @@ import ipe
 import layout
 import mounts
 from assets import (
+    FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     kmodule_dmverity_roothash_policy,
 )
 from model import Batch, Case
 
-from . import kmodule
+from . import firmware, kmodule
 
 # dm-verity mappings under this prefix are reserved for batch cleanup.
 DMVERITY_DEVICE_PREFIX = "ipe-dmverity-"
@@ -69,6 +70,14 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
+                firmware.case(
+                    id="firmware_dmverity_signature_true_sha256_signed_ok",
+                    policy=FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.dmverity_firmware_test_binary(
+                        algorithm="sha256", signed=True
+                    ),
+                    allowed=True,
+                ),
                 *(
                     kmodule.case(
                         id=f"kmodule_dmverity_signature_true_{algorithm}_signed_ok",
