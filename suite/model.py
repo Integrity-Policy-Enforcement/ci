@@ -32,6 +32,14 @@ Check = Callable[[Observation], str | None]
 
 
 @dataclass(frozen=True)
+class Operation:
+    id: str
+    attempt: Callable
+    refused: int
+    completed: Callable
+
+
+@dataclass(frozen=True)
 class Case:
     id: str
     trigger: Trigger | None = None

@@ -4,8 +4,7 @@ import json
 
 import ipe
 import layout
-from model import Observation
-from operations import Operation
+from model import Observation, Operation
 
 
 def errno_is(expected: int, observation: Observation) -> str | None:
