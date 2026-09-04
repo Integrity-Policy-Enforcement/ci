@@ -9,6 +9,11 @@ on:
     # Test the latest upstream and IPE trees once a day (UTC).
     - cron: '23 5 * * *'
   workflow_dispatch:
+    inputs:
+      kernel_branch:
+        description: Branch in Integrity-Policy-Enforcement/linux; empty uses the daily IPE rebase
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -29,25 +34,36 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Prepare kernel tree
+        env:
+          KERNEL_BRANCH: ${{ inputs.kernel_branch }}
         run: |
           set -euo pipefail
-          git clone --filter=blob:none --single-branch --branch master \
-              https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
-              kernel-source
-          git -C kernel-source remote add ipe \
-              https://git.kernel.org/pub/scm/linux/kernel/git/wufan/ipe.git
-          git -C kernel-source fetch --filter=blob:none ipe next
-          git -C kernel-source switch --create ipe-next-tested FETCH_HEAD
+          if [[ -n "$KERNEL_BRANCH" ]]; then
+              git check-ref-format --branch "$KERNEL_BRANCH" >/dev/null
+              git clone --filter=blob:none --single-branch --branch "$KERNEL_BRANCH" \
+                  https://github.com/Integrity-Policy-Enforcement/linux.git \
+                  kernel-source
+              printf 'kernel branch: %s\nkernel SHA:    %s\n' \
+                  "$KERNEL_BRANCH" "$(git -C kernel-source rev-parse HEAD)"
+          else
+              git clone --filter=blob:none --single-branch --branch master \
+                  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
+                  kernel-source
+              git -C kernel-source remote add ipe \
+                  https://git.kernel.org/pub/scm/linux/kernel/git/wufan/ipe.git
+              git -C kernel-source fetch --filter=blob:none ipe next
+              git -C kernel-source switch --create ipe-next-tested FETCH_HEAD
 
-          upstream_sha=$(git -C kernel-source rev-parse origin/master)
-          ipe_sha=$(git -C kernel-source rev-parse HEAD)
-          git -C kernel-source \
-              -c user.name='IPE CI' \
-              -c user.email='ipe-ci@localhost' \
-              rebase origin/master
+              upstream_sha=$(git -C kernel-source rev-parse origin/master)
+              ipe_sha=$(git -C kernel-source rev-parse HEAD)
+              git -C kernel-source \
+                  -c user.name='IPE CI' \
+                  -c user.email='ipe-ci@localhost' \
+                  rebase origin/master
 
-          printf 'upstream master: %s\nipe next:        %s\n' \
-              "$upstream_sha" "$ipe_sha"
+              printf 'upstream master: %s\nipe next:        %s\n' \
+                  "$upstream_sha" "$ipe_sha"
+          fi
 
       - name: Install dependencies
         run: |
