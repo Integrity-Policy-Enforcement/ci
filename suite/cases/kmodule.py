@@ -8,7 +8,11 @@ import ipe
 import modules
 import steps
 from model import Case
-from operations import KMODULE_KERNEL_READ_INSMOD_OPERATION, KMODULE_TEST_BINARY_NAME
+from operations import (
+    INSMOD_REFUSED_RETURN_CODE,
+    KMODULE_KERNEL_READ_INSMOD_OPERATION,
+    KMODULE_TEST_BINARY_NAME,
+)
 
 
 def insmod_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
@@ -24,7 +28,7 @@ def insmod_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Cas
         checks=(
             partial(
                 checks.returncode_is,
-                expected=0 if allowed else KMODULE_KERNEL_READ_INSMOD_OPERATION.refused,
+                expected=0 if allowed else INSMOD_REFUSED_RETURN_CODE,
             ),
             partial(
                 checks.operation_completed_is,

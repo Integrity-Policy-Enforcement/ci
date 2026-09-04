@@ -35,7 +35,6 @@ Check = Callable[[Observation], str | None]
 class Operation:
     id: str
     attempt: Callable
-    refused: int
 
 
 @dataclass(frozen=True)

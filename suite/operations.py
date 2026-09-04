@@ -28,11 +28,9 @@ def call_insmod(binary: Path, state: CaseState) -> Observation:
 KMODULE_KERNEL_READ_INSMOD_OPERATION = Operation(
     id="kmodule_kernel_read_insmod",
     attempt=call_insmod,
-    refused=INSMOD_REFUSED_RETURN_CODE,
 )
 
 FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION = Operation(
     id="firmware_kernel_read_request_firmware",
     attempt=firmware.request_firmware,
-    refused=FIRMWARE_REQUEST_REFUSED_ERRNO,
 )

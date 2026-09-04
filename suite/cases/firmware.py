@@ -9,7 +9,10 @@ import ipe
 import layout
 import steps
 from model import Case
-from operations import FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION
+from operations import (
+    FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION,
+    FIRMWARE_REQUEST_REFUSED_ERRNO,
+)
 
 
 def request_firmware_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
@@ -25,7 +28,7 @@ def request_firmware_case(id: str, policy: ipe.Policy, binary: Path, allowed: bo
         checks=(
             partial(
                 checks.errno_is,
-                expected=0 if allowed else FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION.refused,
+                expected=0 if allowed else FIRMWARE_REQUEST_REFUSED_ERRNO,
             ),
             partial(
                 checks.operation_completed_is,
