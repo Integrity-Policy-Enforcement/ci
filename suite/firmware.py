@@ -52,7 +52,7 @@ def clear_requested_firmware() -> None:
     except OSError as failure:
         if failure.errno != errno.ENOENT:
             raise
-    if FIRMWARE_CONTENT_NODE.read_bytes():
+    if FIRMWARE_CONTENT_NODE.read_bytes() != b"":
         raise RuntimeError("test_firmware retained a binary after cleanup")
 
 
