@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import json
+from collections.abc import Callable
 
 import ipe
 import layout
@@ -87,10 +88,13 @@ def policy_present_is(
 
 
 def operation_completed_is(
-    operation: Operation, expected: bool, observation: Observation
+    operation: Operation,
+    completed: Callable[[], bool],
+    expected: bool,
+    observation: Observation,
 ) -> str | None:
     """The operation left evidence of running, or did not."""
-    actual = operation.completed()
+    actual = completed()
     if actual != expected:
         return f"{operation.id} completed={actual}, expected {expected}"
     return None

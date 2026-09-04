@@ -6,6 +6,7 @@ from pathlib import Path
 import checks
 import firmware
 import ipe
+import layout
 import steps
 from model import Case
 from operations import FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION
@@ -29,6 +30,10 @@ def request_firmware_case(id: str, policy: ipe.Policy, binary: Path, allowed: bo
             partial(
                 checks.operation_completed_is,
                 operation=FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION,
+                completed=partial(
+                    firmware.requested_firmware_matches,
+                    expected=layout.guest.FIRMWARE_TEST_BINARY,
+                ),
                 expected=allowed,
             ),
         ),

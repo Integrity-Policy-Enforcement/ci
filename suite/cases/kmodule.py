@@ -29,6 +29,10 @@ def insmod_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Cas
             partial(
                 checks.operation_completed_is,
                 operation=KMODULE_KERNEL_READ_INSMOD_OPERATION,
+                completed=partial(
+                    modules.is_loaded,
+                    name=KMODULE_TEST_BINARY_NAME,
+                ),
                 expected=allowed,
             ),
         ),

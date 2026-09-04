@@ -36,7 +36,6 @@ class Operation:
     id: str
     attempt: Callable
     refused: int
-    completed: Callable
 
 
 @dataclass(frozen=True)
