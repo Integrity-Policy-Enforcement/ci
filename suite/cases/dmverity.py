@@ -41,25 +41,29 @@ def roothash_cases(*, algorithm: str) -> tuple[Case, ...]:
             id=f"kmodule_kernel_read_insmod_dmverity_roothash_{algorithm}_signed_ok",
             policy=matching_root_hash_policy,
             binary=signed_kmodule_binary,
-            allowed=True,
+            expected_returncode=0,
+            expected_loaded=True,
         ),
         kmodule.insmod_case(
             id=f"kmodule_kernel_read_insmod_dmverity_roothash_{algorithm}_unsigned_ok",
             policy=matching_root_hash_policy,
             binary=unsigned_kmodule_binary,
-            allowed=True,
+            expected_returncode=0,
+            expected_loaded=True,
         ),
         kmodule.insmod_case(
             id=f"kmodule_kernel_read_insmod_dmverity_roothash_{algorithm}_plain_denied",
             policy=matching_root_hash_policy,
             binary=plain_kmodule_binary,
-            allowed=False,
+            expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+            expected_loaded=False,
         ),
         kmodule.insmod_case(
             id=f"kmodule_kernel_read_insmod_dmverity_roothash_{algorithm}_mismatch_denied",
             policy=mismatching_root_hash_policy,
             binary=signed_kmodule_binary,
-            allowed=False,
+            expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+            expected_loaded=False,
         ),
     )
 
@@ -79,7 +83,8 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.dmverity_firmware_test_binary(
                         algorithm="sha256", signed=True
                     ),
-                    allowed=True,
+                    expected_errno=0,
+                    expected_content_match=True,
                 ),
                 *(
                     kmodule.insmod_case(
@@ -91,7 +96,8 @@ def build() -> tuple[Batch, ...]:
                         binary=layout.guest.dmverity_kmodule_test_binary(
                             algorithm=algorithm, signed=True
                         ),
-                        allowed=True,
+                        expected_returncode=0,
+                        expected_loaded=True,
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
@@ -101,13 +107,15 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.dmverity_kmodule_test_binary(
                         algorithm="sha256", signed=False
                     ),
-                    allowed=False,
+                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                    expected_loaded=False,
                 ),
                 kmodule.insmod_case(
                     id="kmodule_kernel_read_insmod_dmverity_signature_true_plain_denied",
                     policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
-                    allowed=False,
+                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                    expected_loaded=False,
                 ),
                 kmodule.insmod_case(
                     id="kmodule_kernel_read_insmod_dmverity_signature_false_signed_ok",
@@ -115,7 +123,8 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.dmverity_kmodule_test_binary(
                         algorithm="sha256", signed=True
                     ),
-                    allowed=True,
+                    expected_returncode=0,
+                    expected_loaded=True,
                 ),
                 kmodule.insmod_case(
                     id="kmodule_kernel_read_insmod_dmverity_signature_false_unsigned_denied",
@@ -123,13 +132,15 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.dmverity_kmodule_test_binary(
                         algorithm="sha256", signed=False
                     ),
-                    allowed=False,
+                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                    expected_loaded=False,
                 ),
                 kmodule.insmod_case(
                     id="kmodule_kernel_read_insmod_dmverity_signature_false_plain_denied",
                     policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
                     binary=layout.guest.PLAIN_KMODULE_TEST_BINARY,
-                    allowed=False,
+                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                    expected_loaded=False,
                 ),
                 *(
                     test_case

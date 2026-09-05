@@ -36,25 +36,29 @@ INITRAMFS_CASES = (
         id="kmodule_kernel_read_insmod_boot_verified_true_initramfs_ok",
         policy=KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
         binary=INITRAMFS_KMODULE_TEST_BINARY,
-        allowed=True,
+        expected_returncode=0,
+        expected_loaded=True,
     ),
     kmodule.insmod_case(
         id="kmodule_kernel_read_insmod_boot_verified_true_tmpfs_denied",
         policy=KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
         binary=TMPFS_KMODULE_TEST_BINARY,
-        allowed=False,
+        expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+        expected_loaded=False,
     ),
     kmodule.insmod_case(
         id="kmodule_kernel_read_insmod_boot_verified_false_initramfs_ok",
         policy=KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
         binary=INITRAMFS_KMODULE_TEST_BINARY,
-        allowed=True,
+        expected_returncode=0,
+        expected_loaded=True,
     ),
     kmodule.insmod_case(
         id="kmodule_kernel_read_insmod_boot_verified_false_tmpfs_denied",
         policy=KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
         binary=TMPFS_KMODULE_TEST_BINARY,
-        allowed=False,
+        expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+        expected_loaded=False,
     ),
 )
 

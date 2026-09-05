@@ -31,8 +31,14 @@ KMODULE_KERNEL_READ_INSMOD_OPERATION = Operation(
 )
 
 
-def insmod_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Case:
-    """Load a kernel module binary and check whether IPE allowed it."""
+def insmod_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    expected_returncode: int,
+    expected_loaded: bool,
+) -> Case:
+    """Run insmod and check its return code and the module's loaded state."""
     return Case(
         id=id,
         setup=(
@@ -44,7 +50,7 @@ def insmod_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Cas
         checks=(
             partial(
                 checks.returncode_is,
-                expected=0 if allowed else INSMOD_REFUSED_RETURN_CODE,
+                expected=expected_returncode,
             ),
             partial(
                 checks.operation_completed_is,
@@ -53,7 +59,7 @@ def insmod_case(id: str, policy: ipe.Policy, binary: Path, allowed: bool) -> Cas
                     modules.is_loaded,
                     name=KMODULE_TEST_BINARY_NAME,
                 ),
-                expected=allowed,
+                expected=expected_loaded,
             ),
         ),
         extra_scopes=(

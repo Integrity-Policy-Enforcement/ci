@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-import errno
 from functools import partial
 from pathlib import Path
 
@@ -10,9 +9,6 @@ import ipe
 import layout
 import steps
 from model import Case, Operation
-
-# Firmware search continues after IPE returns EACCES and ends with ENOENT.
-FIRMWARE_REQUEST_REFUSED_ERRNO = errno.ENOENT
 
 FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION = Operation(
     id="firmware_kernel_read_request_firmware",
@@ -24,9 +20,10 @@ def request_firmware_case(
     id: str,
     policy: ipe.Policy,
     binary: Path,
-    allowed: bool,
+    expected_errno: int,
+    expected_content_match: bool,
 ) -> Case:
-    """Request a firmware binary and check whether IPE allowed it."""
+    """Request firmware and check its errno and content."""
     return Case(
         id=id,
         setup=(
@@ -41,7 +38,7 @@ def request_firmware_case(
         checks=(
             partial(
                 checks.errno_is,
-                expected=0 if allowed else FIRMWARE_REQUEST_REFUSED_ERRNO,
+                expected=expected_errno,
             ),
             partial(
                 checks.operation_completed_is,
@@ -50,7 +47,7 @@ def request_firmware_case(
                     firmware.requested_firmware_matches,
                     expected=layout.guest.FIRMWARE_TEST_BINARY,
                 ),
-                expected=allowed,
+                expected=expected_content_match,
             ),
         ),
         extra_scopes=(firmware.request_firmware_scope,),
