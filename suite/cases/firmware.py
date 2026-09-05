@@ -8,12 +8,7 @@ import firmware
 import ipe
 import layout
 import steps
-from model import Case, Operation
-
-FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION = Operation(
-    id="firmware_kernel_read_request_firmware",
-    attempt=firmware.request_firmware,
-)
+from model import Case
 
 
 def request_firmware_case(
@@ -32,7 +27,7 @@ def request_firmware_case(
             partial(steps.set_enforcement, enabled=True),
         ),
         trigger=partial(
-            FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION.attempt,
+            firmware.request_firmware,
             binary=binary,
         ),
         checks=(

@@ -8,7 +8,7 @@ import ipe
 import layout
 import modules
 import steps
-from model import Case, CaseState, Observation, Operation
+from model import Case, CaseState, Observation
 
 # insmod reports a failed insertion with process return code 1, not an errno.
 INSMOD_REFUSED_RETURN_CODE = 1
@@ -23,12 +23,6 @@ def call_insmod(binary: Path, state: CaseState) -> Observation:
         returncode=finished.returncode,
         message=finished.stderr.strip(),
     )
-
-
-KMODULE_KERNEL_READ_INSMOD_OPERATION = Operation(
-    id="kmodule_kernel_read_insmod",
-    attempt=call_insmod,
-)
 
 
 def insmod_case(
@@ -46,7 +40,7 @@ def insmod_case(
             partial(steps.activate_policy, name=policy.name),
             partial(steps.set_enforcement, enabled=True),
         ),
-        trigger=partial(KMODULE_KERNEL_READ_INSMOD_OPERATION.attempt, binary=binary),
+        trigger=partial(call_insmod, binary=binary),
         checks=(
             partial(
                 checks.returncode_is,
