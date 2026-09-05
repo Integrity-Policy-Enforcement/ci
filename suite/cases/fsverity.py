@@ -17,6 +17,60 @@ from model import Batch, Case
 from . import kmodule
 
 
+def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
+    """The signed and unsigned fs-verity signature cases for one algorithm."""
+    # Preserve the original SHA-256 IDs, which omit the algorithm.
+    algorithm_id = "" if algorithm == "sha256" else f"{algorithm}_"
+    signed_kmodule_binary = layout.guest.fsverity_signed_kmodule_test_binary(
+        algorithm=algorithm
+    )
+    unsigned_kmodule_binary = layout.guest.fsverity_unsigned_kmodule_test_binary(
+        algorithm=algorithm
+    )
+    return (
+        kmodule.insmod_case(
+            id=(
+                "kmodule_kernel_read_insmod_fsverity_signature_true_"
+                f"{algorithm_id}signed_ok"
+            ),
+            policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+            binary=signed_kmodule_binary,
+            expected_returncode=0,
+            expected_loaded=True,
+        ),
+        kmodule.insmod_case(
+            id=(
+                "kmodule_kernel_read_insmod_fsverity_signature_true_"
+                f"{algorithm_id}unsigned_denied"
+            ),
+            policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+            binary=unsigned_kmodule_binary,
+            expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+            expected_loaded=False,
+        ),
+        kmodule.insmod_case(
+            id=(
+                "kmodule_kernel_read_insmod_fsverity_signature_false_"
+                f"{algorithm_id}signed_ok"
+            ),
+            policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+            binary=signed_kmodule_binary,
+            expected_returncode=0,
+            expected_loaded=True,
+        ),
+        kmodule.insmod_case(
+            id=(
+                "kmodule_kernel_read_insmod_fsverity_signature_false_"
+                f"{algorithm_id}unsigned_denied"
+            ),
+            policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+            binary=unsigned_kmodule_binary,
+            expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+            expected_loaded=False,
+        ),
+    )
+
+
 def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
     """The fs-verity digest cases for one algorithm."""
     matching_digest_policy = kmodule_fsverity_digest_policy(
@@ -70,47 +124,10 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="fsverity",
             cases=(
-                kmodule.insmod_case(
-                    id="kmodule_kernel_read_insmod_fsverity_signature_true_signed_ok",
-                    policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
-                        algorithm="sha256"
-                    ),
-                    expected_returncode=0,
-                    expected_loaded=True,
-                ),
-                kmodule.insmod_case(
-                    id=(
-                        "kmodule_kernel_read_insmod_"
-                        "fsverity_signature_true_sha512_signed_ok"
-                    ),
-                    policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
-                        algorithm="sha512"
-                    ),
-                    expected_returncode=0,
-                    expected_loaded=True,
-                ),
-                kmodule.insmod_case(
-                    id="kmodule_kernel_read_insmod_fsverity_signature_true_unsigned_denied",
-                    policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                        algorithm="sha256"
-                    ),
-                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
-                    expected_loaded=False,
-                ),
-                kmodule.insmod_case(
-                    id=(
-                        "kmodule_kernel_read_insmod_"
-                        "fsverity_signature_true_sha512_unsigned_denied"
-                    ),
-                    policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                        algorithm="sha512"
-                    ),
-                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
-                    expected_loaded=False,
+                *(
+                    test_case
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                    for test_case in signature_cases(algorithm=algorithm)
                 ),
                 kmodule.init_module_case(
                     id=(
@@ -143,27 +160,6 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
                     expected_loaded=False,
                 ),
-                kmodule.insmod_case(
-                    id="kmodule_kernel_read_insmod_fsverity_signature_false_signed_ok",
-                    policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
-                        algorithm="sha256"
-                    ),
-                    expected_returncode=0,
-                    expected_loaded=True,
-                ),
-                kmodule.insmod_case(
-                    id=(
-                        "kmodule_kernel_read_insmod_"
-                        "fsverity_signature_false_sha512_signed_ok"
-                    ),
-                    policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
-                        algorithm="sha512"
-                    ),
-                    expected_returncode=0,
-                    expected_loaded=True,
-                ),
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
@@ -174,27 +170,6 @@ def build() -> tuple[Batch, ...]:
                         algorithm="sha256"
                     ),
                     expected_errno=errno.EACCES,
-                    expected_loaded=False,
-                ),
-                kmodule.insmod_case(
-                    id="kmodule_kernel_read_insmod_fsverity_signature_false_unsigned_denied",
-                    policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                        algorithm="sha256"
-                    ),
-                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
-                    expected_loaded=False,
-                ),
-                kmodule.insmod_case(
-                    id=(
-                        "kmodule_kernel_read_insmod_"
-                        "fsverity_signature_false_sha512_unsigned_denied"
-                    ),
-                    policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                        algorithm="sha512"
-                    ),
-                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
                     expected_loaded=False,
                 ),
                 kmodule.init_module_case(
