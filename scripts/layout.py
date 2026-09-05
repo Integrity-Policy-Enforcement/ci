@@ -94,6 +94,7 @@ guest: what the tests find after the switch.
             unsigned-sha512-ipe_test.ko        sha512 fs-verity digest, no signature
             plain-ipe_test.ko                  fs-verity not enabled
             signed-<hash>-ipe_test.ko.gz       signed fs-verity on compressed bytes
+            unsigned-<hash>-ipe_test.ko.gz     unsigned fs-verity on compressed bytes
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
         dmverity-<hash>-signed/            signature passed while opening
@@ -310,11 +311,14 @@ class guest:
     )
 
     @staticmethod
-    def fsverity_unsigned_kmodule_test_binary(algorithm: str) -> Path:
+    def fsverity_unsigned_kmodule_test_binary(
+        algorithm: str, compressed: bool = False
+    ) -> Path:
         """The KMODULE test binary with unsigned fs-verity enabled."""
+        suffix = ".gz" if compressed else ""
         return (
             guest.FSVERITY_MODULES_DIR
-            / f"unsigned-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
+            / f"unsigned-{algorithm}-{_KMODULE_TEST_BINARY_NAME}{suffix}"
         )
 
     @staticmethod
