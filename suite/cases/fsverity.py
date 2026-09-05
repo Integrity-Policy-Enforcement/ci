@@ -72,10 +72,10 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
 def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
     """The fs-verity digest cases for one algorithm."""
     matching_digest_policy = kmodule_fsverity_digest_policy(
-        algorithm=algorithm, matching=True
+        algorithm=algorithm, matching=True, compressed=False
     )
     mismatching_digest_policy = kmodule_fsverity_digest_policy(
-        algorithm=algorithm, matching=False
+        algorithm=algorithm, matching=False, compressed=False
     )
     signed_kmodule_binary = layout.guest.fsverity_signed_kmodule_test_binary(
         algorithm=algorithm, compressed=False
@@ -274,13 +274,30 @@ def build() -> tuple[Batch, ...]:
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                     for test_case in digest_cases(algorithm=algorithm)
                 ),
+                *(
+                    kmodule.insmod_case(
+                        id=(
+                            "kmodule_kernel_read_insmod_compressed_"
+                            f"fsverity_digest_{algorithm}_signed_ok"
+                        ),
+                        policy=kmodule_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True, compressed=True
+                        ),
+                        binary=layout.guest.fsverity_signed_kmodule_test_binary(
+                            algorithm=algorithm, compressed=True
+                        ),
+                        expected_returncode=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
                         "fsverity_digest_sha256_signed_denied"
                     ),
                     policy=kmodule_fsverity_digest_policy(
-                        algorithm="sha256", matching=True
+                        algorithm="sha256", matching=True, compressed=False
                     ),
                     binary=layout.guest.fsverity_signed_kmodule_test_binary(
                         algorithm="sha256", compressed=False
