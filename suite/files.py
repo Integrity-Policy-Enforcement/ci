@@ -5,23 +5,23 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
-import layout
 from command import run
 
 
-def copy_kmodule_test_binary(target: Path) -> None:
-    """Copy the KMODULE test binary to a new path."""
+def copy_kmodule_test_binary(source: Path, target: Path) -> None:
+    """Copy a KMODULE test binary to a new path."""
     target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy(layout.guest.KMODULE_TEST_BINARY, target)
+    shutil.copy(source, target)
 
 
 def prepare_fsverity_kmodule_test_binary(
+    source: Path,
     target: Path,
     algorithm: str,
     signature: Path | None = None,
 ) -> None:
-    """Copy the KMODULE test binary and enable fs-verity on it."""
-    copy_kmodule_test_binary(target)
+    """Copy a KMODULE test binary and enable fs-verity on it."""
+    copy_kmodule_test_binary(source=source, target=target)
     signed = [f"--signature={signature}"] if signature else []
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)
 

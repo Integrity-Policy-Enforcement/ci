@@ -117,7 +117,9 @@ def measurements() -> dict[str, str]:
         table[f"@DMVERITY_ROOTHASH_{upper}@"] = f"{algorithm}:{root_hash}"
         table[f"@DMVERITY_OTHER_ROOTHASH_{upper}@"] = f"{algorithm}:{shift(root_hash)}"
     for algorithm in hashes.FSVERITY_ALGORITHMS:
-        digest = layout.build.fsverity_digest(algorithm).read_text().strip()
+        digest = layout.build.fsverity_digest(
+            algorithm=algorithm, compressed=False
+        ).read_text().strip()
         upper = algorithm.upper()
         table[f"@FSVERITY_DIGEST_{upper}@"] = f"{algorithm}:{digest}"
         table[f"@FSVERITY_OTHER_DIGEST_{upper}@"] = f"{algorithm}:{shift(digest)}"
