@@ -95,6 +95,7 @@ guest: what the tests find after the switch.
             plain-ipe_test.ko                  fs-verity not enabled
             signed-<hash>-ipe_test.ko.gz       signed fs-verity on compressed bytes
             unsigned-<hash>-ipe_test.ko.gz     unsigned fs-verity on compressed bytes
+            plain-ipe_test.ko.gz              compressed file without fs-verity
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
         dmverity-<hash>-signed/            signature passed while opening
@@ -308,6 +309,9 @@ class guest:
     FSVERITY_MODULES_DIR = PAYLOAD_DIR / "fsverity-modules"
     FSVERITY_PLAIN_KMODULE_TEST_BINARY = (
         FSVERITY_MODULES_DIR / f"plain-{_KMODULE_TEST_BINARY_NAME}"
+    )
+    FSVERITY_PLAIN_COMPRESSED_KMODULE_TEST_BINARY = (
+        FSVERITY_PLAIN_KMODULE_TEST_BINARY.with_suffix(".ko.gz")
     )
 
     @staticmethod
