@@ -61,6 +61,13 @@ INITRAMFS_CASES = (
         expected_returncode=0,
         expected_loaded=True,
     ),
+    kmodule.init_module_case(
+        id="kmodule_kernel_load_init_module_boot_verified_false_initramfs_denied",
+        policy=KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=INITRAMFS_KMODULE_TEST_BINARY,
+        expected_errno=errno.EACCES,
+        expected_loaded=False,
+    ),
     kmodule.insmod_case(
         id="kmodule_kernel_read_insmod_boot_verified_false_tmpfs_denied",
         policy=KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY,
