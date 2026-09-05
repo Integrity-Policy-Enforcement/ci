@@ -75,17 +75,20 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
-                firmware.request_firmware_case(
-                    id=(
-                        "firmware_kernel_read_request_firmware_"
-                        "dmverity_signature_true_sha256_signed_ok"
-                    ),
-                    policy=FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    binary=layout.guest.dmverity_firmware_test_binary(
-                        algorithm="sha256", signed=True
-                    ),
-                    expected_errno=0,
-                    expected_content_match=True,
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content_match=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 *(
                     kmodule.insmod_case(
