@@ -40,6 +40,9 @@ build: what the build scripts make from it.
         ipe_test-sha256.p7s       fsverity signature over the sha256 digest
         ipe_test-sha512.digest    sha512 digest of ipe_test.ko, as ASCII hex
         ipe_test-sha512.p7s       fsverity signature over the sha512 digest
+        ipe_test.ko.gz            compressed KMODULE input for fs-verity cases
+        ipe_test-compressed-<hash>.digest  digest of the compressed file
+        ipe_test-compressed-<hash>.p7s     signature over that digest
       policies/                   source policy tree copied, expanded and signed
         signers/intermediate.der  DER certificate linked by the keyring case
 
@@ -81,12 +84,16 @@ guest: what the tests find after the switch.
             ipe_test-sha256.p7s                signature over the sha256 digest
             ipe_test-sha512.digest             sha512 digest of ipe_test.ko
             ipe_test-sha512.p7s                signature over the sha512 digest
+            ipe_test.ko.gz                     compressed KMODULE input
+            ipe_test-compressed-<hash>.digest  digest of the compressed file
+            ipe_test-compressed-<hash>.p7s     signature over that digest
         fsverity-modules/                  a batch writes these, a scope removes
             signed-sha256-ipe_test.ko          sha256 fs-verity digest and signature
             unsigned-sha256-ipe_test.ko        sha256 fs-verity digest, no signature
             signed-sha512-ipe_test.ko          sha512 fs-verity digest and signature
             unsigned-sha512-ipe_test.ko        sha512 fs-verity digest, no signature
             plain-ipe_test.ko                  fs-verity not enabled
+            signed-<hash>-ipe_test.ko.gz       signed fs-verity on compressed bytes
 
     /run/ipe-media/                    test mounts (batch creates, scope removes)
         dmverity-<hash>-signed/            signature passed while opening
@@ -124,12 +131,14 @@ def _root_hash_signature_name(algorithm: str) -> str:
     return f"dmverity-{algorithm}.p7s"
 
 
-def _fsverity_signature_name(algorithm: str) -> str:
-    return f"ipe_test-{algorithm}.p7s"
+def _fsverity_signature_name(algorithm: str, compressed: bool) -> str:
+    variant = "compressed-" if compressed else ""
+    return f"ipe_test-{variant}{algorithm}.p7s"
 
 
-def _fsverity_digest_name(algorithm: str) -> str:
-    return f"ipe_test-{algorithm}.digest"
+def _fsverity_digest_name(algorithm: str, compressed: bool) -> str:
+    variant = "compressed-" if compressed else ""
+    return f"ipe_test-{variant}{algorithm}.digest"
 
 
 class test_media:
@@ -215,16 +224,23 @@ class build:
         return build.DMVERITY_ASSETS_DIR / _root_hash_signature_name(algorithm)
 
     FSVERITY_ASSETS_DIR = ROOT_DIR / _FSVERITY_DIR_NAME
+    FSVERITY_COMPRESSED_KMODULE_TEST_BINARY = (
+        FSVERITY_ASSETS_DIR / test_media.KMODULE_COMPRESSED_TEST_BINARY.name
+    )
 
     @staticmethod
-    def fsverity_signature(algorithm: str) -> Path:
-        """The fs-verity identity signature over this digest."""
-        return build.FSVERITY_ASSETS_DIR / _fsverity_signature_name(algorithm)
+    def fsverity_signature(algorithm: str, compressed: bool = False) -> Path:
+        """The fs-verity signature for this hash and module format."""
+        return build.FSVERITY_ASSETS_DIR / _fsverity_signature_name(
+            algorithm=algorithm, compressed=compressed
+        )
 
     @staticmethod
-    def fsverity_digest(algorithm: str) -> Path:
-        """The test module digest made with this hash."""
-        return build.FSVERITY_ASSETS_DIR / _fsverity_digest_name(algorithm)
+    def fsverity_digest(algorithm: str, compressed: bool = False) -> Path:
+        """The test module digest for this hash and module format."""
+        return build.FSVERITY_ASSETS_DIR / _fsverity_digest_name(
+            algorithm=algorithm, compressed=compressed
+        )
 
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
@@ -277,11 +293,16 @@ class guest:
         return guest.DMVERITY_ASSETS_DIR / _root_hash_signature_name(algorithm)
 
     FSVERITY_ASSETS_DIR = PAYLOAD_DIR / _FSVERITY_DIR_NAME
+    FSVERITY_COMPRESSED_KMODULE_TEST_BINARY = (
+        FSVERITY_ASSETS_DIR / test_media.KMODULE_COMPRESSED_TEST_BINARY.name
+    )
 
     @staticmethod
-    def fsverity_signature(algorithm: str) -> Path:
-        """The guest path to the signature over this digest."""
-        return guest.FSVERITY_ASSETS_DIR / _fsverity_signature_name(algorithm)
+    def fsverity_signature(algorithm: str, compressed: bool = False) -> Path:
+        """The guest signature path for this hash and module format."""
+        return guest.FSVERITY_ASSETS_DIR / _fsverity_signature_name(
+            algorithm=algorithm, compressed=compressed
+        )
 
     FSVERITY_MODULES_DIR = PAYLOAD_DIR / "fsverity-modules"
     FSVERITY_PLAIN_KMODULE_TEST_BINARY = (
@@ -297,11 +318,14 @@ class guest:
         )
 
     @staticmethod
-    def fsverity_signed_kmodule_test_binary(algorithm: str) -> Path:
+    def fsverity_signed_kmodule_test_binary(
+        algorithm: str, compressed: bool = False
+    ) -> Path:
         """The KMODULE test binary with signed fs-verity enabled."""
+        suffix = ".gz" if compressed else ""
         return (
             guest.FSVERITY_MODULES_DIR
-            / f"signed-{algorithm}-{_KMODULE_TEST_BINARY_NAME}"
+            / f"signed-{algorithm}-{_KMODULE_TEST_BINARY_NAME}{suffix}"
         )
 
     MEDIA_DIR = Path("/run/ipe-media")

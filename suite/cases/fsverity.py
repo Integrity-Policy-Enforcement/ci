@@ -127,6 +127,21 @@ def build() -> tuple[Batch, ...]:
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                     for test_case in signature_cases(algorithm=algorithm)
                 ),
+                *(
+                    kmodule.insmod_case(
+                        id=(
+                            "kmodule_kernel_read_insmod_compressed_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_signed_kmodule_test_binary(
+                            algorithm=algorithm, compressed=True
+                        ),
+                        expected_returncode=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
@@ -229,6 +244,20 @@ def build() -> tuple[Batch, ...]:
                             algorithm=algorithm
                         ),
                         algorithm=algorithm,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_kmodule_test_binary,
+                        source=layout.guest.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY,
+                        target=layout.guest.fsverity_signed_kmodule_test_binary(
+                            algorithm=algorithm, compressed=True
+                        ),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_signature(
+                            algorithm=algorithm, compressed=True
+                        ),
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
