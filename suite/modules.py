@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+import ctypes
 import subprocess
 from contextlib import AbstractContextManager
 from functools import partial
@@ -8,6 +9,10 @@ from pathlib import Path
 from command import capture, run
 from model import Observation
 from scope import collection
+
+_LIBC = ctypes.CDLL(None, use_errno=True)
+_LIBC.init_module.argtypes = (ctypes.c_void_p, ctypes.c_ulong, ctypes.c_char_p)
+_LIBC.init_module.restype = ctypes.c_int
 
 
 def names() -> set[str]:
@@ -48,6 +53,19 @@ def insmod(binary: Path) -> subprocess.CompletedProcess:
 def remove(name: str) -> None:
     """rmmod the named module."""
     run("rmmod", name)
+
+
+def init_module_from_buffer(image: bytes) -> int:
+    """Pass a complete module image to init_module and return its errno."""
+    buffer = ctypes.create_string_buffer(image)
+    ctypes.set_errno(0)
+    result = _LIBC.init_module(buffer, len(image), b"")
+    if result == 0:
+        return 0
+    error = ctypes.get_errno()
+    if error == 0:
+        raise RuntimeError("init_module failed without setting errno")
+    return error
 
 
 def loaded_scope(*, prefix: str) -> AbstractContextManager[None]:

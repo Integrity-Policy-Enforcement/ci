@@ -25,6 +25,11 @@ def call_insmod(binary: Path, state: CaseState) -> Observation:
     )
 
 
+def call_init_module(binary: Path, state: CaseState) -> Observation:
+    """Pass a module binary to init_module and report its errno."""
+    return Observation(errno=modules.init_module_from_buffer(binary.read_bytes()))
+
+
 def insmod_case(
     id: str,
     policy: ipe.Policy,
@@ -46,6 +51,39 @@ def insmod_case(
                 checks.returncode_is,
                 expected=expected_returncode,
             ),
+            partial(
+                modules.check_loaded,
+                name=KMODULE_TEST_BINARY_NAME,
+                expected_loaded=expected_loaded,
+            ),
+        ),
+        extra_scopes=(
+            partial(modules.loaded_scope, prefix=KMODULE_TEST_BINARY_NAME),
+        ),
+    )
+
+
+def init_module_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    expected_errno: int,
+    expected_loaded: bool,
+) -> Case:
+    """Run init_module and check its errno and the module's loaded state."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(
+            call_init_module,
+            binary=binary,
+        ),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
             partial(
                 modules.check_loaded,
                 name=KMODULE_TEST_BINARY_NAME,
