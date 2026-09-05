@@ -164,6 +164,18 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=0,
                     expected_loaded=True,
                 ),
+                kmodule.init_module_case(
+                    id=(
+                        "kmodule_kernel_load_init_module_"
+                        "fsverity_signature_false_signed_denied"
+                    ),
+                    policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
+                        algorithm="sha256"
+                    ),
+                    expected_errno=errno.EACCES,
+                    expected_loaded=False,
+                ),
                 kmodule.insmod_case(
                     id="kmodule_kernel_read_insmod_fsverity_signature_false_unsigned_denied",
                     policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
