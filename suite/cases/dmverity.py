@@ -116,6 +116,18 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=0,
                     expected_loaded=True,
                 ),
+                kmodule.insmod_case(
+                    id=(
+                        "kmodule_kernel_read_insmod_compressed_"
+                        "dmverity_signature_true_sha256_unsigned_denied"
+                    ),
+                    policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.dmverity_compressed_kmodule_test_binary(
+                        algorithm="sha256", signed=False
+                    ),
+                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                    expected_loaded=False,
+                ),
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
