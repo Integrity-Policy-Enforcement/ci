@@ -15,6 +15,7 @@ signature and once not, which is the only difference between the two
 devices it gets.
 """
 
+import gzip
 import shutil
 import subprocess
 import tempfile
@@ -77,10 +78,16 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as temporary:
         content_dir = Path(temporary)
         kmodule_target = content_dir / layout.test_media.KMODULE_TEST_BINARY
+        compressed_kmodule_target = (
+            content_dir / layout.test_media.KMODULE_COMPRESSED_TEST_BINARY
+        )
         firmware_target = content_dir / layout.test_media.FIRMWARE_TEST_BINARY
         kmodule_target.parent.mkdir(parents=True)
         firmware_target.parent.mkdir(parents=True)
         shutil.copy(layout.build.KMODULE_TEST_BINARY, kmodule_target)
+        compressed_kmodule_target.write_bytes(
+            gzip.compress(kmodule_target.read_bytes(), mtime=0)
+        )
         shutil.copy(layout.source.FIRMWARE_TEST_BINARY, firmware_target)
         build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)
 

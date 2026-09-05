@@ -71,7 +71,8 @@ guest: what the tests find after the switch.
             ipe_test.ko                        KMODULE test binary
         policies/                         signed copy of the source policy tree
         dmverity/                          dm-verity image and its hashes
-            dmverity.squashfs                  holds ipe_test.ko and ipe_test.fw
+            dmverity.squashfs                  holds ipe_test.ko, ipe_test.ko.gz,
+                                              and ipe_test.fw
             dmverity-<hash>.hash               Merkle tree
             dmverity-<hash>.roothash           root hash
             dmverity-<hash>.p7s                signature over the root hash
@@ -138,6 +139,7 @@ class test_media:
     FIRMWARE_TEST_BINARY = FIRMWARE_DIR / _FIRMWARE_TEST_BINARY_NAME
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
+    KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
 
 
 class source:
@@ -316,6 +318,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm, signed)
             / test_media.KMODULE_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_compressed_kmodule_test_binary(algorithm: str, signed: bool) -> Path:
+        """The gzip-compressed KMODULE binary on a mounted dm-verity image."""
+        return (
+            guest.dmverity_mount_dir(algorithm, signed)
+            / test_media.KMODULE_COMPRESSED_TEST_BINARY
         )
 
     @staticmethod
