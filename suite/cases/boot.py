@@ -10,6 +10,7 @@ After switch_root, build() creates reporting-only cases. Each reads one saved
 outcome instead of trying to access the removed initramfs files again.
 """
 
+import errno
 from functools import partial
 
 import checks
@@ -38,6 +39,13 @@ INITRAMFS_CASES = (
         binary=INITRAMFS_KMODULE_TEST_BINARY,
         expected_returncode=0,
         expected_loaded=True,
+    ),
+    kmodule.init_module_case(
+        id="kmodule_kernel_load_init_module_boot_verified_true_initramfs_denied",
+        policy=KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=INITRAMFS_KMODULE_TEST_BINARY,
+        expected_errno=errno.EACCES,
+        expected_loaded=False,
     ),
     kmodule.insmod_case(
         id="kmodule_kernel_read_insmod_boot_verified_true_tmpfs_denied",
