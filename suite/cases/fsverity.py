@@ -23,7 +23,7 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
         algorithm=algorithm, compressed=False
     )
     unsigned_kmodule_binary = layout.guest.fsverity_unsigned_kmodule_test_binary(
-        algorithm=algorithm
+        algorithm=algorithm, compressed=False
     )
     return (
         kmodule.insmod_case(
@@ -81,7 +81,7 @@ def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
         algorithm=algorithm, compressed=False
     )
     unsigned_kmodule_binary = layout.guest.fsverity_unsigned_kmodule_test_binary(
-        algorithm=algorithm
+        algorithm=algorithm, compressed=False
     )
     plain_kmodule_binary = layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY
     return (
@@ -142,6 +142,21 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                *(
+                    kmodule.insmod_case(
+                        id=(
+                            "kmodule_kernel_read_insmod_compressed_"
+                            f"fsverity_signature_true_{algorithm}_unsigned_denied"
+                        ),
+                        policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
+                            algorithm=algorithm, compressed=True
+                        ),
+                        expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
@@ -161,7 +176,7 @@ def build() -> tuple[Batch, ...]:
                     ),
                     policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                        algorithm="sha256"
+                        algorithm="sha256", compressed=False
                     ),
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
@@ -192,7 +207,7 @@ def build() -> tuple[Batch, ...]:
                     ),
                     policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
                     binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                        algorithm="sha256"
+                        algorithm="sha256", compressed=False
                     ),
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
@@ -247,16 +262,18 @@ def build() -> tuple[Batch, ...]:
                 *(
                     partial(
                         files.prepare_fsverity_kmodule_test_binary,
-                        source=layout.guest.KMODULE_TEST_BINARY,
+                        source=(
+                            layout.guest.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY
+                            if compressed else layout.guest.KMODULE_TEST_BINARY
+                        ),
                         target=layout.guest.fsverity_unsigned_kmodule_test_binary(
-                            algorithm=algorithm
+                            algorithm=algorithm, compressed=compressed
                         ),
                         algorithm=algorithm,
                     )
+                    for compressed in (False, True)
                     for algorithm in hashes.FSVERITY_ALGORITHMS
-                ),
-
-                partial(
+                ),                partial(
                     files.copy_kmodule_test_binary,
                     source=layout.guest.KMODULE_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
