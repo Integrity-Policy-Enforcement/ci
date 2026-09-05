@@ -107,17 +107,20 @@ def build() -> tuple[Batch, ...]:
                 ),
                 # A userspace-decompressed buffer cannot pass this policy.
                 # Success requires finit_module's in-kernel compressed-file path.
-                kmodule.insmod_case(
-                    id=(
-                        "kmodule_kernel_read_insmod_compressed_"
-                        "dmverity_signature_true_sha256_signed_ok"
-                    ),
-                    policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
-                    binary=layout.guest.dmverity_compressed_kmodule_test_binary(
-                        algorithm="sha256", signed=True
-                    ),
-                    expected_returncode=0,
-                    expected_loaded=True,
+                *(
+                    kmodule.insmod_case(
+                        id=(
+                            "kmodule_kernel_read_insmod_compressed_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_compressed_kmodule_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_returncode=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 kmodule.insmod_case(
                     id=(
