@@ -183,14 +183,20 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
                     expected_loaded=False,
                 ),
-                kmodule.insmod_case(
-                    id="kmodule_kernel_read_insmod_dmverity_signature_false_signed_ok",
-                    policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha256", signed=True
-                    ),
-                    expected_returncode=0,
-                    expected_loaded=True,
+                *(
+                    kmodule.insmod_case(
+                        id=(
+                            "kmodule_kernel_read_insmod_dmverity_signature_false_"
+                            f"{algorithm}_signed_ok"
+                        ),
+                        policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.dmverity_kmodule_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_returncode=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 kmodule.init_module_case(
                     id=(
