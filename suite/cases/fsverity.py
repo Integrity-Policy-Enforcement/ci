@@ -221,6 +221,20 @@ def build() -> tuple[Batch, ...]:
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                     for test_case in digest_cases(algorithm=algorithm)
                 ),
+                kmodule.init_module_case(
+                    id=(
+                        "kmodule_kernel_load_init_module_"
+                        "fsverity_digest_sha256_signed_denied"
+                    ),
+                    policy=kmodule_fsverity_digest_policy(
+                        algorithm="sha256", matching=True
+                    ),
+                    binary=layout.guest.fsverity_signed_kmodule_test_binary(
+                        algorithm="sha256"
+                    ),
+                    expected_errno=errno.EACCES,
+                    expected_loaded=False,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
