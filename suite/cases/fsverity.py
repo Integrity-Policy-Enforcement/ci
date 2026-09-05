@@ -100,6 +100,18 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
                     expected_loaded=False,
                 ),
+                kmodule.insmod_case(
+                    id=(
+                        "kmodule_kernel_read_insmod_"
+                        "fsverity_signature_true_sha512_unsigned_denied"
+                    ),
+                    policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
+                        algorithm="sha512"
+                    ),
+                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                    expected_loaded=False,
+                ),
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
