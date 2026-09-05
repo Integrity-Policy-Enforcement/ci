@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import json
-from collections.abc import Callable
 
 import ipe
 import layout
-from model import Observation, Operation
+from model import Observation
 
 
 def errno_is(expected: int, observation: Observation) -> str | None:
@@ -84,19 +83,6 @@ def policy_present_is(
     actual = ipe.policy_present(policy.name)
     if actual != expected:
         return f"policy {policy.name} present={actual}, expected {expected}"
-    return None
-
-
-def operation_completed_is(
-    operation: Operation,
-    completed: Callable[[], bool],
-    expected: bool,
-    observation: Observation,
-) -> str | None:
-    """The operation left evidence of running, or did not."""
-    actual = completed()
-    if actual != expected:
-        return f"{operation.id} completed={actual}, expected {expected}"
     return None
 
 

@@ -53,13 +53,9 @@ def insmod_case(
                 expected=expected_returncode,
             ),
             partial(
-                checks.operation_completed_is,
-                operation=KMODULE_KERNEL_READ_INSMOD_OPERATION,
-                completed=partial(
-                    modules.is_loaded,
-                    name=KMODULE_TEST_BINARY_NAME,
-                ),
-                expected=expected_loaded,
+                modules.check_loaded,
+                name=KMODULE_TEST_BINARY_NAME,
+                expected_loaded=expected_loaded,
             ),
         ),
         extra_scopes=(

@@ -6,6 +6,7 @@ from functools import partial
 from pathlib import Path
 
 from command import capture, run
+from model import Observation
 from scope import collection
 
 
@@ -27,9 +28,16 @@ def loaded(prefix: str) -> set[str]:
     return {name for name in names() if name.startswith(prefix)}
 
 
-def is_loaded(name: str) -> bool:
-    """Whether the exact module name is loaded."""
-    return name in names()
+def check_loaded(
+    name: str,
+    expected_loaded: bool,
+    observation: Observation,
+) -> str | None:
+    """Check whether the named module has the expected loaded state."""
+    actual_loaded = name in names()
+    if actual_loaded != expected_loaded:
+        return f"module {name} loaded={actual_loaded}, expected {expected_loaded}"
+    return None
 
 
 def insmod(binary: Path) -> subprocess.CompletedProcess:

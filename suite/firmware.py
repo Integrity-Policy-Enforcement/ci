@@ -39,9 +39,19 @@ def request_firmware(binary: Path, state: CaseState) -> Observation:
         return error_observation(failure)
 
 
-def requested_firmware_matches(expected: Path) -> bool:
-    """Whether test_firmware retained the expected binary."""
-    return FIRMWARE_CONTENT_NODE.read_bytes() == expected.read_bytes()
+def check_requested_firmware(
+    expected_binary: Path,
+    expected_content_match: bool,
+    observation: Observation,
+) -> str | None:
+    """Check whether retained firmware matches the expected binary."""
+    actual_match = FIRMWARE_CONTENT_NODE.read_bytes() == expected_binary.read_bytes()
+    if actual_match != expected_content_match:
+        return (
+            f"firmware matches {expected_binary}: {actual_match}, "
+            f"expected {expected_content_match}"
+        )
+    return None
 
 
 def clear_requested_firmware() -> None:

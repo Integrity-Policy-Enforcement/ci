@@ -41,13 +41,9 @@ def request_firmware_case(
                 expected=expected_errno,
             ),
             partial(
-                checks.operation_completed_is,
-                operation=FIRMWARE_KERNEL_READ_REQUEST_FIRMWARE_OPERATION,
-                completed=partial(
-                    firmware.requested_firmware_matches,
-                    expected=layout.guest.FIRMWARE_TEST_BINARY,
-                ),
-                expected=expected_content_match,
+                firmware.check_requested_firmware,
+                expected_binary=layout.guest.FIRMWARE_TEST_BINARY,
+                expected_content_match=expected_content_match,
             ),
         ),
         extra_scopes=(firmware.request_firmware_scope,),
