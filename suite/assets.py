@@ -122,11 +122,13 @@ def kmodule_dmverity_roothash_policy(
 def kmodule_fsverity_digest_policy(
     algorithm: str,
     matching: bool,
+    compressed: bool = False,
 ) -> ipe.Policy:
-    """A policy that names an fs-verity digest, or a value no file has."""
+    """A policy naming the selected module's digest, or a value no file has."""
     kind = "" if matching else "mismatch_"
+    variant = "compressed_" if compressed else ""
     return policy(
-        asset=f"fsverity/kmodule_digest_{algorithm}_{kind}allow",
-        name=f"ipe_test_fsverity_kmodule_digest_{algorithm}"
+        asset=f"fsverity/kmodule_{variant}digest_{algorithm}_{kind}allow",
+        name=f"ipe_test_fsverity_kmodule_{variant}digest_{algorithm}"
         + ("" if matching else "_mismatch"),
     )
