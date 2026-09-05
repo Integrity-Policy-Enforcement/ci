@@ -19,8 +19,6 @@ from . import kmodule
 
 def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
     """The signed and unsigned fs-verity signature cases for one algorithm."""
-    # Preserve the original SHA-256 IDs, which omit the algorithm.
-    algorithm_id = "" if algorithm == "sha256" else f"{algorithm}_"
     signed_kmodule_binary = layout.guest.fsverity_signed_kmodule_test_binary(
         algorithm=algorithm
     )
@@ -31,7 +29,7 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
         kmodule.insmod_case(
             id=(
                 "kmodule_kernel_read_insmod_fsverity_signature_true_"
-                f"{algorithm_id}signed_ok"
+                f"{algorithm}_signed_ok"
             ),
             policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
             binary=signed_kmodule_binary,
@@ -41,7 +39,7 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
         kmodule.insmod_case(
             id=(
                 "kmodule_kernel_read_insmod_fsverity_signature_true_"
-                f"{algorithm_id}unsigned_denied"
+                f"{algorithm}_unsigned_denied"
             ),
             policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
             binary=unsigned_kmodule_binary,
@@ -51,7 +49,7 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
         kmodule.insmod_case(
             id=(
                 "kmodule_kernel_read_insmod_fsverity_signature_false_"
-                f"{algorithm_id}signed_ok"
+                f"{algorithm}_signed_ok"
             ),
             policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
             binary=signed_kmodule_binary,
@@ -61,7 +59,7 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
         kmodule.insmod_case(
             id=(
                 "kmodule_kernel_read_insmod_fsverity_signature_false_"
-                f"{algorithm_id}unsigned_denied"
+                f"{algorithm}_unsigned_denied"
             ),
             policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
             binary=unsigned_kmodule_binary,
