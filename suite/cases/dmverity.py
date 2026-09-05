@@ -210,14 +210,20 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
-                kmodule.insmod_case(
-                    id="kmodule_kernel_read_insmod_dmverity_signature_false_unsigned_denied",
-                    policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
-                    binary=layout.guest.dmverity_kmodule_test_binary(
-                        algorithm="sha256", signed=False
-                    ),
-                    expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
-                    expected_loaded=False,
+                *(
+                    kmodule.insmod_case(
+                        id=(
+                            "kmodule_kernel_read_insmod_dmverity_signature_false_"
+                            f"{algorithm}_unsigned_denied"
+                        ),
+                        policy=KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.dmverity_kmodule_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 kmodule.init_module_case(
                     id=(
