@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
+import errno
 from functools import partial
 
 import files
@@ -85,6 +86,18 @@ def build() -> tuple[Batch, ...]:
                         algorithm="sha256"
                     ),
                     expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                    expected_loaded=False,
+                ),
+                kmodule.init_module_case(
+                    id=(
+                        "kmodule_kernel_load_init_module_"
+                        "fsverity_signature_true_unsigned_denied"
+                    ),
+                    policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.fsverity_unsigned_kmodule_test_binary(
+                        algorithm="sha256"
+                    ),
+                    expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
                 kmodule.insmod_case(
