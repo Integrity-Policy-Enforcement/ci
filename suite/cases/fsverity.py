@@ -308,6 +308,21 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                *(
+                    kmodule.insmod_case(
+                        id=(
+                            "kmodule_kernel_read_insmod_compressed_"
+                            f"fsverity_digest_{algorithm}_plain_denied"
+                        ),
+                        policy=kmodule_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True, compressed=True
+                        ),
+                        binary=layout.guest.FSVERITY_PLAIN_COMPRESSED_KMODULE_TEST_BINARY,
+                        expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
