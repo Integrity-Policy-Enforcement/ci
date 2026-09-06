@@ -10,6 +10,7 @@ import ipe
 import layout
 import mounts
 from assets import (
+    FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -139,6 +140,24 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_FIRMWARE_TEST_BINARY,
                     expected_errno=errno.ENOENT,
                     expected_content_match=False,
+                ),
+                # Policy: FIRMWARE default ALLOW; DENY dmverity_signature=FALSE.
+                # Input: .fw on dm-verity with a verified root-hash signature.
+                # Match: FALSE does not match -> default ALLOW.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"dmverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.dmverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content_match=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 # Policy: KMODULE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .ko on dm-verity with a verified root-hash signature.
