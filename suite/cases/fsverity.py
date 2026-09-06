@@ -309,6 +309,26 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: FIRMWARE default DENY; ALLOW a different fsverity_digest.
+                # Input: signed fs-verity .fw; its digest differs from the policy value.
+                # Match: digest mismatch -> default DENY despite the verified signature.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"fsverity_digest_{algorithm}_mismatch_denied"
+                        ),
+                        policy=firmware_fsverity_digest_policy(
+                            algorithm=algorithm, matching=False
+                        ),
+                        binary=layout.guest.fsverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=errno.ENOENT,
+                        expected_content_match=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 *(
                     test_case
                     for algorithm in hashes.FSVERITY_ALGORITHMS

@@ -1,0 +1,4 @@
+policy_name=ipe_test_fsverity_firmware_digest_sha512_mismatch policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=FIRMWARE action=DENY
+op=FIRMWARE fsverity_digest=@FSVERITY_FIRMWARE_OTHER_DIGEST_SHA512@ action=ALLOW
