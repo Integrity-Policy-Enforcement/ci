@@ -93,6 +93,7 @@ guest: what the tests find after the switch.
             firmware/ipe_test-<hash>.p7s      signature over the firmware digest
         fsverity-firmware/                a batch writes these, a scope removes
             signed-<hash>-ipe_test.fw         signed fs-verity firmware
+            unsigned-<hash>-ipe_test.fw       unsigned fs-verity firmware
         fsverity-modules/                  a batch writes these, a scope removes
             signed-sha256-ipe_test.ko          sha256 fs-verity digest and signature
             unsigned-sha256-ipe_test.ko        sha256 fs-verity digest, no signature

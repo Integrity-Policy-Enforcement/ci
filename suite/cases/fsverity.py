@@ -169,6 +169,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: .fw with fs-verity enabled but no built-in signature.
+                # Match: TRUE does not match -> default DENY; search ends in ENOENT.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"fsverity_signature_true_{algorithm}_unsigned_denied"
+                        ),
+                        policy=FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_firmware_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.ENOENT,
+                        expected_content_match=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 *(
                     test_case
                     for algorithm in hashes.FSVERITY_ALGORITHMS
@@ -515,6 +533,17 @@ def build() -> tuple[Batch, ...]:
                         signature=layout.guest.fsverity_firmware_signature(
                             algorithm=algorithm
                         ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.FIRMWARE_TEST_BINARY,
+                        target=layout.guest.fsverity_firmware_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        algorithm=algorithm,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
