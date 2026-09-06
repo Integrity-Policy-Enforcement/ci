@@ -249,6 +249,26 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: FIRMWARE default DENY; ALLOW a different dmverity_roothash.
+                # Input: .fw on signed dm-verity; its root hash differs from the rule.
+                # Match: hash mismatch -> default DENY despite the valid signature.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"dmverity_roothash_{algorithm}_mismatch_denied"
+                        ),
+                        policy=firmware_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=False
+                        ),
+                        binary=layout.guest.dmverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=errno.ENOENT,
+                        expected_content_match=False,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: KMODULE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .ko on dm-verity with a verified root-hash signature.
                 # Match: the mapping signature is TRUE -> ALLOW.
