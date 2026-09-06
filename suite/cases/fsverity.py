@@ -237,6 +237,19 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: FIRMWARE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: .fw without any fs-verity metadata.
+                # Match: absence counts as FALSE -> the explicit DENY rule matches.
+                firmware.request_firmware_case(
+                    id=(
+                        "firmware_kernel_read_request_firmware_"
+                        "fsverity_signature_false_plain_denied"
+                    ),
+                    policy=FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    binary=layout.guest.FSVERITY_PLAIN_FIRMWARE_TEST_BINARY,
+                    expected_errno=errno.ENOENT,
+                    expected_content_match=False,
+                ),
                 *(
                     test_case
                     for algorithm in hashes.FSVERITY_ALGORITHMS
