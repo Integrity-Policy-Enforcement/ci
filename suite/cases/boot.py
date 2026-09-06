@@ -133,6 +133,16 @@ INITRAMFS_CASES = (
         expected_errno=0,
         expected_content_match=True,
     ),
+    # Policy: FIRMWARE default ALLOW; DENY boot_verified=FALSE.
+    # Input: the .fw copy on a separate tmpfs, whose boot_verified property is FALSE.
+    # Match: FALSE matches -> explicit DENY; search ends in ENOENT.
+    firmware.request_firmware_case(
+        id="firmware_kernel_read_request_firmware_boot_verified_false_tmpfs_denied",
+        policy=FIRMWARE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=layout.initrd.BOOT_TMPFS_FIRMWARE_TEST_BINARY,
+        expected_errno=errno.ENOENT,
+        expected_content_match=False,
+    ),
 )
 
 
