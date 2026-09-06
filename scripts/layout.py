@@ -56,6 +56,8 @@ initrd: what boots before the real root, and what it leaves behind.
         ipe_test.ko                        the module the cases load
         boot-verified-true.p7s             allow KMODULE when boot_verified
         boot-verified-false.p7s            deny KMODULE when it is false
+        ipe_test.fw                        the firmware the cases request
+        firmware-boot-verified-true.p7s    allow FIRMWARE when boot_verified
     /run/ipe-boot-verified             how each initramfs case came out
     /run/ipe-boot-verified-tmpfs       a mount that is not the initramfs
 
@@ -425,6 +427,10 @@ class initrd:
 
     TESTS_DIR = Path("/usr/lib/ipe-tests")
     KMODULE_TEST_BINARY = TESTS_DIR / _KMODULE_TEST_BINARY_NAME
+    FIRMWARE_TEST_BINARY = TESTS_DIR / _FIRMWARE_TEST_BINARY_NAME
+    FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
+        TESTS_DIR / "firmware-boot-verified-true.p7s"
+    )
     KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
         TESTS_DIR / "boot-verified-true.p7s"
     )

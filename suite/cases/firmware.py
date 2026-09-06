@@ -6,7 +6,6 @@ from pathlib import Path
 import checks
 import firmware
 import ipe
-import layout
 import steps
 from model import Case
 
@@ -37,7 +36,7 @@ def request_firmware_case(
             ),
             partial(
                 firmware.check_requested_firmware,
-                expected_binary=layout.guest.FIRMWARE_TEST_BINARY,
+                expected_binary=binary,
                 expected_content_match=expected_content_match,
             ),
         ),

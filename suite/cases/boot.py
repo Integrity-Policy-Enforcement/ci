@@ -18,7 +18,7 @@ import ipe
 import layout
 from model import Batch, Case
 
-from . import kmodule
+from . import firmware, kmodule
 
 KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
@@ -28,12 +28,16 @@ KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE,
     name="ipe_test_kmodule_boot_verified_false",
 )
+FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
+    signed=layout.initrd.FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
+    name="ipe_test_firmware_boot_verified_true",
+)
 INITRAMFS_KMODULE_TEST_BINARY = layout.initrd.KMODULE_TEST_BINARY
 TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 
 
 # These rules test initramfs provenance, not dm/fs-verity or module signatures.
-# The tmpfs input is a byte-for-byte copy of the initramfs module.
+# Tmpfs cases use byte-for-byte copies of their initramfs inputs.
 INITRAMFS_CASES = (
     # Policy: KMODULE default DENY; ALLOW boot_verified=TRUE.
     # Input: the original initramfs .ko, whose file context has boot_verified=TRUE.
@@ -95,6 +99,16 @@ INITRAMFS_CASES = (
         expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
         expected_loaded=False,
     ),
+    # Policy: FIRMWARE default DENY; ALLOW boot_verified=TRUE.
+    # Input: the original initramfs .fw, whose file context has boot_verified=TRUE.
+    # Match: TRUE matches -> ALLOW; the retained bytes must match the input.
+    firmware.request_firmware_case(
+        id="firmware_kernel_read_request_firmware_boot_verified_true_initramfs_ok",
+        policy=FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=layout.initrd.FIRMWARE_TEST_BINARY,
+        expected_errno=0,
+        expected_content_match=True,
+    ),
 )
 
 
@@ -103,7 +117,7 @@ def build() -> tuple[Batch, ...]:
     return (
         Batch(
             id="boot",
-            # Module loading already ran in initramfs; report its saved outcome.
+            # Operations already ran in initramfs; report their saved outcomes.
             cases=tuple(
                 Case(
                     id=case.id,

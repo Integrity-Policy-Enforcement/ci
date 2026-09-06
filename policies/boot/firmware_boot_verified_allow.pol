@@ -1,0 +1,7 @@
+policy_name=ipe_test_firmware_boot_verified_true policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+op=EXECUTE boot_verified=TRUE action=ALLOW
+op=EXECUTE dmverity_signature=TRUE action=ALLOW
+DEFAULT op=FIRMWARE action=DENY
+op=FIRMWARE boot_verified=TRUE action=ALLOW
