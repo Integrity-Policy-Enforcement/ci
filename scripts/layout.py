@@ -316,7 +316,8 @@ class guest:
 
     @staticmethod
     def fsverity_unsigned_kmodule_test_binary(
-        algorithm: str, compressed: bool
+        algorithm: str,
+        compressed: bool,
     ) -> Path:
         """The KMODULE test binary with unsigned fs-verity enabled."""
         suffix = ".gz" if compressed else ""
@@ -327,7 +328,8 @@ class guest:
 
     @staticmethod
     def fsverity_signed_kmodule_test_binary(
-        algorithm: str, compressed: bool
+        algorithm: str,
+        compressed: bool,
     ) -> Path:
         """The KMODULE test binary with signed fs-verity enabled."""
         suffix = ".gz" if compressed else ""

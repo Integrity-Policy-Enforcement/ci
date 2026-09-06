@@ -362,7 +362,8 @@ def build() -> tuple[Batch, ...]:
                         files.prepare_fsverity_kmodule_test_binary,
                         source=(
                             layout.guest.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY
-                            if compressed else layout.guest.KMODULE_TEST_BINARY
+                            if compressed
+                            else layout.guest.KMODULE_TEST_BINARY
                         ),
                         target=layout.guest.fsverity_signed_kmodule_test_binary(
                             algorithm=algorithm, compressed=compressed
@@ -380,7 +381,8 @@ def build() -> tuple[Batch, ...]:
                         files.prepare_fsverity_kmodule_test_binary,
                         source=(
                             layout.guest.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY
-                            if compressed else layout.guest.KMODULE_TEST_BINARY
+                            if compressed
+                            else layout.guest.KMODULE_TEST_BINARY
                         ),
                         target=layout.guest.fsverity_unsigned_kmodule_test_binary(
                             algorithm=algorithm, compressed=compressed
@@ -389,7 +391,8 @@ def build() -> tuple[Batch, ...]:
                     )
                     for compressed in (False, True)
                     for algorithm in hashes.FSVERITY_ALGORITHMS
-                ),                partial(
+                ),
+                partial(
                     files.copy_kmodule_test_binary,
                     source=layout.guest.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_COMPRESSED_KMODULE_TEST_BINARY,

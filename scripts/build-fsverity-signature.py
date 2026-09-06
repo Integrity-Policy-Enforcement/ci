@@ -40,15 +40,18 @@ def main() -> int:
     for compressed in (False, True):
         binary = (
             layout.build.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY
-            if compressed else layout.build.KMODULE_TEST_BINARY
+            if compressed
+            else layout.build.KMODULE_TEST_BINARY
         )
         for algorithm in hashes.FSVERITY_ALGORITHMS:
             subprocess.run(
                 [
                     "fsverity", "sign", str(binary),
-                    str(layout.build.fsverity_signature(
-                        algorithm=algorithm, compressed=compressed
-                    )),
+                    str(
+                        layout.build.fsverity_signature(
+                            algorithm=algorithm, compressed=compressed
+                        )
+                    ),
                     f"--key={signing.FSVERITY.key}", f"--cert={signing.FSVERITY.certificate}",
                     f"--hash-alg={algorithm}",
                 ],
