@@ -112,6 +112,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: the same real kernel image on unsigned dm-verity, using its original fd.
+                # Match: TRUE does not match -> EACCES; no image may remain staged.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"dmverity_signature_true_{algorithm}_unsigned_denied"
+                        ),
+                        policy=KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .fw on a mapping opened with a trusted root-hash signature.
                 # Match: the mapping signature is TRUE -> the ALLOW rule matches.
