@@ -12,6 +12,7 @@ import mounts
 from assets import (
     FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_dmverity_roothash_policy,
@@ -19,7 +20,7 @@ from assets import (
 )
 from model import Batch, Case
 
-from . import firmware, kmodule
+from . import firmware, kexec, kmodule
 
 # Signed/unsigned refers to the mapping's root-hash signature, not an
 # embedded module signature or a signature attached to the firmware file.
@@ -93,6 +94,24 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
+                # Policy: KEXEC_IMAGE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: the real kernel image on signed dm-verity, passed by original fd.
+                # Match: TRUE matches -> ALLOW; stage the image, then unload without executing.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .fw on a mapping opened with a trusted root-hash signature.
                 # Match: the mapping signature is TRUE -> the ALLOW rule matches.

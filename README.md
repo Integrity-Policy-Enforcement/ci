@@ -17,6 +17,8 @@ Policy names beginning with `ipe_test_` are reserved for this test suite. Scope 
 
 Runtime cleanup also reserves the trees rooted at `/run/ipe-tests/fsverity-modules` and `/run/ipe-tests/fsverity-firmware`, mount points below `/run/ipe-media`, dm-verity mapping names beginning with `ipe-dmverity-`, and module names beginning with `ipe_test`. While the suite runs, unrelated software must not create resources inside those boundaries; newly appearing resources may be deleted, unmounted, closed, or unloaded.
 
+KEXEC cases require the normal kexec slot to be empty before each case. They load a real kernel image, check its staged state, then unload it; they never execute it. Do not run another kexec loader concurrently with the suite. An image present before a case causes an error rather than being replaced.
+
 ## Usage
 
 Clone the repositories and build the container image:

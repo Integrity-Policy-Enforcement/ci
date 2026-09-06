@@ -72,6 +72,8 @@ def main() -> int:
         raise SystemExit("signing keys are missing; run prepare-keys.py")
     if not layout.build.KMODULE_TEST_BINARY.is_file():
         raise SystemExit("the test module is missing; run build-kernel-modules.py")
+    if not layout.build.KEXEC_IMAGE_TEST_BINARY.is_file():
+        raise SystemExit("the KEXEC kernel image is missing; run build-kexec-assets.py")
     shutil.rmtree(layout.build.DMVERITY_ASSETS_DIR, ignore_errors=True)
     layout.build.DMVERITY_ASSETS_DIR.mkdir(parents=True)
 
@@ -82,13 +84,16 @@ def main() -> int:
             content_dir / layout.test_media.KMODULE_COMPRESSED_TEST_BINARY
         )
         firmware_target = content_dir / layout.test_media.FIRMWARE_TEST_BINARY
+        kexec_target = content_dir / layout.test_media.KEXEC_IMAGE_TEST_BINARY
         kmodule_target.parent.mkdir(parents=True)
         firmware_target.parent.mkdir(parents=True)
+        kexec_target.parent.mkdir(parents=True)
         shutil.copy(layout.build.KMODULE_TEST_BINARY, kmodule_target)
         compressed_kmodule_target.write_bytes(
             gzip.compress(kmodule_target.read_bytes(), mtime=0)
         )
         shutil.copy(layout.source.FIRMWARE_TEST_BINARY, firmware_target)
+        shutil.copy(layout.build.KEXEC_IMAGE_TEST_BINARY, kexec_target)
         build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)
 
     for algorithm in hashes.DMVERITY_ALGORITHMS:
