@@ -94,6 +94,7 @@ guest: what the tests find after the switch.
         fsverity-firmware/                a batch writes these, a scope removes
             signed-<hash>-ipe_test.fw         signed fs-verity firmware
             unsigned-<hash>-ipe_test.fw       unsigned fs-verity firmware
+            plain-ipe_test.fw                firmware without fs-verity
         fsverity-modules/                  a batch writes these, a scope removes
             signed-sha256-ipe_test.ko          sha256 fs-verity digest and signature
             unsigned-sha256-ipe_test.ko        sha256 fs-verity digest, no signature
@@ -338,6 +339,9 @@ class guest:
         )
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"
+    FSVERITY_PLAIN_FIRMWARE_TEST_BINARY = (
+        FSVERITY_FIRMWARE_DIR / f"plain-{_FIRMWARE_TEST_BINARY_NAME}"
+    )
 
     @staticmethod
     def fsverity_firmware_test_binary(algorithm: str, signed: bool) -> Path:
