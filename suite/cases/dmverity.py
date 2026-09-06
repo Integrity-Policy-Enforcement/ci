@@ -14,6 +14,7 @@ from assets import (
     FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    firmware_dmverity_roothash_policy,
     kmodule_dmverity_roothash_policy,
 )
 from model import Batch, Case
@@ -189,6 +190,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_FIRMWARE_TEST_BINARY,
                     expected_errno=errno.ENOENT,
                     expected_content_match=False,
+                ),
+                # Policy: FIRMWARE default DENY; ALLOW matching dmverity_roothash.
+                # Input: .fw on signed dm-verity; the mapping's root hash matches.
+                # Match: root-hash rule -> ALLOW; this rule does not require a signature.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"dmverity_roothash_{algorithm}_signed_ok"
+                        ),
+                        policy=firmware_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.dmverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content_match=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 # Policy: KMODULE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .ko on dm-verity with a verified root-hash signature.
