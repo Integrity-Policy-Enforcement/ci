@@ -28,6 +28,10 @@ KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE,
     name="ipe_test_kmodule_boot_verified_false",
 )
+FIRMWARE_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
+    signed=layout.initrd.FIRMWARE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE,
+    name="ipe_test_firmware_boot_verified_false",
+)
 FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_firmware_boot_verified_true",
@@ -118,6 +122,16 @@ INITRAMFS_CASES = (
         binary=layout.initrd.BOOT_TMPFS_FIRMWARE_TEST_BINARY,
         expected_errno=errno.ENOENT,
         expected_content_match=False,
+    ),
+    # Policy: FIRMWARE default ALLOW; DENY boot_verified=FALSE.
+    # Input: the original initramfs .fw, whose boot_verified property is TRUE.
+    # Match: FALSE does not match -> default ALLOW.
+    firmware.request_firmware_case(
+        id="firmware_kernel_read_request_firmware_boot_verified_false_initramfs_ok",
+        policy=FIRMWARE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=layout.initrd.FIRMWARE_TEST_BINARY,
+        expected_errno=0,
+        expected_content_match=True,
     ),
 )
 
