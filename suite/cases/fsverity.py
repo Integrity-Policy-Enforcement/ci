@@ -8,6 +8,7 @@ import hashes
 import ipe
 import layout
 from assets import (
+    FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -199,6 +200,24 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_FIRMWARE_TEST_BINARY,
                     expected_errno=errno.ENOENT,
                     expected_content_match=False,
+                ),
+                # Policy: FIRMWARE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: .fw with fs-verity and a verified built-in signature.
+                # Match: FALSE does not match -> default ALLOW.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"fsverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.fsverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content_match=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 *(
                     test_case
