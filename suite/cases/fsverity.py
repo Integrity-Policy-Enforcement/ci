@@ -8,13 +8,14 @@ import hashes
 import ipe
 import layout
 from assets import (
+    FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     kmodule_fsverity_digest_policy,
 )
 from model import Batch, Case
 
-from . import kmodule
+from . import firmware, kmodule
 
 # Here "signed" means fs-verity's built-in signature, not module signing.
 # Signed and unsigned files both have fs-verity enabled; plain files do not.
@@ -150,6 +151,24 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="fsverity",
             cases=(
+                # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: .fw with fs-verity enabled and a verified built-in signature.
+                # Match: the file signature is TRUE -> ALLOW.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content_match=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 *(
                     test_case
                     for algorithm in hashes.FSVERITY_ALGORITHMS
@@ -440,7 +459,7 @@ def build() -> tuple[Batch, ...]:
                 partial(ipe.set_enforcement, enabled=False),
                 *(
                     partial(
-                        files.prepare_fsverity_kmodule_test_binary,
+                        files.prepare_fsverity_test_binary,
                         source=(
                             layout.guest.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY
                             if compressed
@@ -461,7 +480,7 @@ def build() -> tuple[Batch, ...]:
                 # The plain copies below skip fsverity enable entirely.
                 *(
                     partial(
-                        files.prepare_fsverity_kmodule_test_binary,
+                        files.prepare_fsverity_test_binary,
                         source=(
                             layout.guest.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY
                             if compressed
@@ -476,20 +495,38 @@ def build() -> tuple[Batch, ...]:
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 partial(
-                    files.copy_kmodule_test_binary,
+                    files.copy_test_binary,
                     source=layout.guest.FSVERITY_COMPRESSED_KMODULE_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_COMPRESSED_KMODULE_TEST_BINARY,
                 ),
                 partial(
-                    files.copy_kmodule_test_binary,
+                    files.copy_test_binary,
                     source=layout.guest.KMODULE_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY,
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.FIRMWARE_TEST_BINARY,
+                        target=layout.guest.fsverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_firmware_signature(
+                            algorithm=algorithm
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             extra_scopes=(
                 partial(
                     files.directory_scope,
                     directory=layout.guest.FSVERITY_MODULES_DIR,
+                ),
+                partial(
+                    files.directory_scope,
+                    directory=layout.guest.FSVERITY_FIRMWARE_DIR,
                 ),
             ),
         ),

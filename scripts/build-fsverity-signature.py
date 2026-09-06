@@ -1,29 +1,56 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Sign the fs-verity digest of the test module.
+"""Prepare fs-verity digests and signatures for the test inputs.
 
     build/fsverity/
-        ipe_test-sha256.digest    sha256 digest of ipe_test.ko, as ASCII hex
-        ipe_test-sha256.p7s       fsverity signature over the sha256 digest
-        ipe_test-sha512.digest    sha512 digest of ipe_test.ko, as ASCII hex
-        ipe_test-sha512.p7s       fsverity signature over the sha512 digest
-        ipe_test.ko.gz            the compressed module used by the guest
+        ipe_test-<hash>.digest             digest of ipe_test.ko
+        ipe_test-<hash>.p7s                signature over that digest
+        ipe_test.ko.gz                    compressed module used by the guest
         ipe_test-compressed-<hash>.digest  digest of the compressed file
         ipe_test-compressed-<hash>.p7s     signature over that digest
+        firmware/ipe_test-<hash>.digest   digest of ipe_test.fw
+        firmware/ipe_test-<hash>.p7s      signature over the firmware digest
 
-One pair per hash in hashes.FSVERITY_ALGORITHMS for each module format.
-
-The digest depends on the file alone, so it can be computed here, where
-the key is, and the guest only has to enable fs-verity with the result.
+Use hashes.FSVERITY_ALGORITHMS for every input. The digest depends on the
+file bytes, so compute and sign it here; the guest enables fs-verity on
+an exact copy of the same file.
 """
 
 import gzip
 import shutil
 import subprocess
+from pathlib import Path
 
 import hashes
 import layout
 import signing
+
+
+def prepare_input(
+    *,
+    binary: Path,
+    algorithm: str,
+    signature_path: Path,
+    digest_path: Path,
+) -> None:
+    """Measure and sign one test input with one fs-verity hash."""
+    signature_path.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        [
+            "fsverity", "sign", str(binary), str(signature_path),
+            f"--key={signing.FSVERITY.key}", f"--cert={signing.FSVERITY.certificate}",
+            f"--hash-alg={algorithm}",
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+    digest = subprocess.run(
+        ["fsverity", "digest", str(binary), f"--hash-alg={algorithm}", "--compact"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    digest_path.write_text(digest + "\n")
 
 
 def main() -> int:
@@ -44,38 +71,26 @@ def main() -> int:
             else layout.build.KMODULE_TEST_BINARY
         )
         for algorithm in hashes.FSVERITY_ALGORITHMS:
-            subprocess.run(
-                [
-                    "fsverity", "sign", str(binary),
-                    str(
-                        layout.build.fsverity_signature(
-                            algorithm=algorithm, compressed=compressed
-                        )
-                    ),
-                    f"--key={signing.FSVERITY.key}", f"--cert={signing.FSVERITY.certificate}",
-                    f"--hash-alg={algorithm}",
-                ],
-                check=True,
-                stdout=subprocess.DEVNULL,
+            prepare_input(
+                binary=binary,
+                algorithm=algorithm,
+                signature_path=layout.build.fsverity_signature(
+                    algorithm=algorithm, compressed=compressed
+                ),
+                digest_path=layout.build.fsverity_digest(
+                    algorithm=algorithm, compressed=compressed
+                ),
             )
-            digest = subprocess.run(
-                [
-                    "fsverity",
-                    "digest",
-                    str(binary),
-                    f"--hash-alg={algorithm}",
-                    "--compact",
-                ],
-                check=True,
-                capture_output=True,
-                text=True,
-            ).stdout.strip()
-            layout.build.fsverity_digest(
-                algorithm=algorithm, compressed=compressed
-            ).write_text(digest + "\n")
+    for algorithm in hashes.FSVERITY_ALGORITHMS:
+        prepare_input(
+            binary=layout.source.FIRMWARE_TEST_BINARY,
+            algorithm=algorithm,
+            signature_path=layout.build.fsverity_firmware_signature(algorithm=algorithm),
+            digest_path=layout.build.fsverity_firmware_digest(algorithm=algorithm),
+        )
 
     relative = layout.build.FSVERITY_ASSETS_DIR.relative_to(layout.source.ROOT_DIR)
-    print(f"    Prepared the fs-verity signature in {relative}")
+    print(f"    Prepared the fs-verity signatures in {relative}")
     return 0
 
 

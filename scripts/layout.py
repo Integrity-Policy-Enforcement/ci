@@ -43,6 +43,8 @@ build: what the build scripts make from it.
         ipe_test.ko.gz            compressed KMODULE input for fs-verity cases
         ipe_test-compressed-<hash>.digest  digest of the compressed file
         ipe_test-compressed-<hash>.p7s     signature over that digest
+        firmware/ipe_test-<hash>.digest   digest of ipe_test.fw
+        firmware/ipe_test-<hash>.p7s      signature over the firmware digest
       policies/                   source policy tree copied, expanded and signed
         signers/intermediate.der  DER certificate linked by the keyring case
 
@@ -87,6 +89,10 @@ guest: what the tests find after the switch.
             ipe_test.ko.gz                     compressed KMODULE input
             ipe_test-compressed-<hash>.digest  digest of the compressed file
             ipe_test-compressed-<hash>.p7s     signature over that digest
+            firmware/ipe_test-<hash>.digest   digest of ipe_test.fw
+            firmware/ipe_test-<hash>.p7s      signature over the firmware digest
+        fsverity-firmware/                a batch writes these, a scope removes
+            signed-<hash>-ipe_test.fw         signed fs-verity firmware
         fsverity-modules/                  a batch writes these, a scope removes
             signed-sha256-ipe_test.ko          sha256 fs-verity digest and signature
             unsigned-sha256-ipe_test.ko        sha256 fs-verity digest, no signature
@@ -244,6 +250,22 @@ class build:
             algorithm=algorithm, compressed=compressed
         )
 
+    @staticmethod
+    def fsverity_firmware_signature(algorithm: str) -> Path:
+        """The fs-verity signature over the firmware digest."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.FIRMWARE_DIR
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    @staticmethod
+    def fsverity_firmware_digest(algorithm: str) -> Path:
+        """The firmware digest made with this hash."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.FIRMWARE_DIR
+            / _fsverity_digest_name(algorithm=algorithm, compressed=False)
+        )
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -305,6 +327,22 @@ class guest:
         return guest.FSVERITY_ASSETS_DIR / _fsverity_signature_name(
             algorithm=algorithm, compressed=compressed
         )
+
+    @staticmethod
+    def fsverity_firmware_signature(algorithm: str) -> Path:
+        """The guest path to the signature over the firmware digest."""
+        return (
+            guest.FSVERITY_ASSETS_DIR / test_media.FIRMWARE_DIR
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"
+
+    @staticmethod
+    def fsverity_firmware_test_binary(algorithm: str, signed: bool) -> Path:
+        """The firmware file with signed or unsigned fs-verity enabled."""
+        state = "signed" if signed else "unsigned"
+        return guest.FSVERITY_FIRMWARE_DIR / f"{state}-{algorithm}-{_FIRMWARE_TEST_BINARY_NAME}"
 
     FSVERITY_MODULES_DIR = PAYLOAD_DIR / "fsverity-modules"
     FSVERITY_PLAIN_KMODULE_TEST_BINARY = (

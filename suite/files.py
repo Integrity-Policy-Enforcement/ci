@@ -8,20 +8,20 @@ from pathlib import Path
 from command import run
 
 
-def copy_kmodule_test_binary(source: Path, target: Path) -> None:
-    """Copy a KMODULE test binary to a new path."""
+def copy_test_binary(source: Path, target: Path) -> None:
+    """Copy a test binary to a new path."""
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(source, target)
 
 
-def prepare_fsverity_kmodule_test_binary(
+def prepare_fsverity_test_binary(
     source: Path,
     target: Path,
     algorithm: str,
     signature: Path | None = None,
 ) -> None:
-    """Copy a KMODULE test binary and enable fs-verity on it."""
-    copy_kmodule_test_binary(source=source, target=target)
+    """Copy a test binary and enable fs-verity on it."""
+    copy_test_binary(source=source, target=target)
     signed = [f"--signature={signature}"] if signature else []
     run("fsverity", "enable", target, f"--hash-alg={algorithm}", *signed)
 

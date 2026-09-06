@@ -495,7 +495,7 @@ def build() -> tuple[Batch, ...]:
                 ),
                 partial(mounts.tmpfs, point=layout.guest.PLAIN_MOUNT_DIR),
                 partial(
-                    files.copy_kmodule_test_binary,
+                    files.copy_test_binary,
                     source=layout.guest.KMODULE_TEST_BINARY,
                     target=layout.guest.PLAIN_KMODULE_TEST_BINARY,
                 ),

@@ -89,6 +89,11 @@ FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     name="ipe_test_dmverity_firmware_signature_true",
 )
 
+FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
+    asset="fsverity/firmware_signature_true_allow",
+    name="ipe_test_fsverity_firmware_signature_true",
+)
+
 # KMODULE policies for signed and unsigned dm-verity media.
 KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     asset="dmverity/kmodule_signature_true_allow",
