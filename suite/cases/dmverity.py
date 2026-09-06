@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import errno
+import shutil
 from functools import partial
 
 import files
@@ -125,6 +126,19 @@ def build() -> tuple[Batch, ...]:
                         expected_content_match=False,
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
+                # Policy: FIRMWARE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: the same .fw bytes on plain tmpfs, without dm-verity.
+                # Match: no mapping signature -> default DENY; search ends in ENOENT.
+                firmware.request_firmware_case(
+                    id=(
+                        "firmware_kernel_read_request_firmware_"
+                        "dmverity_signature_true_plain_denied"
+                    ),
+                    policy=FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.PLAIN_FIRMWARE_TEST_BINARY,
+                    expected_errno=errno.ENOENT,
+                    expected_content_match=False,
                 ),
                 # Policy: KMODULE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .ko on dm-verity with a verified root-hash signature.
@@ -355,6 +369,16 @@ def build() -> tuple[Batch, ...]:
                     files.copy_kmodule_test_binary,
                     source=layout.guest.KMODULE_TEST_BINARY,
                     target=layout.guest.PLAIN_KMODULE_TEST_BINARY,
+                ),
+                partial(
+                    layout.guest.PLAIN_FIRMWARE_TEST_BINARY.parent.mkdir,
+                    parents=True,
+                    exist_ok=True,
+                ),
+                partial(
+                    shutil.copy,
+                    src=layout.guest.FIRMWARE_TEST_BINARY,
+                    dst=layout.guest.PLAIN_FIRMWARE_TEST_BINARY,
                 ),
             ),
             extra_scopes=(
