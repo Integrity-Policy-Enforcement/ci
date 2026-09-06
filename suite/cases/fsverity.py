@@ -12,6 +12,7 @@ from assets import (
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    firmware_fsverity_digest_policy,
     kmodule_fsverity_digest_policy,
 )
 from model import Batch, Case
@@ -249,6 +250,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_FIRMWARE_TEST_BINARY,
                     expected_errno=errno.ENOENT,
                     expected_content_match=False,
+                ),
+                # Policy: FIRMWARE default DENY; ALLOW matching fsverity_digest.
+                # Input: signed fs-verity .fw; its own measured digest matches.
+                # Match: digest rule -> ALLOW; this rule does not require a signature.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"fsverity_digest_{algorithm}_signed_ok"
+                        ),
+                        policy=firmware_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.fsverity_firmware_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content_match=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 *(
                     test_case
