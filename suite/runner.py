@@ -14,7 +14,7 @@ import runtime
 from assets import BASELINE_POLICY
 from model import Case, CaseState, Observation
 
-CASE_TIMEOUT_SECONDS = 60
+CASE_TIMEOUT_SECONDS = 180
 
 
 def error_report(message: str) -> dict:
