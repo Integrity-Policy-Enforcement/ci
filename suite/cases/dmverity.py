@@ -231,6 +231,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: FIRMWARE default DENY; ALLOW matching dmverity_roothash.
+                # Input: .fw on plain tmpfs; no dm-verity root-hash property exists.
+                # Match: no ALLOW match -> default DENY; search ends in ENOENT.
+                *(
+                    firmware.request_firmware_case(
+                        id=(
+                            "firmware_kernel_read_request_firmware_"
+                            f"dmverity_roothash_{algorithm}_plain_denied"
+                        ),
+                        policy=firmware_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.PLAIN_FIRMWARE_TEST_BINARY,
+                        expected_errno=errno.ENOENT,
+                        expected_content_match=False,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: KMODULE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .ko on dm-verity with a verified root-hash signature.
                 # Match: the mapping signature is TRUE -> ALLOW.
