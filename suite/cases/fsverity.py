@@ -16,6 +16,10 @@ from model import Batch, Case
 
 from . import kmodule
 
+# Here "signed" means fs-verity's built-in signature, not module signing.
+# Signed and unsigned files both have fs-verity enabled; plain files do not.
+# For .ko.gz, the signed fs-verity digest is computed from compressed bytes.
+
 
 def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
     """The signed and unsigned fs-verity signature cases for one algorithm."""
@@ -26,6 +30,9 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
         algorithm=algorithm, compressed=False
     )
     return (
+        # Policy: KMODULE default DENY; ALLOW fsverity_signature=TRUE.
+        # Input: .ko with fs-verity enabled and a verified built-in signature.
+        # Match: the file's signature property is TRUE -> ALLOW.
         kmodule.insmod_case(
             id=(
                 "kmodule_kernel_read_insmod_fsverity_signature_true_"
@@ -36,6 +43,9 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
             expected_returncode=0,
             expected_loaded=True,
         ),
+        # Policy: KMODULE default DENY; ALLOW fsverity_signature=TRUE.
+        # Input: .ko with fs-verity enabled but no built-in signature.
+        # Match: the signature property is FALSE -> no ALLOW match -> default DENY.
         kmodule.insmod_case(
             id=(
                 "kmodule_kernel_read_insmod_fsverity_signature_true_"
@@ -46,6 +56,9 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
             expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
             expected_loaded=False,
         ),
+        # Policy: KMODULE default ALLOW; DENY fsverity_signature=FALSE.
+        # Input: .ko with fs-verity enabled and a verified built-in signature.
+        # Match: FALSE does not match -> default ALLOW, not the DENY rule.
         kmodule.insmod_case(
             id=(
                 "kmodule_kernel_read_insmod_fsverity_signature_false_"
@@ -56,6 +69,9 @@ def signature_cases(*, algorithm: str) -> tuple[Case, ...]:
             expected_returncode=0,
             expected_loaded=True,
         ),
+        # Policy: KMODULE default ALLOW; DENY fsverity_signature=FALSE.
+        # Input: .ko with fs-verity enabled but no built-in signature.
+        # Match: FALSE matches -> the explicit DENY rule applies.
         kmodule.insmod_case(
             id=(
                 "kmodule_kernel_read_insmod_fsverity_signature_false_"
@@ -85,6 +101,9 @@ def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
     )
     plain_kmodule_binary = layout.guest.FSVERITY_PLAIN_KMODULE_TEST_BINARY
     return (
+        # Policy: KMODULE default DENY; ALLOW matching fsverity_digest.
+        # Input: signed fs-verity .ko; its measured digest matches the policy.
+        # Match: digest rule -> ALLOW; this rule does not require a signature.
         kmodule.insmod_case(
             id=f"kmodule_kernel_read_insmod_fsverity_digest_{algorithm}_signed_ok",
             policy=matching_digest_policy,
@@ -92,6 +111,9 @@ def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
             expected_returncode=0,
             expected_loaded=True,
         ),
+        # Policy: KMODULE default DENY; ALLOW matching fsverity_digest.
+        # Input: unsigned fs-verity .ko; verity is enabled and its digest matches.
+        # Match: digest rule -> ALLOW despite the missing built-in signature.
         kmodule.insmod_case(
             id=f"kmodule_kernel_read_insmod_fsverity_digest_{algorithm}_unsigned_ok",
             policy=matching_digest_policy,
@@ -99,6 +121,9 @@ def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
             expected_returncode=0,
             expected_loaded=True,
         ),
+        # Policy: KMODULE default DENY; ALLOW matching fsverity_digest.
+        # Input: the same .ko bytes, but fs-verity is not enabled.
+        # Match: no fs-verity digest exists -> no ALLOW match -> default DENY.
         kmodule.insmod_case(
             id=f"kmodule_kernel_read_insmod_fsverity_digest_{algorithm}_plain_denied",
             policy=matching_digest_policy,
@@ -106,6 +131,9 @@ def digest_cases(*, algorithm: str) -> tuple[Case, ...]:
             expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
             expected_loaded=False,
         ),
+        # Policy: KMODULE default DENY; ALLOW a different fsverity_digest.
+        # Input: signed fs-verity .ko; its digest differs from the policy value.
+        # Match: digest mismatch -> default DENY, even with a valid signature.
         kmodule.insmod_case(
             id=f"kmodule_kernel_read_insmod_fsverity_digest_{algorithm}_mismatch_denied",
             policy=mismatching_digest_policy,
@@ -127,6 +155,9 @@ def build() -> tuple[Batch, ...]:
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                     for test_case in signature_cases(algorithm=algorithm)
                 ),
+                # Policy: KMODULE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: .ko.gz with fs-verity and a verified built-in signature.
+                # Match: the compressed file's signature is TRUE -> ALLOW before decompression.
                 *(
                     kmodule.insmod_case(
                         id=(
@@ -142,6 +173,9 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KMODULE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: .ko.gz with fs-verity enabled but no built-in signature.
+                # Match: TRUE does not match -> default DENY.
                 *(
                     kmodule.insmod_case(
                         id=(
@@ -157,6 +191,9 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KMODULE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: the same .ko.gz bytes without fs-verity or its signature.
+                # Match: the signature property is FALSE -> default DENY.
                 kmodule.insmod_case(
                     id=(
                         "kmodule_kernel_read_insmod_compressed_"
@@ -167,6 +204,9 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
                     expected_loaded=False,
                 ),
+                # Policy: KMODULE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: .ko.gz with a verified signature for its compressed-file digest.
+                # Match: FALSE does not match -> default ALLOW.
                 *(
                     kmodule.insmod_case(
                         id=(
@@ -182,6 +222,9 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KMODULE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: .ko.gz with fs-verity enabled but no built-in signature.
+                # Match: FALSE matches -> the explicit DENY rule applies.
                 *(
                     kmodule.insmod_case(
                         id=(
@@ -197,6 +240,9 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KMODULE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: .ko.gz with no fs-verity metadata, not just a missing signature.
+                # Match: absence counts as FALSE -> the explicit DENY rule matches.
                 kmodule.insmod_case(
                     id=(
                         "kmodule_kernel_read_insmod_compressed_"
@@ -207,6 +253,9 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
                     expected_loaded=False,
                 ),
+                # Policy: KMODULE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: a buffer read from a signed fs-verity .ko.
+                # Match: KERNEL_LOAD has no inode; TRUE cannot match -> default DENY.
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
@@ -219,6 +268,9 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
+                # Policy: KMODULE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: a buffer read from an unsigned fs-verity .ko.
+                # Match: KERNEL_LOAD has no inode; TRUE cannot match -> default DENY.
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
@@ -231,6 +283,9 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
+                # Policy: KMODULE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: .ko without fs-verity or a built-in fs-verity signature.
+                # Match: TRUE does not match -> default DENY.
                 kmodule.insmod_case(
                     id="kmodule_kernel_read_insmod_fsverity_signature_true_plain_denied",
                     policy=KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -238,6 +293,9 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=kmodule.INSMOD_REFUSED_RETURN_CODE,
                     expected_loaded=False,
                 ),
+                # Policy: KMODULE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: a buffer read from a signed fs-verity .ko.
+                # Match: no inode makes the signature property FALSE -> explicit DENY.
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
@@ -250,6 +308,9 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
+                # Policy: KMODULE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: a buffer read from an unsigned fs-verity .ko.
+                # Match: no inode makes the signature property FALSE -> explicit DENY.
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
@@ -262,6 +323,9 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
+                # Policy: KMODULE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: .ko without any fs-verity metadata.
+                # Match: absence counts as FALSE -> the explicit DENY rule matches.
                 kmodule.insmod_case(
                     id="kmodule_kernel_read_insmod_fsverity_signature_false_plain_denied",
                     policy=KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
@@ -274,6 +338,9 @@ def build() -> tuple[Batch, ...]:
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                     for test_case in digest_cases(algorithm=algorithm)
                 ),
+                # Policy: KMODULE default DENY; ALLOW matching fsverity_digest.
+                # Input: signed fs-verity .ko.gz; its compressed-file digest matches.
+                # Match: digest rule -> ALLOW; the policy does not require a signature.
                 *(
                     kmodule.insmod_case(
                         id=(
@@ -291,6 +358,9 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KMODULE default DENY; ALLOW matching fsverity_digest.
+                # Input: unsigned fs-verity .ko.gz; its compressed-file digest matches.
+                # Match: digest rule -> ALLOW without a built-in signature.
                 *(
                     kmodule.insmod_case(
                         id=(
@@ -308,6 +378,9 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KMODULE default DENY; ALLOW matching fsverity_digest.
+                # Input: identical .ko.gz bytes, but fs-verity is not enabled.
+                # Match: no fs-verity digest property -> default DENY, not a value mismatch.
                 *(
                     kmodule.insmod_case(
                         id=(
@@ -323,6 +396,9 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KMODULE default DENY; ALLOW a different fsverity_digest.
+                # Input: signed fs-verity .ko.gz; its actual compressed-file digest differs.
+                # Match: digest mismatch -> default DENY despite the verified signature.
                 *(
                     kmodule.insmod_case(
                         id=(
@@ -340,6 +416,9 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KMODULE default DENY; ALLOW the source file's fsverity_digest.
+                # Input: a buffer read from a signed .ko with the matching SHA-256 digest.
+                # Match: KERNEL_LOAD has no inode/digest property -> default DENY.
                 kmodule.init_module_case(
                     id=(
                         "kmodule_kernel_load_init_module_"
@@ -355,6 +434,8 @@ def build() -> tuple[Batch, ...]:
                     expected_loaded=False,
                 ),
             ),
+            # Prepare fixtures with enforcement off; each case then activates
+            # its selected policy and enables enforcement for the module load.
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
                 *(
@@ -376,6 +457,8 @@ def build() -> tuple[Batch, ...]:
                     for compressed in (False, True)
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Unsigned still runs fsverity enable; signature=None omits --signature.
+                # The plain copies below skip fsverity enable entirely.
                 *(
                     partial(
                         files.prepare_fsverity_kmodule_test_binary,
