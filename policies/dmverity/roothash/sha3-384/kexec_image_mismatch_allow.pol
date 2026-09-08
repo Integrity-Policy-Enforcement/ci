@@ -1,0 +1,4 @@
+policy_name=ipe_test_dmverity_kexec_image_roothash_sha3-384_mismatch policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=KEXEC_IMAGE action=DENY
+op=KEXEC_IMAGE dmverity_roothash=@DMVERITY_OTHER_ROOTHASH_SHA3-384@ action=ALLOW
