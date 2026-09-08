@@ -278,6 +278,22 @@ class build:
             / _fsverity_digest_name(algorithm=algorithm, compressed=False)
         )
 
+    @staticmethod
+    def fsverity_kexec_image_signature(algorithm: str) -> Path:
+        """The fs-verity signature over the real kernel image digest."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.KEXEC_DIR
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    @staticmethod
+    def fsverity_kexec_image_digest(algorithm: str) -> Path:
+        """The real kernel image digest made with this hash."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.KEXEC_DIR
+            / _fsverity_digest_name(algorithm=algorithm, compressed=False)
+        )
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -347,6 +363,25 @@ class guest:
         return (
             guest.FSVERITY_ASSETS_DIR / test_media.FIRMWARE_DIR
             / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    @staticmethod
+    def fsverity_kexec_image_signature(algorithm: str) -> Path:
+        """The guest signature path for the kernel image digest."""
+        return (
+            guest.FSVERITY_ASSETS_DIR / test_media.KEXEC_DIR
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    FSVERITY_KEXEC_IMAGES_DIR = PAYLOAD_DIR / "fsverity-kexec"
+
+    @staticmethod
+    def fsverity_kexec_image_test_binary(algorithm: str, signed: bool) -> Path:
+        """The real kernel image with signed or unsigned fs-verity enabled."""
+        state = "signed" if signed else "unsigned"
+        return (
+            guest.FSVERITY_KEXEC_IMAGES_DIR
+            / f"{state}-{algorithm}-{test_media.KEXEC_IMAGE_TEST_BINARY.name}"
         )
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"

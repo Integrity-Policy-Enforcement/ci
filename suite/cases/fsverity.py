@@ -10,6 +10,7 @@ import layout
 from assets import (
     FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    KEXEC_IMAGE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_fsverity_digest_policy,
@@ -17,7 +18,7 @@ from assets import (
 )
 from model import Batch, Case
 
-from . import firmware, kmodule
+from . import firmware, kexec, kmodule
 
 # Here "signed" means fs-verity's built-in signature, not module signing.
 # Signed and unsigned files both have fs-verity enabled; plain files do not.
@@ -153,6 +154,24 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="fsverity",
             cases=(
+                # Policy: KEXEC_IMAGE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: a real kernel image with a verified built-in fs-verity signature.
+                # Match: TRUE matches -> ALLOW; check staging before unloading.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=KEXEC_IMAGE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: .fw with fs-verity enabled and a verified built-in signature.
                 # Match: the file signature is TRUE -> ALLOW.
@@ -694,6 +713,20 @@ def build() -> tuple[Batch, ...]:
                     source=layout.guest.FIRMWARE_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_FIRMWARE_TEST_BINARY,
                 ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                        target=layout.guest.fsverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_kexec_image_signature(
+                            algorithm=algorithm
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             extra_scopes=(
                 partial(
@@ -703,6 +736,10 @@ def build() -> tuple[Batch, ...]:
                 partial(
                     files.directory_scope,
                     directory=layout.guest.FSVERITY_FIRMWARE_DIR,
+                ),
+                partial(
+                    files.directory_scope,
+                    directory=layout.guest.FSVERITY_KEXEC_IMAGES_DIR,
                 ),
             ),
         ),
