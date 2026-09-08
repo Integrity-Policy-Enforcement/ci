@@ -228,6 +228,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW matching dmverity_roothash.
+                # Input: identical kernel bytes on plain tmpfs; no root hash exists.
+                # Match: no property -> no ALLOW match -> EACCES.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"dmverity_roothash_{algorithm}_plain_denied"
+                        ),
+                        policy=kexec_image_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.PLAIN_KEXEC_IMAGE_TEST_BINARY,
+                        expected_errno=errno.EACCES,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .fw on a mapping opened with a trusted root-hash signature.
                 # Match: the mapping signature is TRUE -> the ALLOW rule matches.
