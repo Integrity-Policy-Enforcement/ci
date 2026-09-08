@@ -18,7 +18,7 @@ import ipe
 import layout
 from model import Batch, Case
 
-from . import firmware, kmodule
+from . import firmware, kexec, kmodule
 
 KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
@@ -35,6 +35,10 @@ FIRMWARE_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
 FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_firmware_boot_verified_true",
+)
+KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
+    signed=layout.initrd.KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
+    name="ipe_test_kexec_image_boot_verified_true",
 )
 INITRAMFS_KMODULE_TEST_BINARY = layout.initrd.KMODULE_TEST_BINARY
 TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
@@ -142,6 +146,16 @@ INITRAMFS_CASES = (
         binary=layout.initrd.BOOT_TMPFS_FIRMWARE_TEST_BINARY,
         expected_errno=errno.ENOENT,
         expected_content_match=False,
+    ),
+    # Policy: KEXEC_IMAGE default DENY; ALLOW boot_verified=TRUE.
+    # Input: the real kernel image from the verified boot filesystem.
+    # Match: TRUE matches -> ALLOW; check staging and unload without executing.
+    kexec.file_load_case(
+        id="kexec_image_kernel_read_kexec_file_load_boot_verified_true_initramfs_ok",
+        policy=KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=layout.initrd.KEXEC_IMAGE_TEST_BINARY,
+        expected_errno=0,
+        expected_loaded=True,
     ),
 )
 

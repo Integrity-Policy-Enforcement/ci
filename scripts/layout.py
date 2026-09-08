@@ -484,6 +484,10 @@ class initrd:
     TESTS_DIR = Path("/usr/lib/ipe-tests")
     KMODULE_TEST_BINARY = TESTS_DIR / _KMODULE_TEST_BINARY_NAME
     FIRMWARE_TEST_BINARY = TESTS_DIR / _FIRMWARE_TEST_BINARY_NAME
+    KEXEC_IMAGE_TEST_BINARY = TESTS_DIR / test_media.KEXEC_IMAGE_TEST_BINARY.name
+    KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
+        TESTS_DIR / "kexec-image-boot-verified-true.p7s"
+    )
     FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
         TESTS_DIR / "firmware-boot-verified-true.p7s"
     )
