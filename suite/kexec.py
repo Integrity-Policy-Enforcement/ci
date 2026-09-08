@@ -11,6 +11,7 @@ LOADED_NODE = Path("/sys/kernel/kexec/loaded")
 # These UAPI flag bits are architecture-independent; syscall numbers are not.
 KEXEC_FILE_UNLOAD = 1 << 0
 KEXEC_FILE_NO_INITRAMFS = 1 << 2
+KEXEC_ARCH_DEFAULT = 0
 
 _LIBC = ctypes.CDLL(None, use_errno=True)
 _LIBC.syscall.argtypes = (ctypes.c_long,)
@@ -21,6 +22,18 @@ _SECCOMP.seccomp_syscall_resolve_name.restype = ctypes.c_int
 _KEXEC_FILE_LOAD_NR = _SECCOMP.seccomp_syscall_resolve_name(b"kexec_file_load")
 if _KEXEC_FILE_LOAD_NR < 0:
     raise RuntimeError("kexec_file_load is unavailable on this architecture")
+_KEXEC_LOAD_NR = _SECCOMP.seccomp_syscall_resolve_name(b"kexec_load")
+if _KEXEC_LOAD_NR < 0:
+    raise RuntimeError("kexec_load is unavailable on this architecture")
+
+
+class _KexecSegment(ctypes.Structure):
+    _fields_ = (
+        ("buf", ctypes.c_void_p),
+        ("bufsz", ctypes.c_size_t),
+        ("mem", ctypes.c_ulong),
+        ("memsz", ctypes.c_size_t),
+    )
 
 
 def _file_load_syscall(
@@ -62,6 +75,37 @@ def load_file(binary: Path, state: CaseState) -> Observation:
             command_line=b"\0",
             flags=KEXEC_FILE_NO_INITRAMFS,
         )
+    return Observation(errno=error)
+
+
+def load_buffer(binary: Path, state: CaseState) -> Observation:
+    """Try kexec_load on real kernel bytes; the rejection cases must stop at IPE."""
+    image = binary.read_bytes()
+    if not image:
+        raise ValueError("kexec buffer input is empty")
+    buffer = ctypes.create_string_buffer(image)
+    # IPE runs before segment validation. A zero destination size ensures that
+    # an unexpected ALLOW reaches EINVAL, not an installed image. EINVAL is not
+    # an accepted result for the IPE-denial cases.
+    segment = _KexecSegment(
+        buf=ctypes.cast(buffer, ctypes.c_void_p),
+        bufsz=len(image),
+        mem=0,
+        memsz=0,
+    )
+    ctypes.set_errno(0)
+    result = _LIBC.syscall(
+        _KEXEC_LOAD_NR,
+        ctypes.c_ulong(0),
+        ctypes.c_ulong(1),
+        ctypes.byref(segment),
+        ctypes.c_ulong(KEXEC_ARCH_DEFAULT),
+    )
+    if result == 0:
+        return Observation(errno=0)
+    error = ctypes.get_errno()
+    if error == 0:
+        raise RuntimeError("kexec_load failed without setting errno")
     return Observation(errno=error)
 
 
