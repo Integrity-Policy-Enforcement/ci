@@ -314,6 +314,20 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW the source mapping's root hash.
+                # Input: userspace bytes from the matching signed SHA-256 mapping.
+                # Match: KERNEL_LOAD has no root-hash context -> EACCES.
+                kexec.buffer_load_case(
+                    id="kexec_image_kernel_load_kexec_load_dmverity_roothash_sha256_signed_denied",
+                    policy=kexec_image_dmverity_roothash_policy(
+                        algorithm="sha256", matching=True
+                    ),
+                    binary=layout.guest.dmverity_kexec_image_test_binary(
+                        algorithm="sha256", signed=True
+                    ),
+                    expected_errno=errno.EACCES,
+                    expected_loaded=False,
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .fw on a mapping opened with a trusted root-hash signature.
                 # Match: the mapping signature is TRUE -> the ALLOW rule matches.
