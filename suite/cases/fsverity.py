@@ -374,6 +374,20 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW the source file's fsverity_digest.
+                # Input: a buffer from a signed kernel image with a matching SHA-256 digest.
+                # Match: KERNEL_LOAD has no inode/digest property -> EACCES.
+                kexec.buffer_load_case(
+                    id="kexec_image_kernel_load_kexec_load_fsverity_digest_sha256_signed_denied",
+                    policy=kexec_image_fsverity_digest_policy(
+                        algorithm="sha256", matching=True
+                    ),
+                    binary=layout.guest.fsverity_kexec_image_test_binary(
+                        algorithm="sha256", signed=True
+                    ),
+                    expected_errno=errno.EACCES,
+                    expected_loaded=False,
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: .fw with fs-verity enabled and a verified built-in signature.
                 # Match: the file signature is TRUE -> ALLOW.
