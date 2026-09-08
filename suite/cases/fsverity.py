@@ -172,6 +172,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: a real kernel image with fs-verity but no built-in signature.
+                # Match: TRUE does not match -> EACCES; nothing is staged.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"fsverity_signature_true_{algorithm}_unsigned_denied"
+                        ),
+                        policy=KEXEC_IMAGE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: .fw with fs-verity enabled and a verified built-in signature.
                 # Match: the file signature is TRUE -> ALLOW.
@@ -724,6 +742,17 @@ def build() -> tuple[Batch, ...]:
                         signature=layout.guest.fsverity_kexec_image_signature(
                             algorithm=algorithm
                         ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                        target=layout.guest.fsverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        algorithm=algorithm,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
