@@ -110,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
 
     kvm = os.access("/dev/kvm", os.R_OK | os.W_OK)
     acceleration = "kvm" if kvm else "tcg"
-    timeout = os.environ.get("IPE_TEST_TIMEOUT", "180" if kvm else "3600")
+    timeout = os.environ.get("IPE_TEST_TIMEOUT", "180" if kvm else "7200")
     command = [
         "timeout",
         timeout,

@@ -17,6 +17,7 @@ from assets import (
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_dmverity_roothash_policy,
+    kexec_image_dmverity_roothash_policy,
     kmodule_dmverity_roothash_policy,
 )
 from model import Batch, Case
@@ -186,6 +187,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_KEXEC_IMAGE_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
+                ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW matching dmverity_roothash.
+                # Input: a real kernel image on signed dm-verity; the root hash matches.
+                # Match: root-hash rule -> ALLOW; verify staging, then unload.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"dmverity_roothash_{algorithm}_signed_ok"
+                        ),
+                        policy=kexec_image_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.dmverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 # Policy: FIRMWARE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .fw on a mapping opened with a trusted root-hash signature.
