@@ -288,6 +288,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW matching fsverity_digest.
+                # Input: identical kernel bytes with fs-verity disabled.
+                # Match: no digest property -> default DENY, not a hash mismatch.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"fsverity_digest_{algorithm}_plain_denied"
+                        ),
+                        policy=kexec_image_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.FSVERITY_PLAIN_KEXEC_IMAGE_TEST_BINARY,
+                        expected_errno=errno.EACCES,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: .fw with fs-verity enabled and a verified built-in signature.
                 # Match: the file signature is TRUE -> ALLOW.
