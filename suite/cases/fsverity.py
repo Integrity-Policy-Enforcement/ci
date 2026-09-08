@@ -10,6 +10,7 @@ import layout
 from assets import (
     FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    KEXEC_IMAGE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KEXEC_IMAGE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -199,6 +200,24 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_KEXEC_IMAGE_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
+                ),
+                # Policy: KEXEC_IMAGE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: a kernel image with a verified built-in fs-verity signature.
+                # Match: FALSE does not match -> default ALLOW; unload after checking.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"fsverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=KEXEC_IMAGE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.fsverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: .fw with fs-verity enabled and a verified built-in signature.

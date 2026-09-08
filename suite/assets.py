@@ -107,6 +107,10 @@ KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     name="ipe_test_dmverity_kexec_image_signature_true",
 )
 
+KEXEC_IMAGE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
+    asset="fsverity/kexec_image_signature_false_deny",
+    name="ipe_test_fsverity_kexec_image_signature_false",
+)
 KEXEC_IMAGE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     asset="fsverity/kexec_image_signature_true_allow",
     name="ipe_test_fsverity_kexec_image_signature_true",
