@@ -33,6 +33,10 @@ def main() -> int:
             layout.initrd.FIRMWARE_TEST_BINARY,
             layout.initrd.BOOT_TMPFS_FIRMWARE_TEST_BINARY,
         )
+        shutil.copy(
+            layout.initrd.KEXEC_IMAGE_TEST_BINARY,
+            layout.initrd.BOOT_TMPFS_KEXEC_IMAGE_TEST_BINARY,
+        )
         outcomes = {case.id: runner.test(case=case) for case in INITRAMFS_CASES}
 
     layout.initrd.BOOT_VERIFIED_RECORD.write_text(json.dumps(outcomes) + "\n")
