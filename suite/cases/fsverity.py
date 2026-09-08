@@ -350,6 +350,18 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
+                # Policy: KEXEC_IMAGE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: userspace bytes from a signed SHA-256 fs-verity kernel image.
+                # Match: no inode makes the signature property FALSE -> explicit DENY.
+                kexec.buffer_load_case(
+                    id="kexec_image_kernel_load_kexec_load_fsverity_signature_false_signed_denied",
+                    policy=KEXEC_IMAGE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    binary=layout.guest.fsverity_kexec_image_test_binary(
+                        algorithm="sha256", signed=True
+                    ),
+                    expected_errno=errno.EACCES,
+                    expected_loaded=False,
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: .fw with fs-verity enabled and a verified built-in signature.
                 # Match: the file signature is TRUE -> ALLOW.
