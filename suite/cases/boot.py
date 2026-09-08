@@ -191,6 +191,16 @@ INITRAMFS_CASES = (
         expected_errno=errno.EACCES,
         expected_loaded=False,
     ),
+    # Policy: KEXEC_IMAGE default DENY; ALLOW boot_verified=TRUE.
+    # Input: a userspace buffer read from the verified boot kernel image.
+    # Match: KERNEL_LOAD has no file context; boot_verified is FALSE -> EACCES.
+    kexec.buffer_load_case(
+        id="kexec_image_kernel_load_kexec_load_boot_verified_true_initramfs_denied",
+        policy=KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=layout.initrd.KEXEC_IMAGE_TEST_BINARY,
+        expected_errno=errno.EACCES,
+        expected_loaded=False,
+    ),
 )
 
 
