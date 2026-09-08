@@ -12,6 +12,7 @@ import mounts
 from assets import (
     FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    KEXEC_IMAGE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -139,6 +140,24 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_KEXEC_IMAGE_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
+                ),
+                # Policy: KEXEC_IMAGE default ALLOW; DENY dmverity_signature=FALSE.
+                # Input: the real kernel image on signed dm-verity.
+                # Match: FALSE does not match -> default ALLOW; unload after checking.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"dmverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=KEXEC_IMAGE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.dmverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 # Policy: FIRMWARE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .fw on a mapping opened with a trusted root-hash signature.
