@@ -130,6 +130,16 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: the real kernel image on plain tmpfs, without dm-verity.
+                # Match: TRUE does not match -> EACCES; nothing is staged.
+                kexec.file_load_case(
+                    id="kexec_image_kernel_read_kexec_file_load_dmverity_signature_true_plain_denied",
+                    policy=KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.PLAIN_KEXEC_IMAGE_TEST_BINARY,
+                    expected_errno=errno.EACCES,
+                    expected_loaded=False,
+                ),
                 # Policy: FIRMWARE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: .fw on a mapping opened with a trusted root-hash signature.
                 # Match: the mapping signature is TRUE -> the ALLOW rule matches.
@@ -545,6 +555,11 @@ def build() -> tuple[Batch, ...]:
                     shutil.copy,
                     src=layout.guest.FIRMWARE_TEST_BINARY,
                     dst=layout.guest.PLAIN_FIRMWARE_TEST_BINARY,
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                    target=layout.guest.PLAIN_KEXEC_IMAGE_TEST_BINARY,
                 ),
             ),
             extra_scopes=(

@@ -60,12 +60,17 @@ def make_payload(output: Path) -> None:
             layout.build.KMODULE_TEST_BINARY,
             staging_path(layout.guest.KMODULE_TEST_BINARY),
         )
+        staging_path(layout.guest.KEXEC_IMAGE_TEST_BINARY).parent.mkdir()
+        shutil.copy(
+            layout.build.KEXEC_IMAGE_TEST_BINARY,
+            staging_path(layout.guest.KEXEC_IMAGE_TEST_BINARY),
+        )
         shutil.copytree(
             layout.build.FSVERITY_ASSETS_DIR,
             staging_path(layout.guest.FSVERITY_ASSETS_DIR),
         )
         with output.open("wb") as stream:
-            stream.truncate(48 * 1024 * 1024)
+            stream.truncate(1024 * 1024 * 1024)
         subprocess.run(
             [
                 "mkfs.ext4", "-q", "-F", "-O", "verity",
