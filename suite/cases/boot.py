@@ -181,6 +181,16 @@ INITRAMFS_CASES = (
         expected_errno=0,
         expected_loaded=True,
     ),
+    # Policy: KEXEC_IMAGE default ALLOW; DENY boot_verified=FALSE.
+    # Input: the real kernel image copied onto a separate tmpfs.
+    # Match: FALSE matches -> explicit DENY; nothing is staged.
+    kexec.file_load_case(
+        id="kexec_image_kernel_read_kexec_file_load_boot_verified_false_tmpfs_denied",
+        policy=KEXEC_IMAGE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=layout.initrd.BOOT_TMPFS_KEXEC_IMAGE_TEST_BINARY,
+        expected_errno=errno.EACCES,
+        expected_loaded=False,
+    ),
 )
 
 
