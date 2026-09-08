@@ -36,6 +36,10 @@ FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_firmware_boot_verified_true",
 )
+KEXEC_IMAGE_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
+    signed=layout.initrd.KEXEC_IMAGE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE,
+    name="ipe_test_kexec_image_boot_verified_false",
+)
 KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_kexec_image_boot_verified_true",
@@ -166,6 +170,16 @@ INITRAMFS_CASES = (
         binary=layout.initrd.BOOT_TMPFS_KEXEC_IMAGE_TEST_BINARY,
         expected_errno=errno.EACCES,
         expected_loaded=False,
+    ),
+    # Policy: KEXEC_IMAGE default ALLOW; DENY boot_verified=FALSE.
+    # Input: the original kernel image from the verified boot filesystem.
+    # Match: FALSE does not match -> default ALLOW; check staging and unload.
+    kexec.file_load_case(
+        id="kexec_image_kernel_read_kexec_file_load_boot_verified_false_initramfs_ok",
+        policy=KEXEC_IMAGE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=layout.initrd.KEXEC_IMAGE_TEST_BINARY,
+        expected_errno=0,
+        expected_loaded=True,
     ),
 )
 

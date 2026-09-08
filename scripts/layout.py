@@ -488,6 +488,9 @@ class initrd:
     KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
         TESTS_DIR / "kexec-image-boot-verified-true.p7s"
     )
+    KEXEC_IMAGE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE = (
+        TESTS_DIR / "kexec-image-boot-verified-false.p7s"
+    )
     FIRMWARE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
         TESTS_DIR / "firmware-boot-verified-true.p7s"
     )
