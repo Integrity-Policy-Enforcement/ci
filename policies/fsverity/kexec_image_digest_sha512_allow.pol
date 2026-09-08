@@ -1,0 +1,4 @@
+policy_name=ipe_test_fsverity_kexec_image_digest_sha512 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=KEXEC_IMAGE action=DENY
+op=KEXEC_IMAGE fsverity_digest=@FSVERITY_KEXEC_IMAGE_DIGEST_SHA512@ action=ALLOW

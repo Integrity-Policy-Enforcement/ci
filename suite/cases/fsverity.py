@@ -15,6 +15,7 @@ from assets import (
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_fsverity_digest_policy,
+    kexec_image_fsverity_digest_policy,
     kmodule_fsverity_digest_policy,
 )
 from model import Batch, Case
@@ -246,6 +247,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_KEXEC_IMAGE_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
+                ),
+                # Policy: KEXEC_IMAGE default DENY; ALLOW matching fsverity_digest.
+                # Input: a signed fs-verity kernel image; its own digest matches.
+                # Match: digest rule -> ALLOW; verify staging and unload.
+                *(
+                    kexec.file_load_case(
+                        id=(
+                            "kexec_image_kernel_read_kexec_file_load_"
+                            f"fsverity_digest_{algorithm}_signed_ok"
+                        ),
+                        policy=kexec_image_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.fsverity_kexec_image_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 # Policy: FIRMWARE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: .fw with fs-verity enabled and a verified built-in signature.
