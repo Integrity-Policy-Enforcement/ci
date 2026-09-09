@@ -538,6 +538,9 @@ class initrd:
     KEXEC_INITRAMFS_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
         TESTS_DIR / "kexec-initramfs-boot-verified-true.p7s"
     )
+    KEXEC_INITRAMFS_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE = (
+        TESTS_DIR / "kexec-initramfs-boot-verified-false.p7s"
+    )
     KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
         TESTS_DIR / "kexec-image-boot-verified-true.p7s"
     )
