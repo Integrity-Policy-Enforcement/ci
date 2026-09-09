@@ -73,6 +73,16 @@ INITRAMFS_CASES = (
         expected_errno=0,
         expected_content=layout.initrd.POLICY_OP_TEST_BINARY,
     ),
+    # Policy: POLICY default DENY; ALLOW boot_verified=TRUE.
+    # Input: identical policy text copied to a separate tmpfs, not the boot filesystem.
+    # Match: boot_verified is FALSE -> no TRUE match -> default DENY.
+    policy_op.read_case(
+        id="policy_op_kernel_read_ipe_test_policy_op_boot_verified_true_tmpfs_denied",
+        policy=POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=layout.initrd.BOOT_TMPFS_POLICY_OP_TEST_BINARY,
+        expected_errno=errno.EACCES,
+        expected_content=b"",
+    ),
     # Policy: KMODULE default DENY; ALLOW boot_verified=TRUE.
     # Input: the original initramfs .ko, whose file context has boot_verified=TRUE.
     # Match: TRUE matches -> the ALLOW rule applies.
