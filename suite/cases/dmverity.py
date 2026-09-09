@@ -1410,6 +1410,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW matching dmverity_roothash.
+                # Input: identical executable ELF bytes on tmpfs, with no root-hash property.
+                # Match: the property is absent -> no ALLOW match -> default DENY.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"dmverity_roothash_{algorithm}_plain_denied"
+                        ),
+                        policy=execute_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
