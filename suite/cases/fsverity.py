@@ -200,6 +200,16 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: POLICY default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: identical policy text without fs-verity or a built-in signature.
+                # Match: TRUE does not match -> default DENY.
+                policy_op.read_case(
+                    id="policy_op_kernel_read_ipe_test_policy_op_fsverity_signature_true_plain_denied",
+                    policy=POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.FSVERITY_PLAIN_POLICY_OP_TEST_BINARY,
+                    expected_errno=errno.EACCES,
+                    expected_content=b"",
+                ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: CPIO with fs-verity enabled and a built-in signature over its digest;
                 #        the fixed kernel remains permitted under KEXEC_IMAGE.
@@ -1248,6 +1258,11 @@ def build() -> tuple[Batch, ...]:
                         algorithm=algorithm,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.POLICY_OP_TEST_BINARY,
+                    target=layout.guest.FSVERITY_PLAIN_POLICY_OP_TEST_BINARY,
                 ),
             ),
             extra_scopes=(

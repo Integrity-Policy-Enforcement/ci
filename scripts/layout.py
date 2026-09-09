@@ -459,6 +459,9 @@ class guest:
         )
 
     FSVERITY_POLICY_OP_DIR = PAYLOAD_DIR / "fsverity-policy-op"
+    FSVERITY_PLAIN_POLICY_OP_TEST_BINARY = (
+        FSVERITY_POLICY_OP_DIR / f"plain-{test_media.POLICY_OP_TEST_BINARY.name}"
+    )
 
     @staticmethod
     def fsverity_policy_op_test_binary(algorithm: str, signed: bool) -> Path:
