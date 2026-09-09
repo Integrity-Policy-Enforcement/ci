@@ -1599,6 +1599,20 @@ def build() -> tuple[Batch, ...]:
                     shared=False,
                     expected_errno=errno.EACCES,
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: ELF on dm-verity with a verified root-hash signature; shared R mapping.
+                # Match: PROT_EXEC is absent -> the hook skips EXECUTE evaluation -> ALLOW.
+                *(
+                    execute_mmap.mmap_case(
+                        id=f"execute_mmap_mmap_file_shared_r_dmverity_signature_true_trusted_ok_{algorithm}",
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_execute_test_binary(algorithm=algorithm, signed=True),
+                        protection=mmap.PROT_READ,
+                        shared=True,
+                        expected_errno=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
