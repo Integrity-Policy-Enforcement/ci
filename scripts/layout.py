@@ -549,6 +549,9 @@ class guest:
         )
 
     FSVERITY_EXECUTE_DIR = PAYLOAD_DIR / "fsverity-execute"
+    FSVERITY_PLAIN_EXECUTE_TEST_BINARY = (
+        FSVERITY_EXECUTE_DIR / f"plain-{test_media.EXECUTE_TEST_BINARY.name}"
+    )
 
     @staticmethod
     def fsverity_execute_test_binary(algorithm: str, signed: bool) -> Path:

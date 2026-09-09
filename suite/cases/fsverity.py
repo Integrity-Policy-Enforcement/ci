@@ -1442,6 +1442,16 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: identical executable ELF bytes with no fs-verity metadata.
+                # Match: no built-in signature -> no TRUE match -> default DENY.
+                execute.execve_case(
+                    id="execute_bprm_check_execve_fsverity_signature_true_plain_denied",
+                    policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.FSVERITY_PLAIN_EXECUTE_TEST_BINARY,
+                    expected_errno=errno.EACCES,
+                    expected_returncode=None,
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -1670,6 +1680,11 @@ def build() -> tuple[Batch, ...]:
                         algorithm=algorithm,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.EXECUTE_TEST_BINARY,
+                    target=layout.guest.FSVERITY_PLAIN_EXECUTE_TEST_BINARY,
                 ),
             ),
             extra_scopes=(
