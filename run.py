@@ -50,6 +50,9 @@ def main(argv: list[str] | None = None) -> int:
     step("Prepare the KEXEC test image")
     run_checked([PYTHON, SCRIPTS / "build-kexec-assets.py"])
 
+    step("Prepare the EXECUTE test binary")
+    run_checked([PYTHON, SCRIPTS / "build-execute-assets.py"])
+
     step("Prepare the dm-verity image")
     run_checked([PYTHON, SCRIPTS / "build-dmverity-image.py"])
 

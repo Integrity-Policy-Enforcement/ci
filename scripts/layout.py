@@ -166,6 +166,8 @@ class test_media:
     POLICY_OP_TEST_BINARY = POLICY_OP_DIR / "ipe_test.policy"
     X509_DIR = Path("x509")
     X509_TEST_BINARY = X509_DIR / "ipe_test.der"
+    EXECUTE_DIR = Path("execute")
+    EXECUTE_TEST_BINARY = EXECUTE_DIR / "target"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
@@ -189,6 +191,7 @@ class source:
     FIRMWARE_TEST_BINARY = TEST_MEDIA_DIR / test_media.FIRMWARE_TEST_BINARY
     POLICY_OP_TEST_BINARY = TEST_MEDIA_DIR / test_media.POLICY_OP_TEST_BINARY
     KERNEL_MODULES_DIR = ROOT_DIR / "kernel-modules"
+    EXECUTE_TARGET_SOURCE = ROOT_DIR / "test-programs" / "execute-target.c"
     KERNEL_CONFIG = ROOT_DIR / "config" / "ipe-tests.config"
     BOOT_POLICY = ROOT_DIR / "config" / "boot-policy.pol"
 
@@ -215,6 +218,8 @@ class build:
     KMODULE_TEST_BINARY = ROOT_DIR / test_media.KMODULE_TEST_BINARY
     POLICY_OP_TEST_MODULE = ROOT_DIR / test_media.POLICY_OP_TEST_MODULE
     X509_TEST_MODULE = ROOT_DIR / test_media.X509_TEST_MODULE
+
+    EXECUTE_TEST_BINARY = ROOT_DIR / test_media.EXECUTE_TEST_BINARY
 
     KEXEC_ASSETS_DIR = ROOT_DIR / test_media.KEXEC_DIR
     KEXEC_IMAGE_TEST_BINARY = ROOT_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
@@ -375,6 +380,7 @@ class guest:
     FIRMWARE_TEST_BINARY = PAYLOAD_DIR / test_media.FIRMWARE_TEST_BINARY
     POLICY_OP_TEST_BINARY = PAYLOAD_DIR / test_media.POLICY_OP_TEST_BINARY
     X509_TEST_BINARY = PAYLOAD_DIR / test_media.X509_TEST_BINARY
+    EXECUTE_TEST_BINARY = PAYLOAD_DIR / test_media.EXECUTE_TEST_BINARY
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
     POLICY_OP_TEST_MODULE = PAYLOAD_DIR / test_media.POLICY_OP_TEST_MODULE
@@ -623,6 +629,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
             / test_media.X509_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_execute_test_binary(algorithm: str, signed: bool) -> Path:
+        """The static ELF on a mounted dm-verity filesystem."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.EXECUTE_TEST_BINARY
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"

@@ -88,12 +88,14 @@ def main() -> int:
         firmware_target = content_dir / layout.test_media.FIRMWARE_TEST_BINARY
         policy_op_target = content_dir / layout.test_media.POLICY_OP_TEST_BINARY
         x509_target = content_dir / layout.test_media.X509_TEST_BINARY
+        execute_target = content_dir / layout.test_media.EXECUTE_TEST_BINARY
         kexec_target = content_dir / layout.test_media.KEXEC_IMAGE_TEST_BINARY
         initramfs_target = content_dir / layout.test_media.KEXEC_INITRAMFS_TEST_BINARY
         kmodule_target.parent.mkdir(parents=True)
         firmware_target.parent.mkdir(parents=True)
         policy_op_target.parent.mkdir(parents=True)
         x509_target.parent.mkdir(parents=True)
+        execute_target.parent.mkdir(parents=True)
         kexec_target.parent.mkdir(parents=True)
         shutil.copy(layout.build.KMODULE_TEST_BINARY, kmodule_target)
         compressed_kmodule_target.write_bytes(
@@ -102,6 +104,7 @@ def main() -> int:
         shutil.copy(layout.source.FIRMWARE_TEST_BINARY, firmware_target)
         shutil.copy(layout.source.POLICY_OP_TEST_BINARY, policy_op_target)
         shutil.copy(layout.build.X509_TEST_BINARY, x509_target)
+        shutil.copy(layout.build.EXECUTE_TEST_BINARY, execute_target)
         shutil.copy(layout.build.KEXEC_IMAGE_TEST_BINARY, kexec_target)
         shutil.copy(layout.build.KEXEC_INITRAMFS_TEST_BINARY, initramfs_target)
         build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)

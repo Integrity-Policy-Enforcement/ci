@@ -11,6 +11,7 @@ import layout
 import modules
 import mounts
 from assets import (
+    EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KEXEC_IMAGE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
@@ -33,7 +34,7 @@ from assets import (
 from command import run
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule, policy_op, x509
+from . import execute, firmware, kexec, kmodule, policy_op, x509
 
 # Signed/unsigned refers to the mapping's root-hash signature, not an
 # embedded module signature or a signature attached to an input file.
@@ -108,6 +109,24 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: a static ELF on dm-verity with a verified root-hash signature.
+                # Match: TRUE matches -> ALLOW; exec succeeds and the program exits zero.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: X509_CERT default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: DER file on dm-verity with a trusted root-hash signature.
                 # Match: the mapping's TRUE signature -> ALLOW; retain bytes, import no key.
