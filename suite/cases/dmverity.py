@@ -1341,6 +1341,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default ALLOW; DENY dmverity_signature=FALSE.
+                # Input: the same static ELF on dm-verity without a root-hash signature.
+                # Match: FALSE matches -> explicit DENY; no program exit status exists.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"dmverity_signature_false_{algorithm}_unsigned_denied"
+                        ),
+                        policy=EXECUTE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.dmverity_execute_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
