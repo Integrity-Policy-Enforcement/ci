@@ -137,6 +137,18 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_INITRAMFS default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: the same CPIO on plain tmpfs, with no dm-verity mapping;
+                #        the fixed kernel remains permitted under KEXEC_IMAGE.
+                # Match: no mapping signature -> no TRUE match -> default DENY.
+                kexec.initramfs_load_case(
+                    id="kexec_initramfs_kernel_read_kexec_file_load_dmverity_signature_true_plain_denied",
+                    policy=KEXEC_INITRAMFS_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    kernel=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                    binary=layout.guest.PLAIN_KEXEC_INITRAMFS_TEST_BINARY,
+                    expected_errno=errno.EACCES,
+                    expected_loaded=False,
+                ),
                 # Policy: KEXEC_IMAGE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: the real kernel image on signed dm-verity, passed by original fd.
                 # Match: TRUE matches -> ALLOW; stage the image, then unload without executing.
@@ -789,6 +801,11 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.KEXEC_IMAGE_TEST_BINARY,
                     target=layout.guest.PLAIN_KEXEC_IMAGE_TEST_BINARY,
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.KEXEC_INITRAMFS_TEST_BINARY,
+                    target=layout.guest.PLAIN_KEXEC_INITRAMFS_TEST_BINARY,
                 ),
             ),
             extra_scopes=(
