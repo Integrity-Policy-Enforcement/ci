@@ -649,6 +649,9 @@ class initrd:
     X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
         TESTS_DIR / "x509-cert-boot-verified-true.p7s"
     )
+    X509_CERT_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE = (
+        TESTS_DIR / "x509-cert-boot-verified-false.p7s"
+    )
     POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE = (
         TESTS_DIR / "policy-op-boot-verified-true.p7s"
     )
