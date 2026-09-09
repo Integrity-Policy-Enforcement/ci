@@ -1540,6 +1540,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW matching fsverity_digest.
+                # Input: identical executable ELF bytes with fs-verity disabled.
+                # Match: no digest property -> default DENY, not a digest mismatch.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"fsverity_digest_{algorithm}_plain_denied"
+                        ),
+                        policy=execute_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.FSVERITY_PLAIN_EXECUTE_TEST_BINARY,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
