@@ -1751,6 +1751,17 @@ def build() -> tuple[Batch, ...]:
                     shared=True,
                     expected_errno=0,
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: anonymous memory with no trusted file provenance; shared X mapping.
+                # Match: the required file property is absent -> no ALLOW match -> default DENY.
+                execute_mmap.mmap_case(
+                    id="execute_mmap_mmap_anon_shared_x_dmverity_signature_true_anonymous_denied",
+                    policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=None,
+                    protection=mmap.PROT_EXEC,
+                    shared=True,
+                    expected_errno=errno.EACCES,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
