@@ -28,8 +28,10 @@ def main() -> int:
     with (
         mounts.mounted_scope(directory=layout.initrd.BOOT_TMPFS_DIR),
         modules.loaded_scope(prefix=layout.initrd.POLICY_OP_TEST_MODULE.stem),
+        modules.loaded_scope(prefix=layout.initrd.X509_TEST_MODULE.stem),
     ):
         run("insmod", layout.initrd.POLICY_OP_TEST_MODULE)
+        run("insmod", layout.initrd.X509_TEST_MODULE)
         mounts.tmpfs(layout.initrd.BOOT_TMPFS_DIR)
         shutil.copy(
             layout.initrd.KMODULE_TEST_BINARY,

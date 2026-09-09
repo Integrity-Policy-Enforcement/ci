@@ -18,7 +18,7 @@ import ipe
 import layout
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule, policy_op
+from . import firmware, kexec, kmodule, policy_op, x509
 
 KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
@@ -60,6 +60,10 @@ POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_policy_op_boot_verified_true",
 )
+X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
+    signed=layout.initrd.X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
+    name="ipe_test_x509_cert_boot_verified_true",
+)
 INITRAMFS_KMODULE_TEST_BINARY = layout.initrd.KMODULE_TEST_BINARY
 TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 
@@ -67,6 +71,16 @@ TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 # These rules test initramfs provenance, not dm/fs-verity or module signatures.
 # Tmpfs cases use byte-for-byte copies of their initramfs inputs.
 INITRAMFS_CASES = (
+    # Policy: X509_CERT default DENY; ALLOW boot_verified=TRUE.
+    # Input: the original DER certificate file from the verified boot initramfs.
+    # Match: boot_verified is TRUE -> ALLOW; read the DER bytes without importing a key.
+    x509.read_case(
+        id="x509_cert_kernel_read_ipe_test_x509_boot_verified_true_initramfs_ok",
+        policy=X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=layout.initrd.X509_TEST_BINARY,
+        expected_errno=0,
+        expected_content=layout.initrd.X509_TEST_BINARY,
+    ),
     # Policy: POLICY default DENY; ALLOW boot_verified=TRUE.
     # Input: the original policy text file from the verified boot initramfs.
     # Match: its boot_verified property is TRUE -> ALLOW; retain the exact bytes.
