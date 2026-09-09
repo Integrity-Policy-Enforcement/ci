@@ -9,6 +9,7 @@ import ipe
 import layout
 import modules
 from assets import (
+    EXECUTE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -1451,6 +1452,24 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_EXECUTE_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_returncode=None,
+                ),
+                # Policy: EXECUTE default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: a static ELF with a verified built-in fs-verity digest signature.
+                # Match: FALSE does not match -> default ALLOW; the program exits zero.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"fsverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=EXECUTE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
