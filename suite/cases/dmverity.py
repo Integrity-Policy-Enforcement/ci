@@ -267,6 +267,28 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_INITRAMFS default DENY; ALLOW a different dmverity_roothash.
+                # Input: CPIO on signed dm-verity whose root hash differs from the rule;
+                #        the fixed kernel remains permitted under KEXEC_IMAGE.
+                # Match: root-hash mismatch -> default DENY despite the valid signature.
+                *(
+                    kexec.initramfs_load_case(
+                        id=(
+                            "kexec_initramfs_kernel_read_kexec_file_load_"
+                            f"dmverity_roothash_{algorithm}_mismatch_denied"
+                        ),
+                        policy=kexec_initramfs_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=False
+                        ),
+                        kernel=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                        binary=layout.guest.dmverity_kexec_initramfs_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_IMAGE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: the real kernel image on signed dm-verity, passed by original fd.
                 # Match: TRUE matches -> ALLOW; stage the image, then unload without executing.
