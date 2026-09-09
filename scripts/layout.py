@@ -505,6 +505,9 @@ class guest:
         )
 
     FSVERITY_X509_DIR = PAYLOAD_DIR / "fsverity-x509"
+    FSVERITY_PLAIN_X509_TEST_BINARY = (
+        FSVERITY_X509_DIR / f"plain-{test_media.X509_TEST_BINARY.name}"
+    )
 
     @staticmethod
     def fsverity_x509_test_binary(algorithm: str, signed: bool) -> Path:
