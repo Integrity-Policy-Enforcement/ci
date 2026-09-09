@@ -57,6 +57,10 @@ def main() -> int:
             layout.initrd.X509_TEST_BINARY,
             layout.initrd.BOOT_TMPFS_X509_TEST_BINARY,
         )
+        shutil.copy(
+            layout.initrd.EXECUTE_TEST_BINARY,
+            layout.initrd.BOOT_TMPFS_EXECUTE_TEST_BINARY,
+        )
         outcomes = {case.id: runner.test(case=case) for case in INITRAMFS_CASES}
 
     layout.initrd.BOOT_VERIFIED_RECORD.write_text(json.dumps(outcomes) + "\n")
