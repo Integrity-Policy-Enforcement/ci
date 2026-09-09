@@ -1787,6 +1787,20 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching dmverity_roothash.
+                # Input: identical ELF bytes without the required file property; private R mapping.
+                # Match: PROT_EXEC is absent -> the hook skips EXECUTE evaluation -> ALLOW.
+                *(
+                    execute_mmap.mmap_case(
+                        id=f"execute_mmap_mmap_file_private_r_dmverity_roothash_plain_ok_{algorithm}",
+                        policy=execute_dmverity_roothash_policy(algorithm=algorithm, matching=True),
+                        binary=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
+                        protection=mmap.PROT_READ,
+                        shared=False,
+                        expected_errno=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
