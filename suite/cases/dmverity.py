@@ -11,6 +11,7 @@ import layout
 import modules
 import mounts
 from assets import (
+    EXECUTE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -1321,6 +1322,24 @@ def build() -> tuple[Batch, ...]:
                     ),
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
+                ),
+                # Policy: EXECUTE default ALLOW; DENY dmverity_signature=FALSE.
+                # Input: a static ELF on dm-verity with a verified root-hash signature.
+                # Match: FALSE does not match -> default ALLOW; the program exits zero.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"dmverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=EXECUTE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.dmverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
             ),
             setup=(
