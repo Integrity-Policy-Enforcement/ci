@@ -164,6 +164,19 @@ KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
 )
 
 
+def policy_op_dmverity_roothash_policy(
+    algorithm: str,
+    matching: bool,
+) -> ipe.Policy:
+    """A POLICY rule naming a root hash, or a value no device has."""
+    kind = "" if matching else "mismatch_"
+    return policy(
+        asset=f"dmverity/roothash/{algorithm}/policy_op_{kind}allow",
+        name=f"ipe_test_dmverity_policy_op_roothash_{algorithm}"
+        + ("" if matching else "_mismatch"),
+    )
+
+
 def firmware_dmverity_roothash_policy(
     algorithm: str,
     matching: bool,
