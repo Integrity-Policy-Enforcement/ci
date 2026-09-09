@@ -195,6 +195,18 @@ INITRAMFS_CASES = (
         expected_errno=0,
         expected_loaded=True,
     ),
+    # Policy: KEXEC_INITRAMFS default ALLOW; DENY boot_verified=FALSE.
+    # Input: the CPIO copy on a separate tmpfs, not the verified boot filesystem;
+    #        the fixed kernel remains permitted under KEXEC_IMAGE.
+    # Match: the copy's boot_verified is FALSE -> explicit DENY.
+    kexec.initramfs_load_case(
+        id="kexec_initramfs_kernel_read_kexec_file_load_boot_verified_false_tmpfs_denied",
+        policy=KEXEC_INITRAMFS_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        kernel=layout.initrd.KEXEC_IMAGE_TEST_BINARY,
+        binary=layout.initrd.BOOT_TMPFS_KEXEC_INITRAMFS_TEST_BINARY,
+        expected_errno=errno.EACCES,
+        expected_loaded=False,
+    ),
     # Policy: KEXEC_IMAGE default DENY; ALLOW boot_verified=TRUE.
     # Input: the real kernel image from the verified boot filesystem.
     # Match: TRUE matches -> ALLOW; check staging and unload without executing.
