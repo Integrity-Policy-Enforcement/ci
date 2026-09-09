@@ -9,6 +9,7 @@ import ipe
 import layout
 import modules
 from assets import (
+    EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KEXEC_IMAGE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
@@ -31,7 +32,7 @@ from assets import (
 from command import run
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule, policy_op, x509
+from . import execute, firmware, kexec, kmodule, policy_op, x509
 
 # Here "signed" means fs-verity's built-in signature, not module signing.
 # For DER inputs it is not the certificate issuer signature.
@@ -1405,9 +1406,27 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_loaded=False,
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: a static ELF with a verified built-in fs-verity digest signature.
+                # Match: TRUE matches -> ALLOW; the program exits zero.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
-            # its selected policy and enables enforcement for the module load.
+            # its selected policy and enables enforcement for its operation.
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
                 partial(run, "insmod", layout.guest.POLICY_OP_TEST_MODULE),
@@ -1609,8 +1628,26 @@ def build() -> tuple[Batch, ...]:
                     source=layout.guest.X509_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_X509_TEST_BINARY,
                 ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.EXECUTE_TEST_BINARY,
+                        target=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_execute_signature(
+                            algorithm=algorithm
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             extra_scopes=(
+                partial(
+                    files.directory_scope,
+                    directory=layout.guest.FSVERITY_EXECUTE_DIR,
+                ),
                 partial(
                     files.directory_scope,
                     directory=layout.guest.FSVERITY_MODULES_DIR,

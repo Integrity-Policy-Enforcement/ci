@@ -361,6 +361,22 @@ class build:
             / _fsverity_digest_name(algorithm=algorithm, compressed=False)
         )
 
+    @staticmethod
+    def fsverity_execute_signature(algorithm: str) -> Path:
+        """The built-in fs-verity signature over the static ELF target."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    @staticmethod
+    def fsverity_execute_digest(algorithm: str) -> Path:
+        """The static ELF target's fs-verity digest."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR
+            / _fsverity_digest_name(algorithm=algorithm, compressed=False)
+        )
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -522,6 +538,25 @@ class guest:
         return (
             guest.FSVERITY_X509_DIR
             / f"{state}-{algorithm}-{test_media.X509_TEST_BINARY.name}"
+        )
+
+    @staticmethod
+    def fsverity_execute_signature(algorithm: str) -> Path:
+        """The guest signature path for the static ELF digest."""
+        return (
+            guest.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    FSVERITY_EXECUTE_DIR = PAYLOAD_DIR / "fsverity-execute"
+
+    @staticmethod
+    def fsverity_execute_test_binary(algorithm: str, signed: bool) -> Path:
+        """The static ELF with signed or unsigned fs-verity enabled."""
+        state = "signed" if signed else "unsigned"
+        return (
+            guest.FSVERITY_EXECUTE_DIR
+            / f"{state}-{algorithm}-{test_media.EXECUTE_TEST_BINARY.name}"
         )
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"
