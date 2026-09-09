@@ -89,6 +89,10 @@ X509_CERT_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     name="ipe_test_dmverity_x509_cert_signature_true",
 )
 
+X509_CERT_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
+    asset="fsverity/x509_cert_signature_false_deny",
+    name="ipe_test_fsverity_x509_cert_signature_false",
+)
 X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     asset="fsverity/x509_cert_signature_true_allow",
     name="ipe_test_fsverity_x509_cert_signature_true",

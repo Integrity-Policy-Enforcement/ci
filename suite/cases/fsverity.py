@@ -19,6 +19,7 @@ from assets import (
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    X509_CERT_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_fsverity_digest_policy,
     kexec_image_fsverity_digest_policy,
@@ -213,6 +214,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_X509_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_content=b"",
+                ),
+                # Policy: X509_CERT default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: DER file with a verified built-in signature over its fs-verity digest.
+                # Match: FALSE does not match -> default ALLOW; retain the exact DER bytes.
+                *(
+                    x509.read_case(
+                        id=(
+                            "x509_cert_kernel_read_ipe_test_x509_"
+                            f"fsverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=X509_CERT_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.fsverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.fsverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 # Policy: POLICY default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: policy text with fs-verity and a built-in signature over its digest.
