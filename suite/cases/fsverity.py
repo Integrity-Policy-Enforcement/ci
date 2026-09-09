@@ -1754,6 +1754,20 @@ def build() -> tuple[Batch, ...]:
                     shared=True,
                     expected_errno=0,
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: ELF with a verified built-in signature over its fs-verity digest; shared X mapping.
+                # Match: the file-property rule matches -> ALLOW.
+                *(
+                    execute_mmap.mmap_case(
+                        id=f"execute_mmap_mmap_file_shared_x_fsverity_signature_true_trusted_ok_{algorithm}",
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(algorithm=algorithm, signed=True),
+                        protection=mmap.PROT_EXEC,
+                        shared=True,
+                        expected_errno=0,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
