@@ -269,6 +269,19 @@ def kmodule_dmverity_roothash_policy(
     )
 
 
+def x509_cert_fsverity_digest_policy(
+    algorithm: str,
+    matching: bool,
+) -> ipe.Policy:
+    """An X509_CERT rule naming its digest, or a value no test file has."""
+    kind = "" if matching else "mismatch_"
+    return policy(
+        asset=f"fsverity/x509_cert_digest_{algorithm}_{kind}allow",
+        name=f"ipe_test_fsverity_x509_cert_digest_{algorithm}"
+        + ("" if matching else "_mismatch"),
+    )
+
+
 def policy_op_fsverity_digest_policy(
     algorithm: str,
     matching: bool,

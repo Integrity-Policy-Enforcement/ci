@@ -26,6 +26,7 @@ from assets import (
     kexec_initramfs_fsverity_digest_policy,
     kmodule_fsverity_digest_policy,
     policy_op_fsverity_digest_policy,
+    x509_cert_fsverity_digest_policy,
 )
 from command import run
 from model import Batch, Case
@@ -262,6 +263,28 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_X509_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_content=b"",
+                ),
+                # Policy: X509_CERT default DENY; ALLOW matching fsverity_digest.
+                # Input: a signed fs-verity DER file whose own digest matches the rule.
+                # Match: digest rule -> ALLOW; a built-in file signature is not required.
+                *(
+                    x509.read_case(
+                        id=(
+                            "x509_cert_kernel_read_ipe_test_x509_"
+                            f"fsverity_digest_{algorithm}_signed_ok"
+                        ),
+                        policy=x509_cert_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.fsverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.fsverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 # Policy: POLICY default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: policy text with fs-verity and a built-in signature over its digest.

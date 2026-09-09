@@ -145,6 +145,11 @@ def measurements() -> dict[str, str]:
         upper = algorithm.upper()
         table[f"@FSVERITY_POLICY_OP_DIGEST_{upper}@"] = f"{algorithm}:{digest}"
         table[f"@FSVERITY_POLICY_OP_OTHER_DIGEST_{upper}@"] = f"{algorithm}:{shift(digest)}"
+    for algorithm in hashes.FSVERITY_ALGORITHMS:
+        digest = layout.build.fsverity_x509_digest(algorithm=algorithm).read_text().strip()
+        upper = algorithm.upper()
+        table[f"@FSVERITY_X509_CERT_DIGEST_{upper}@"] = f"{algorithm}:{digest}"
+        table[f"@FSVERITY_X509_CERT_OTHER_DIGEST_{upper}@"] = f"{algorithm}:{shift(digest)}"
     return table
 
 

@@ -1,0 +1,4 @@
+policy_name=ipe_test_fsverity_x509_cert_digest_sha256 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=X509_CERT action=DENY
+op=X509_CERT fsverity_digest=@FSVERITY_X509_CERT_DIGEST_SHA256@ action=ALLOW
