@@ -2039,6 +2039,20 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching dmverity_roothash.
+                # Input: anonymous memory with no trusted file provenance; private W mapping.
+                # Match: PROT_EXEC is absent -> the hook skips EXECUTE evaluation -> ALLOW.
+                *(
+                    execute_mmap.mmap_case(
+                        id=f"execute_mmap_mmap_anon_private_w_dmverity_roothash_anonymous_ok_{algorithm}",
+                        policy=execute_dmverity_roothash_policy(algorithm=algorithm, matching=True),
+                        binary=None,
+                        protection=mmap.PROT_WRITE,
+                        shared=False,
+                        expected_errno=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
