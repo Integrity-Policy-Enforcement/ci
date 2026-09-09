@@ -5,6 +5,7 @@
     build/kernel-modules/
         ipe_test.ko           the inert KMODULE policy target
         ipe_test_policy_op.ko    reads a file as POLICY without applying it
+        ipe_test_x509.ko      reads a file as X509_CERT without importing it
 """
 
 import os
@@ -30,7 +31,11 @@ def main() -> int:
         check=True,
         stdout=subprocess.DEVNULL,
     )
-    for binary in (layout.build.KMODULE_TEST_BINARY, layout.build.POLICY_OP_TEST_MODULE):
+    for binary in (
+        layout.build.KMODULE_TEST_BINARY,
+        layout.build.POLICY_OP_TEST_MODULE,
+        layout.build.X509_TEST_MODULE,
+    ):
         if not binary.is_file():
             raise SystemExit(f"the test module was not produced: {binary}")
         print(f"    Prepared {binary.name}")

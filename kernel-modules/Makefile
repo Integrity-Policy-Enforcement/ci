@@ -2,3 +2,4 @@
 
 obj-m += ipe_test.o
 obj-m += ipe_test_policy_op.o
+obj-m += ipe_test_x509.o

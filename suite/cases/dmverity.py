@@ -21,6 +21,7 @@ from assets import (
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     POLICY_OP_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    X509_CERT_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_dmverity_roothash_policy,
     kexec_image_dmverity_roothash_policy,
     kexec_initramfs_dmverity_roothash_policy,
@@ -30,10 +31,11 @@ from assets import (
 from command import run
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule, policy_op
+from . import firmware, kexec, kmodule, policy_op, x509
 
 # Signed/unsigned refers to the mapping's root-hash signature, not an
 # embedded module signature or a signature attached to an input file.
+# It also does not refer to the issuer signature inside an X.509 certificate.
 
 # dm-verity mappings under this prefix are reserved for batch cleanup.
 DMVERITY_DEVICE_PREFIX = "ipe-dmverity-"
@@ -104,6 +106,26 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
+                # Policy: X509_CERT default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: DER file on dm-verity with a trusted root-hash signature.
+                # Match: the mapping's TRUE signature -> ALLOW; retain bytes, import no key.
+                *(
+                    x509.read_case(
+                        id=(
+                            "x509_cert_kernel_read_ipe_test_x509_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=X509_CERT_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.dmverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: POLICY default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: policy text on dm-verity with a trusted root-hash signature;
                 #        the test module reads the original fd without applying the text.
@@ -1097,6 +1119,7 @@ def build() -> tuple[Batch, ...]:
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
                 partial(run, "insmod", layout.guest.POLICY_OP_TEST_MODULE),
+                partial(run, "insmod", layout.guest.X509_TEST_MODULE),
                 *(
                     partial(
                         mounts.dmverity,
@@ -1151,6 +1174,10 @@ def build() -> tuple[Batch, ...]:
                 partial(
                     modules.loaded_scope,
                     prefix=layout.guest.POLICY_OP_TEST_MODULE.stem,
+                ),
+                partial(
+                    modules.loaded_scope,
+                    prefix=layout.guest.X509_TEST_MODULE.stem,
                 ),
             ),
         ),
