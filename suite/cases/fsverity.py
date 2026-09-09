@@ -235,6 +235,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: X509_CERT default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: DER file with fs-verity enabled but no built-in fs-verity signature.
+                # Match: FALSE matches -> explicit DENY, not default ALLOW.
+                *(
+                    x509.read_case(
+                        id=(
+                            "x509_cert_kernel_read_ipe_test_x509_"
+                            f"fsverity_signature_false_{algorithm}_unsigned_denied"
+                        ),
+                        policy=X509_CERT_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.fsverity_x509_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_content=b"",
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: POLICY default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: policy text with fs-verity and a built-in signature over its digest.
                 # Match: the file's verified signature is TRUE -> ALLOW; retain exact bytes.
