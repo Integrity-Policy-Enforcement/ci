@@ -182,6 +182,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: POLICY default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: policy text with fs-verity enabled but no built-in digest signature.
+                # Match: TRUE does not match -> default DENY; retained contents must be empty.
+                *(
+                    policy_op.read_case(
+                        id=(
+                            "policy_op_kernel_read_ipe_test_policy_op_"
+                            f"fsverity_signature_true_{algorithm}_unsigned_denied"
+                        ),
+                        policy=POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_content=b"",
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: CPIO with fs-verity enabled and a built-in signature over its digest;
                 #        the fixed kernel remains permitted under KEXEC_IMAGE.
@@ -1217,6 +1235,17 @@ def build() -> tuple[Batch, ...]:
                         signature=layout.guest.fsverity_policy_op_signature(
                             algorithm=algorithm
                         ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.POLICY_OP_TEST_BINARY,
+                        target=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        algorithm=algorithm,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
