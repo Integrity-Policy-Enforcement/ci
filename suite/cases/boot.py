@@ -52,6 +52,10 @@ KEXEC_INITRAMFS_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KEXEC_INITRAMFS_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_kexec_initramfs_boot_verified_true",
 )
+POLICY_OP_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
+    signed=layout.initrd.POLICY_OP_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE,
+    name="ipe_test_policy_op_boot_verified_false",
+)
 POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_policy_op_boot_verified_true",
@@ -82,6 +86,16 @@ INITRAMFS_CASES = (
         binary=layout.initrd.BOOT_TMPFS_POLICY_OP_TEST_BINARY,
         expected_errno=errno.EACCES,
         expected_content=b"",
+    ),
+    # Policy: POLICY default ALLOW; DENY boot_verified=FALSE.
+    # Input: the original policy text from the verified boot initramfs.
+    # Match: boot_verified is TRUE -> FALSE does not match -> default ALLOW.
+    policy_op.read_case(
+        id="policy_op_kernel_read_ipe_test_policy_op_boot_verified_false_initramfs_ok",
+        policy=POLICY_OP_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=layout.initrd.POLICY_OP_TEST_BINARY,
+        expected_errno=0,
+        expected_content=layout.initrd.POLICY_OP_TEST_BINARY,
     ),
     # Policy: KMODULE default DENY; ALLOW boot_verified=TRUE.
     # Input: the original initramfs .ko, whose file context has boot_verified=TRUE.
