@@ -7,6 +7,7 @@ import files
 import hashes
 import ipe
 import layout
+import modules
 from assets import (
     FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -16,14 +17,16 @@ from assets import (
     KEXEC_INITRAMFS_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_fsverity_digest_policy,
     kexec_image_fsverity_digest_policy,
     kexec_initramfs_fsverity_digest_policy,
     kmodule_fsverity_digest_policy,
 )
+from command import run
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule
+from . import firmware, kexec, kmodule, policy_op
 
 # Here "signed" means fs-verity's built-in signature, not module signing.
 # Signed and unsigned files both have fs-verity enabled; plain files do not.
@@ -159,6 +162,26 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="fsverity",
             cases=(
+                # Policy: POLICY default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: policy text with fs-verity and a built-in signature over its digest.
+                # Match: the file's verified signature is TRUE -> ALLOW; retain exact bytes.
+                *(
+                    policy_op.read_case(
+                        id=(
+                            "policy_op_kernel_read_ipe_test_policy_op_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: CPIO with fs-verity enabled and a built-in signature over its digest;
                 #        the fixed kernel remains permitted under KEXEC_IMAGE.
@@ -1045,6 +1068,7 @@ def build() -> tuple[Batch, ...]:
             # its selected policy and enables enforcement for the module load.
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
+                partial(run, "insmod", layout.guest.POLICY_OP_TEST_MODULE),
                 *(
                     partial(
                         files.prepare_fsverity_test_binary,
@@ -1182,6 +1206,20 @@ def build() -> tuple[Batch, ...]:
                     source=layout.guest.KEXEC_INITRAMFS_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_KEXEC_INITRAMFS_TEST_BINARY,
                 ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.POLICY_OP_TEST_BINARY,
+                        target=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_policy_op_signature(
+                            algorithm=algorithm
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             extra_scopes=(
                 partial(
@@ -1195,6 +1233,14 @@ def build() -> tuple[Batch, ...]:
                 partial(
                     files.directory_scope,
                     directory=layout.guest.FSVERITY_KEXEC_IMAGES_DIR,
+                ),
+                partial(
+                    files.directory_scope,
+                    directory=layout.guest.FSVERITY_POLICY_OP_DIR,
+                ),
+                partial(
+                    modules.loaded_scope,
+                    prefix=layout.guest.POLICY_OP_TEST_MODULE.stem,
                 ),
             ),
         ),

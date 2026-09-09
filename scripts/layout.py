@@ -318,6 +318,22 @@ class build:
             / _fsverity_digest_name(algorithm=algorithm, compressed=False)
         )
 
+    @staticmethod
+    def fsverity_policy_op_signature(algorithm: str) -> Path:
+        """The fs-verity signature over the policy input digest."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.POLICY_OP_DIR
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    @staticmethod
+    def fsverity_policy_op_digest(algorithm: str) -> Path:
+        """The policy input digest made with this hash."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.POLICY_OP_DIR
+            / _fsverity_digest_name(algorithm=algorithm, compressed=False)
+        )
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -432,6 +448,25 @@ class guest:
         return (
             guest.FSVERITY_KEXEC_IMAGES_DIR
             / f"{state}-{algorithm}-{test_media.KEXEC_INITRAMFS_TEST_BINARY.name}"
+        )
+
+    @staticmethod
+    def fsverity_policy_op_signature(algorithm: str) -> Path:
+        """The guest signature path for the policy input digest."""
+        return (
+            guest.FSVERITY_ASSETS_DIR / test_media.POLICY_OP_DIR
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    FSVERITY_POLICY_OP_DIR = PAYLOAD_DIR / "fsverity-policy-op"
+
+    @staticmethod
+    def fsverity_policy_op_test_binary(algorithm: str, signed: bool) -> Path:
+        """The policy input with signed or unsigned fs-verity enabled."""
+        state = "signed" if signed else "unsigned"
+        return (
+            guest.FSVERITY_POLICY_OP_DIR
+            / f"{state}-{algorithm}-{test_media.POLICY_OP_TEST_BINARY.name}"
         )
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"

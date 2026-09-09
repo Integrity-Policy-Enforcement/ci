@@ -105,6 +105,14 @@ def main() -> int:
             digest_path=layout.build.fsverity_kexec_initramfs_digest(algorithm=algorithm),
         )
 
+    for algorithm in hashes.FSVERITY_ALGORITHMS:
+        prepare_input(
+            binary=layout.source.POLICY_OP_TEST_BINARY,
+            algorithm=algorithm,
+            signature_path=layout.build.fsverity_policy_op_signature(algorithm=algorithm),
+            digest_path=layout.build.fsverity_policy_op_digest(algorithm=algorithm),
+        )
+
     relative = layout.build.FSVERITY_ASSETS_DIR.relative_to(layout.source.ROOT_DIR)
     print(f"    Prepared the fs-verity signatures in {relative}")
     return 0

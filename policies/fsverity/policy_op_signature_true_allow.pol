@@ -1,0 +1,4 @@
+policy_name=ipe_test_fsverity_policy_op_signature_true policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=POLICY action=DENY
+op=POLICY fsverity_signature=TRUE action=ALLOW
