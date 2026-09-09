@@ -246,6 +246,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: POLICY default DENY; ALLOW matching dmverity_roothash.
+                # Input: identical policy text on plain tmpfs, with no device root hash.
+                # Match: no property -> no root-hash match -> default DENY.
+                *(
+                    policy_op.read_case(
+                        id=(
+                            "policy_op_kernel_read_ipe_test_policy_op_"
+                            f"dmverity_roothash_{algorithm}_plain_denied"
+                        ),
+                        policy=policy_op_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.PLAIN_POLICY_OP_TEST_BINARY,
+                        expected_errno=errno.EACCES,
+                        expected_content=b"",
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: CPIO on dm-verity with a trusted root-hash signature, by original fd;
                 #        the fixed kernel is on the payload and KEXEC_IMAGE is allowed.
