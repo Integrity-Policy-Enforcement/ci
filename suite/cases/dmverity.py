@@ -8,6 +8,7 @@ import files
 import hashes
 import ipe
 import layout
+import modules
 import mounts
 from assets import (
     FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
@@ -18,14 +19,16 @@ from assets import (
     KEXEC_INITRAMFS_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    POLICY_OP_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_dmverity_roothash_policy,
     kexec_image_dmverity_roothash_policy,
     kexec_initramfs_dmverity_roothash_policy,
     kmodule_dmverity_roothash_policy,
 )
+from command import run
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule
+from . import firmware, kexec, kmodule, policy_op
 
 # Signed/unsigned refers to the mapping's root-hash signature, not an
 # embedded module signature or a signature attached to an input file.
@@ -99,6 +102,27 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
+                # Policy: POLICY default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: policy text on dm-verity with a trusted root-hash signature;
+                #        the test module reads the original fd without applying the text.
+                # Match: the mapping's signature is TRUE -> ALLOW; retain the exact bytes.
+                *(
+                    policy_op.read_case(
+                        id=(
+                            "policy_op_kernel_read_ipe_test_policy_op_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=POLICY_OP_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.dmverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: CPIO on dm-verity with a trusted root-hash signature, by original fd;
                 #        the fixed kernel is on the payload and KEXEC_IMAGE is allowed.
@@ -911,6 +935,7 @@ def build() -> tuple[Batch, ...]:
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
+                partial(run, "insmod", layout.guest.POLICY_OP_TEST_MODULE),
                 *(
                     partial(
                         mounts.dmverity,
@@ -956,6 +981,10 @@ def build() -> tuple[Batch, ...]:
                 partial(
                     mounts.mounted_scope,
                     directory=layout.guest.MEDIA_DIR,
+                ),
+                partial(
+                    modules.loaded_scope,
+                    prefix=layout.guest.POLICY_OP_TEST_MODULE.stem,
                 ),
             ),
         ),

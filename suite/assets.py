@@ -80,6 +80,11 @@ TEXT_SPECIAL_NAME_POLICY = text_policy(
     asset="special_name_ok", name="ipe_test_text$-.+"
 )
 
+POLICY_OP_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
+    asset="dmverity/policy_op_signature_true_allow",
+    name="ipe_test_dmverity_policy_op_signature_true",
+)
+
 FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
     asset="dmverity/firmware_signature_false_deny",
     name="ipe_test_dmverity_firmware_signature_false",

@@ -47,6 +47,11 @@ def make_payload(output: Path) -> None:
             layout.source.FIRMWARE_TEST_BINARY,
             staging_path(layout.guest.FIRMWARE_TEST_BINARY),
         )
+        staging_path(layout.guest.POLICY_OP_TEST_BINARY).parent.mkdir()
+        shutil.copy(
+            layout.source.POLICY_OP_TEST_BINARY,
+            staging_path(layout.guest.POLICY_OP_TEST_BINARY),
+        )
         shutil.copytree(
             layout.build.POLICIES_DIR,
             staging_path(layout.guest.POLICIES_DIR),
@@ -59,6 +64,10 @@ def make_payload(output: Path) -> None:
         shutil.copy(
             layout.build.KMODULE_TEST_BINARY,
             staging_path(layout.guest.KMODULE_TEST_BINARY),
+        )
+        shutil.copy(
+            layout.build.POLICY_OP_TEST_MODULE,
+            staging_path(layout.guest.POLICY_OP_TEST_MODULE),
         )
         staging_path(layout.guest.KEXEC_IMAGE_TEST_BINARY).parent.mkdir()
         shutil.copy(

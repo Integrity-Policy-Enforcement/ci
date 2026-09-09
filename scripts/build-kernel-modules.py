@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Build the out-of-tree kernel modules used by the KMODULE cases.
+"""Build the out-of-tree IPE test modules against build/kernel.
 
     build/kernel-modules/
-        ipe_test.ko           built against build/kernel
-
-The ipe_test module does nothing; only whether the kernel accepts it matters.
+        ipe_test.ko           the inert KMODULE policy target
+        ipe_test_policy_op.ko    reads a file as POLICY without applying it
 """
 
 import os
@@ -31,9 +30,10 @@ def main() -> int:
         check=True,
         stdout=subprocess.DEVNULL,
     )
-    if not layout.build.KMODULE_TEST_BINARY.is_file():
-        raise SystemExit("the KMODULE test binary was not produced")
-    print(f"    Prepared {layout.build.KMODULE_TEST_BINARY.name}")
+    for binary in (layout.build.KMODULE_TEST_BINARY, layout.build.POLICY_OP_TEST_MODULE):
+        if not binary.is_file():
+            raise SystemExit(f"the test module was not produced: {binary}")
+        print(f"    Prepared {binary.name}")
     return 0
 
 

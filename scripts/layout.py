@@ -162,9 +162,12 @@ class test_media:
 
     FIRMWARE_DIR = Path("firmware")
     FIRMWARE_TEST_BINARY = FIRMWARE_DIR / _FIRMWARE_TEST_BINARY_NAME
+    POLICY_OP_DIR = Path("policy-op")
+    POLICY_OP_TEST_BINARY = POLICY_OP_DIR / "ipe_test.policy"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
+    POLICY_OP_TEST_MODULE = KERNEL_MODULES_DIR / "ipe_test_policy_op.ko"
     KEXEC_DIR = Path("kexec")
     KEXEC_IMAGE_TEST_BINARY = KEXEC_DIR / "ipe_test.kernel"
     KEXEC_INITRAMFS_TEST_BINARY = KEXEC_DIR / "ipe_test.cpio"
@@ -181,6 +184,7 @@ class source:
     POLICIES_DIR = ROOT_DIR / "policies"
     TEST_MEDIA_DIR = ROOT_DIR / "test-media"
     FIRMWARE_TEST_BINARY = TEST_MEDIA_DIR / test_media.FIRMWARE_TEST_BINARY
+    POLICY_OP_TEST_BINARY = TEST_MEDIA_DIR / test_media.POLICY_OP_TEST_BINARY
     KERNEL_MODULES_DIR = ROOT_DIR / "kernel-modules"
     KERNEL_CONFIG = ROOT_DIR / "config" / "ipe-tests.config"
     BOOT_POLICY = ROOT_DIR / "config" / "boot-policy.pol"
@@ -204,6 +208,7 @@ class build:
 
     KERNEL_MODULES_DIR = ROOT_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = ROOT_DIR / test_media.KMODULE_TEST_BINARY
+    POLICY_OP_TEST_MODULE = ROOT_DIR / test_media.POLICY_OP_TEST_MODULE
 
     KEXEC_ASSETS_DIR = ROOT_DIR / test_media.KEXEC_DIR
     KEXEC_IMAGE_TEST_BINARY = ROOT_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
@@ -330,8 +335,10 @@ class guest:
     HASHES_MODULE = PAYLOAD_DIR / "hashes.py"
     FIRMWARE_DIR = PAYLOAD_DIR / test_media.FIRMWARE_DIR
     FIRMWARE_TEST_BINARY = PAYLOAD_DIR / test_media.FIRMWARE_TEST_BINARY
+    POLICY_OP_TEST_BINARY = PAYLOAD_DIR / test_media.POLICY_OP_TEST_BINARY
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
+    POLICY_OP_TEST_MODULE = PAYLOAD_DIR / test_media.POLICY_OP_TEST_MODULE
     KEXEC_IMAGE_TEST_BINARY = PAYLOAD_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
     KEXEC_INITRAMFS_TEST_BINARY = PAYLOAD_DIR / test_media.KEXEC_INITRAMFS_TEST_BINARY
 
@@ -516,6 +523,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
             / test_media.KEXEC_INITRAMFS_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_policy_op_test_binary(algorithm: str, signed: bool) -> Path:
+        """The POLICY input on a mounted dm-verity filesystem."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.POLICY_OP_TEST_BINARY
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"
