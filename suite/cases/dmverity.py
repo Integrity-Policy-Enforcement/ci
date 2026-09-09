@@ -1359,6 +1359,16 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default ALLOW; DENY dmverity_signature=FALSE.
+                # Input: identical executable ELF bytes on plain tmpfs, without dm-verity.
+                # Match: absence counts as FALSE -> explicit DENY.
+                execute.execve_case(
+                    id="execute_bprm_check_execve_dmverity_signature_false_plain_denied",
+                    policy=EXECUTE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    binary=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
+                    expected_errno=errno.EACCES,
+                    expected_returncode=None,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
