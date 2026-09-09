@@ -127,6 +127,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: the same static ELF on dm-verity without a root-hash signature.
+                # Match: TRUE does not match -> default DENY; the program never starts.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"dmverity_signature_true_{algorithm}_unsigned_denied"
+                        ),
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_execute_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: X509_CERT default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: DER file on dm-verity with a trusted root-hash signature.
                 # Match: the mapping's TRUE signature -> ALLOW; retain bytes, import no key.
