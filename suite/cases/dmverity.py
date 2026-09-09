@@ -1997,6 +1997,20 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching dmverity_roothash.
+                # Input: ELF on matching dm-verity without a root-hash signature; shared RX mapping.
+                # Match: the file-property rule matches -> ALLOW.
+                *(
+                    execute_mmap.mmap_case(
+                        id=f"execute_mmap_mmap_file_shared_rx_dmverity_roothash_trusted_ok_{algorithm}",
+                        policy=execute_dmverity_roothash_policy(algorithm=algorithm, matching=True),
+                        binary=layout.guest.dmverity_execute_test_binary(algorithm=algorithm, signed=False),
+                        protection=mmap.PROT_READ | mmap.PROT_EXEC,
+                        shared=True,
+                        expected_errno=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
