@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import errno
+import mmap
 from functools import partial
 
 import files
@@ -34,7 +35,7 @@ from assets import (
 from command import run
 from model import Batch, Case
 
-from . import execute, firmware, kexec, kmodule, policy_op, x509
+from . import execute, execute_mmap, firmware, kexec, kmodule, policy_op, x509
 
 # Here "signed" means fs-verity's built-in signature, not module signing.
 # For DER inputs it is not the certificate issuer signature.
@@ -1575,6 +1576,20 @@ def build() -> tuple[Batch, ...]:
                         ),
                         expected_errno=errno.EACCES,
                         expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: ELF with a verified built-in signature over its fs-verity digest; private R mapping.
+                # Match: PROT_EXEC is absent -> the hook skips EXECUTE evaluation -> ALLOW.
+                *(
+                    execute_mmap.mmap_case(
+                        id=f"execute_mmap_mmap_file_private_r_fsverity_signature_true_trusted_ok_{algorithm}",
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(algorithm=algorithm, signed=True),
+                        protection=mmap.PROT_READ,
+                        shared=False,
+                        expected_errno=0,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
