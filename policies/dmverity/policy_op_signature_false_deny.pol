@@ -1,0 +1,3 @@
+policy_name=ipe_test_dmverity_policy_op_signature_false policy_version=0.0.1
+DEFAULT action=ALLOW
+op=POLICY dmverity_signature=FALSE action=DENY

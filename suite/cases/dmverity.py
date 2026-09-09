@@ -19,6 +19,7 @@ from assets import (
     KEXEC_INITRAMFS_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    POLICY_OP_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_dmverity_roothash_policy,
     kexec_image_dmverity_roothash_policy,
@@ -151,6 +152,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_POLICY_OP_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_content=b"",
+                ),
+                # Policy: POLICY default ALLOW; DENY dmverity_signature=FALSE.
+                # Input: policy text on dm-verity with a verified root-hash signature.
+                # Match: FALSE does not match -> default ALLOW; retain the exact bytes.
+                *(
+                    policy_op.read_case(
+                        id=(
+                            "policy_op_kernel_read_ipe_test_policy_op_"
+                            f"dmverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=POLICY_OP_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.dmverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.dmverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: CPIO on dm-verity with a trusted root-hash signature, by original fd;
