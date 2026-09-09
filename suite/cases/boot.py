@@ -18,7 +18,7 @@ import ipe
 import layout
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule, policy_op, x509
+from . import execute, firmware, kexec, kmodule, policy_op, x509
 
 KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
@@ -67,6 +67,10 @@ X509_CERT_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
 X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_x509_cert_boot_verified_true",
+)
+EXECUTE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
+    signed=layout.initrd.EXECUTE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
+    name="ipe_test_execute_boot_verified_true",
 )
 INITRAMFS_KMODULE_TEST_BINARY = layout.initrd.KMODULE_TEST_BINARY
 TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
@@ -362,6 +366,16 @@ INITRAMFS_CASES = (
         binary=layout.initrd.KEXEC_IMAGE_TEST_BINARY,
         expected_errno=errno.EACCES,
         expected_loaded=False,
+    ),
+    # Policy: EXECUTE default DENY; ALLOW boot_verified=TRUE.
+    # Input: the static ELF from the verified boot initramfs.
+    # Match: boot_verified is TRUE -> ALLOW; the program exits zero.
+    execute.execve_case(
+        id="execute_bprm_check_execve_boot_verified_true_initramfs_ok",
+        policy=EXECUTE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=layout.initrd.EXECUTE_TEST_BINARY,
+        expected_errno=0,
+        expected_returncode=0,
     ),
 )
 
