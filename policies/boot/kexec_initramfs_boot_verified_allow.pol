@@ -1,0 +1,7 @@
+policy_name=ipe_test_kexec_initramfs_boot_verified_true policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+op=EXECUTE boot_verified=TRUE action=ALLOW
+op=EXECUTE dmverity_signature=TRUE action=ALLOW
+DEFAULT op=KEXEC_INITRAMFS action=DENY
+op=KEXEC_INITRAMFS boot_verified=TRUE action=ALLOW

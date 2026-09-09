@@ -44,6 +44,10 @@ KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KEXEC_IMAGE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_kexec_image_boot_verified_true",
 )
+KEXEC_INITRAMFS_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
+    signed=layout.initrd.KEXEC_INITRAMFS_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
+    name="ipe_test_kexec_initramfs_boot_verified_true",
+)
 INITRAMFS_KMODULE_TEST_BINARY = layout.initrd.KMODULE_TEST_BINARY
 TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 
@@ -150,6 +154,18 @@ INITRAMFS_CASES = (
         binary=layout.initrd.BOOT_TMPFS_FIRMWARE_TEST_BINARY,
         expected_errno=errno.ENOENT,
         expected_content_match=False,
+    ),
+    # Policy: KEXEC_INITRAMFS default DENY; ALLOW boot_verified=TRUE.
+    # Input: the target CPIO file from the verified boot initramfs;
+    #        the fixed kernel remains permitted under KEXEC_IMAGE.
+    # Match: the CPIO file's boot_verified is TRUE -> ALLOW; stage then unload.
+    kexec.initramfs_load_case(
+        id="kexec_initramfs_kernel_read_kexec_file_load_boot_verified_true_initramfs_ok",
+        policy=KEXEC_INITRAMFS_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        kernel=layout.initrd.KEXEC_IMAGE_TEST_BINARY,
+        binary=layout.initrd.KEXEC_INITRAMFS_TEST_BINARY,
+        expected_errno=0,
+        expected_loaded=True,
     ),
     # Policy: KEXEC_IMAGE default DENY; ALLOW boot_verified=TRUE.
     # Input: the real kernel image from the verified boot filesystem.
