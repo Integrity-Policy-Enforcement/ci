@@ -193,6 +193,16 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: X509_CERT default ALLOW; DENY dmverity_signature=FALSE.
+                # Input: the same DER bytes on plain tmpfs, without dm-verity metadata.
+                # Match: absence counts as FALSE -> explicit DENY.
+                x509.read_case(
+                    id="x509_cert_kernel_read_ipe_test_x509_dmverity_signature_false_plain_denied",
+                    policy=X509_CERT_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                    binary=layout.guest.PLAIN_X509_TEST_BINARY,
+                    expected_errno=errno.EACCES,
+                    expected_content=b"",
+                ),
                 # Policy: POLICY default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: policy text on dm-verity with a trusted root-hash signature;
                 #        the test module reads the original fd without applying the text.
