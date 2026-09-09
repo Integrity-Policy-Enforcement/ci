@@ -177,6 +177,26 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_INITRAMFS default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: CPIO with fs-verity enabled but no built-in digest signature;
+                #        the fixed kernel remains permitted under KEXEC_IMAGE.
+                # Match: TRUE does not match -> default DENY; nothing is staged.
+                *(
+                    kexec.initramfs_load_case(
+                        id=(
+                            "kexec_initramfs_kernel_read_kexec_file_load_"
+                            f"fsverity_signature_true_{algorithm}_unsigned_denied"
+                        ),
+                        policy=KEXEC_INITRAMFS_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        kernel=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                        binary=layout.guest.fsverity_kexec_initramfs_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_IMAGE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: a real kernel image with a verified built-in fs-verity signature.
                 # Match: TRUE matches -> ALLOW; check staging before unloading.
@@ -991,6 +1011,17 @@ def build() -> tuple[Batch, ...]:
                         signature=layout.guest.fsverity_kexec_initramfs_signature(
                             algorithm=algorithm
                         ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.KEXEC_INITRAMFS_TEST_BINARY,
+                        target=layout.guest.fsverity_kexec_initramfs_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        algorithm=algorithm,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
