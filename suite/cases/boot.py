@@ -81,6 +81,16 @@ INITRAMFS_CASES = (
         expected_errno=0,
         expected_content=layout.initrd.X509_TEST_BINARY,
     ),
+    # Policy: X509_CERT default DENY; ALLOW boot_verified=TRUE.
+    # Input: identical DER bytes copied to a separate tmpfs, not the boot filesystem.
+    # Match: boot_verified is FALSE -> no TRUE match -> default DENY.
+    x509.read_case(
+        id="x509_cert_kernel_read_ipe_test_x509_boot_verified_true_tmpfs_denied",
+        policy=X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=layout.initrd.BOOT_TMPFS_X509_TEST_BINARY,
+        expected_errno=errno.EACCES,
+        expected_content=b"",
+    ),
     # Policy: POLICY default DENY; ALLOW boot_verified=TRUE.
     # Input: the original policy text file from the verified boot initramfs.
     # Match: its boot_verified property is TRUE -> ALLOW; retain the exact bytes.
