@@ -89,6 +89,10 @@ POLICY_OP_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     name="ipe_test_dmverity_policy_op_signature_true",
 )
 
+POLICY_OP_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
+    asset="fsverity/policy_op_signature_false_deny",
+    name="ipe_test_fsverity_policy_op_signature_false",
+)
 POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     asset="fsverity/policy_op_signature_true_allow",
     name="ipe_test_fsverity_policy_op_signature_true",

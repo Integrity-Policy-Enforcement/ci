@@ -17,6 +17,7 @@ from assets import (
     KEXEC_INITRAMFS_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    POLICY_OP_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_fsverity_digest_policy,
     kexec_image_fsverity_digest_policy,
@@ -209,6 +210,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_POLICY_OP_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_content=b"",
+                ),
+                # Policy: POLICY default ALLOW; DENY fsverity_signature=FALSE.
+                # Input: policy text with a verified built-in fs-verity digest signature.
+                # Match: FALSE does not match -> default ALLOW; retain the exact bytes.
+                *(
+                    policy_op.read_case(
+                        id=(
+                            "policy_op_kernel_read_ipe_test_policy_op_"
+                            f"fsverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=POLICY_OP_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: CPIO with fs-verity enabled and a built-in signature over its digest;
