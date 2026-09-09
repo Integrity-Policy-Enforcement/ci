@@ -125,6 +125,10 @@ KEXEC_IMAGE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     name="ipe_test_fsverity_kexec_image_signature_true",
 )
 
+KEXEC_INITRAMFS_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
+    asset="fsverity/kexec_initramfs_signature_false_deny",
+    name="ipe_test_fsverity_kexec_initramfs_signature_false",
+)
 KEXEC_INITRAMFS_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     asset="fsverity/kexec_initramfs_signature_true_allow",
     name="ipe_test_fsverity_kexec_initramfs_signature_true",
