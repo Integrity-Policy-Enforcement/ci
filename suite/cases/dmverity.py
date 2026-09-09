@@ -1663,6 +1663,17 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: identical ELF bytes without the required file property; shared RX mapping.
+                # Match: the required file property is absent -> no ALLOW match -> default DENY.
+                execute_mmap.mmap_case(
+                    id="execute_mmap_mmap_file_shared_rx_dmverity_signature_true_plain_denied",
+                    policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
+                    protection=mmap.PROT_READ | mmap.PROT_EXEC,
+                    shared=True,
+                    expected_errno=errno.EACCES,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
