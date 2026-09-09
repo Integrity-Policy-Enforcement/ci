@@ -1643,6 +1643,17 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: identical ELF bytes without the required file property; private RW mapping.
+                # Match: PROT_EXEC is absent -> the hook skips EXECUTE evaluation -> ALLOW.
+                execute_mmap.mmap_case(
+                    id="execute_mmap_mmap_file_private_rw_fsverity_signature_true_plain_ok",
+                    policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.FSVERITY_PLAIN_EXECUTE_TEST_BINARY,
+                    protection=mmap.PROT_READ | mmap.PROT_WRITE,
+                    shared=False,
+                    expected_errno=0,
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
