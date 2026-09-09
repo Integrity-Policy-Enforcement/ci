@@ -1,0 +1,4 @@
+policy_name=ipe_test_fsverity_x509_cert_signature_true policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=X509_CERT action=DENY
+op=X509_CERT fsverity_signature=TRUE action=ALLOW

@@ -19,6 +19,7 @@ from assets import (
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_fsverity_digest_policy,
     kexec_image_fsverity_digest_policy,
     kexec_initramfs_fsverity_digest_policy,
@@ -28,9 +29,10 @@ from assets import (
 from command import run
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule, policy_op
+from . import firmware, kexec, kmodule, policy_op, x509
 
 # Here "signed" means fs-verity's built-in signature, not module signing.
+# For DER inputs it is not the certificate issuer signature.
 # Signed and unsigned files both have fs-verity enabled; plain files do not.
 # For .ko.gz, the signed fs-verity digest is computed from compressed bytes.
 
@@ -164,6 +166,26 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="fsverity",
             cases=(
+                # Policy: X509_CERT default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: DER file with a verified built-in signature over its fs-verity digest.
+                # Match: the file's TRUE signature -> ALLOW; retain bytes, import no key.
+                *(
+                    x509.read_case(
+                        id=(
+                            "x509_cert_kernel_read_ipe_test_x509_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.fsverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: POLICY default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: policy text with fs-verity and a built-in signature over its digest.
                 # Match: the file's verified signature is TRUE -> ALLOW; retain exact bytes.
@@ -1229,6 +1251,7 @@ def build() -> tuple[Batch, ...]:
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
                 partial(run, "insmod", layout.guest.POLICY_OP_TEST_MODULE),
+                partial(run, "insmod", layout.guest.X509_TEST_MODULE),
                 *(
                     partial(
                         files.prepare_fsverity_test_binary,
@@ -1396,6 +1419,20 @@ def build() -> tuple[Batch, ...]:
                     source=layout.guest.POLICY_OP_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_POLICY_OP_TEST_BINARY,
                 ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.X509_TEST_BINARY,
+                        target=layout.guest.fsverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_x509_signature(
+                            algorithm=algorithm
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             extra_scopes=(
                 partial(
@@ -1417,6 +1454,14 @@ def build() -> tuple[Batch, ...]:
                 partial(
                     modules.loaded_scope,
                     prefix=layout.guest.POLICY_OP_TEST_MODULE.stem,
+                ),
+                partial(
+                    files.directory_scope,
+                    directory=layout.guest.FSVERITY_X509_DIR,
+                ),
+                partial(
+                    modules.loaded_scope,
+                    prefix=layout.guest.X509_TEST_MODULE.stem,
                 ),
             ),
         ),

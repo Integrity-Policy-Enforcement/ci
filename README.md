@@ -15,7 +15,7 @@ The built-in IPE policy denies `EXECUTE` by default. It allows execution when IP
 
 Policy names beginning with `ipe_test_` are reserved for this test suite. Scope cleanup treats any newly appearing policy with that prefix as test-owned and may delete it. Do not load an unrelated policy under that prefix while the suite is running.
 
-Runtime cleanup also reserves the trees rooted at `/run/ipe-tests/fsverity-modules`, `/run/ipe-tests/fsverity-firmware`, `/run/ipe-tests/fsverity-policy-op`, and `/run/ipe-tests/fsverity-kexec`, mount points below `/run/ipe-media`, dm-verity mapping names beginning with `ipe-dmverity-`, and module names beginning with `ipe_test`. While the suite runs, unrelated software must not create resources inside those boundaries; newly appearing resources may be deleted, unmounted, closed, or unloaded.
+Runtime cleanup also reserves the trees rooted at `/run/ipe-tests/fsverity-modules`, `/run/ipe-tests/fsverity-firmware`, `/run/ipe-tests/fsverity-policy-op`, `/run/ipe-tests/fsverity-x509`, and `/run/ipe-tests/fsverity-kexec`, mount points below `/run/ipe-media`, dm-verity mapping names beginning with `ipe-dmverity-`, and module names beginning with `ipe_test`. While the suite runs, unrelated software must not create resources inside those boundaries; newly appearing resources may be deleted, unmounted, closed, or unloaded.
 
 KEXEC cases require the normal kexec slot to be empty before each case. They load a real kernel image, check its staged state, then unload it; they never execute it. Do not run another kexec loader concurrently with the suite. An image present before a case causes an error rather than being replaced.
 
