@@ -1,0 +1,4 @@
+policy_name=ipe_test_dmverity_x509_cert_roothash_sha3-224_mismatch policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=X509_CERT action=DENY
+op=X509_CERT dmverity_roothash=@DMVERITY_OTHER_ROOTHASH_SHA3-224@ action=ALLOW

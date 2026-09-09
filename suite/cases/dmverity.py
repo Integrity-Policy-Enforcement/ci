@@ -266,6 +266,26 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: X509_CERT default DENY; ALLOW a different dmverity_roothash.
+                # Input: DER file on signed dm-verity whose root hash differs from the rule.
+                # Match: root-hash mismatch -> default DENY despite the mapping signature.
+                *(
+                    x509.read_case(
+                        id=(
+                            "x509_cert_kernel_read_ipe_test_x509_"
+                            f"dmverity_roothash_{algorithm}_mismatch_denied"
+                        ),
+                        policy=x509_cert_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=False
+                        ),
+                        binary=layout.guest.dmverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_content=b"",
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: POLICY default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: policy text on dm-verity with a trusted root-hash signature;
                 #        the test module reads the original fd without applying the text.
