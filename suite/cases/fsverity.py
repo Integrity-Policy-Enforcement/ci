@@ -1424,6 +1424,24 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: the static ELF with fs-verity enabled but no built-in signature.
+                # Match: TRUE does not match -> default DENY; the program never starts.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"fsverity_signature_true_{algorithm}_unsigned_denied"
+                        ),
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -1639,6 +1657,17 @@ def build() -> tuple[Batch, ...]:
                         signature=layout.guest.fsverity_execute_signature(
                             algorithm=algorithm
                         ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.EXECUTE_TEST_BINARY,
+                        target=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        algorithm=algorithm,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
