@@ -172,6 +172,19 @@ def kexec_image_dmverity_roothash_policy(
     )
 
 
+def kexec_initramfs_dmverity_roothash_policy(
+    algorithm: str,
+    matching: bool,
+) -> ipe.Policy:
+    """A KEXEC_INITRAMFS policy naming a root hash, or a value no device has."""
+    kind = "" if matching else "mismatch_"
+    return policy(
+        asset=f"dmverity/roothash/{algorithm}/kexec_initramfs_{kind}allow",
+        name=f"ipe_test_dmverity_kexec_initramfs_roothash_{algorithm}"
+        + ("" if matching else "_mismatch"),
+    )
+
+
 def kmodule_dmverity_roothash_policy(
     algorithm: str,
     matching: bool,

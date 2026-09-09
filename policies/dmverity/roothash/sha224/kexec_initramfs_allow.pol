@@ -1,0 +1,4 @@
+policy_name=ipe_test_dmverity_kexec_initramfs_roothash_sha224 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=KEXEC_INITRAMFS action=DENY
+op=KEXEC_INITRAMFS dmverity_roothash=@DMVERITY_ROOTHASH_SHA224@ action=ALLOW
