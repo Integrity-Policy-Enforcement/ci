@@ -1740,6 +1740,17 @@ def build() -> tuple[Batch, ...]:
                     shared=False,
                     expected_errno=errno.EACCES,
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: anonymous memory with no trusted file provenance; shared R mapping.
+                # Match: PROT_EXEC is absent -> the hook skips EXECUTE evaluation -> ALLOW.
+                execute_mmap.mmap_case(
+                    id="execute_mmap_mmap_anon_shared_r_dmverity_signature_true_anonymous_ok",
+                    policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=None,
+                    protection=mmap.PROT_READ,
+                    shared=True,
+                    expected_errno=0,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
