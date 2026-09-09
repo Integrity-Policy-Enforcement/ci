@@ -238,6 +238,19 @@ def kmodule_dmverity_roothash_policy(
     )
 
 
+def policy_op_fsverity_digest_policy(
+    algorithm: str,
+    matching: bool,
+) -> ipe.Policy:
+    """A POLICY rule naming its digest, or a value no test file has."""
+    kind = "" if matching else "mismatch_"
+    return policy(
+        asset=f"fsverity/policy_op_digest_{algorithm}_{kind}allow",
+        name=f"ipe_test_fsverity_policy_op_digest_{algorithm}"
+        + ("" if matching else "_mismatch"),
+    )
+
+
 def firmware_fsverity_digest_policy(
     algorithm: str,
     matching: bool,

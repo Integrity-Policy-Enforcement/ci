@@ -23,6 +23,7 @@ from assets import (
     kexec_image_fsverity_digest_policy,
     kexec_initramfs_fsverity_digest_policy,
     kmodule_fsverity_digest_policy,
+    policy_op_fsverity_digest_policy,
 )
 from command import run
 from model import Batch, Case
@@ -258,6 +259,28 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_POLICY_OP_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_content=b"",
+                ),
+                # Policy: POLICY default DENY; ALLOW matching fsverity_digest.
+                # Input: signed fs-verity policy text whose own digest matches the rule.
+                # Match: digest rule -> ALLOW; a built-in signature is not required.
+                *(
+                    policy_op.read_case(
+                        id=(
+                            "policy_op_kernel_read_ipe_test_policy_op_"
+                            f"fsverity_digest_{algorithm}_signed_ok"
+                        ),
+                        policy=policy_op_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: CPIO with fs-verity enabled and a built-in signature over its digest;
