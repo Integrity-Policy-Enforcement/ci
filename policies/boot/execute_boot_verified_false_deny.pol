@@ -1,0 +1,3 @@
+policy_name=ipe_test_execute_boot_verified_false policy_version=0.0.1
+DEFAULT action=ALLOW
+op=EXECUTE boot_verified=FALSE action=DENY

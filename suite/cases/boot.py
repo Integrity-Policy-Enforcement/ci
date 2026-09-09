@@ -68,6 +68,10 @@ X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.X509_CERT_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_x509_cert_boot_verified_true",
 )
+EXECUTE_BOOT_VERIFIED_FALSE_DENY_POLICY = ipe.Policy(
+    signed=layout.initrd.EXECUTE_BOOT_VERIFIED_FALSE_DENY_POLICY_SIGNATURE,
+    name="ipe_test_execute_boot_verified_false",
+)
 EXECUTE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.EXECUTE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_execute_boot_verified_true",
@@ -386,6 +390,16 @@ INITRAMFS_CASES = (
         binary=layout.initrd.BOOT_TMPFS_EXECUTE_TEST_BINARY,
         expected_errno=errno.EACCES,
         expected_returncode=None,
+    ),
+    # Policy: EXECUTE default ALLOW; DENY boot_verified=FALSE.
+    # Input: the original static ELF from the verified boot initramfs.
+    # Match: boot_verified is TRUE -> FALSE does not match -> default ALLOW.
+    execute.execve_case(
+        id="execute_bprm_check_execve_boot_verified_false_initramfs_ok",
+        policy=EXECUTE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=layout.initrd.EXECUTE_TEST_BINARY,
+        expected_errno=0,
+        expected_returncode=0,
     ),
 )
 
