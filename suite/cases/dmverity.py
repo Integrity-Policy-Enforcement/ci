@@ -25,6 +25,7 @@ from assets import (
     POLICY_OP_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     X509_CERT_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     X509_CERT_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    execute_dmverity_roothash_policy,
     firmware_dmverity_roothash_policy,
     kexec_image_dmverity_roothash_policy,
     kexec_initramfs_dmverity_roothash_policy,
@@ -1368,6 +1369,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_returncode=None,
+                ),
+                # Policy: EXECUTE default DENY; ALLOW matching dmverity_roothash.
+                # Input: a static ELF on signed dm-verity whose root hash matches.
+                # Match: the root-hash rule -> ALLOW; this rule does not require a signature.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"dmverity_roothash_{algorithm}_signed_ok"
+                        ),
+                        policy=execute_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.dmverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
             ),
             setup=(
