@@ -23,6 +23,7 @@ from assets import (
     POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    execute_fsverity_digest_policy,
     firmware_fsverity_digest_policy,
     kexec_image_fsverity_digest_policy,
     kexec_initramfs_fsverity_digest_policy,
@@ -1498,6 +1499,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_EXECUTE_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_returncode=None,
+                ),
+                # Policy: EXECUTE default DENY; ALLOW matching fsverity_digest.
+                # Input: a signed fs-verity static ELF whose own digest matches the rule.
+                # Match: the digest rule -> ALLOW; no built-in signature is required by it.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"fsverity_digest_{algorithm}_signed_ok"
+                        ),
+                        policy=execute_fsverity_digest_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             # Prepare fixtures with enforcement off; each case then activates

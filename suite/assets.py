@@ -300,6 +300,19 @@ def kmodule_dmverity_roothash_policy(
     )
 
 
+def execute_fsverity_digest_policy(
+    algorithm: str,
+    matching: bool,
+) -> ipe.Policy:
+    """An EXECUTE rule naming the static ELF digest or a mismatching value."""
+    kind = "" if matching else "mismatch_"
+    return policy(
+        asset=f"fsverity/execute_digest_{algorithm}_{kind}allow",
+        name=f"ipe_test_fsverity_execute_digest_{algorithm}"
+        + ("" if matching else "_mismatch"),
+    )
+
+
 def x509_cert_fsverity_digest_policy(
     algorithm: str,
     matching: bool,
