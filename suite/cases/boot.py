@@ -18,7 +18,7 @@ import ipe
 import layout
 from model import Batch, Case
 
-from . import firmware, kexec, kmodule
+from . import firmware, kexec, kmodule, policy_op
 
 KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
@@ -52,6 +52,10 @@ KEXEC_INITRAMFS_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KEXEC_INITRAMFS_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
     name="ipe_test_kexec_initramfs_boot_verified_true",
 )
+POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
+    signed=layout.initrd.POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
+    name="ipe_test_policy_op_boot_verified_true",
+)
 INITRAMFS_KMODULE_TEST_BINARY = layout.initrd.KMODULE_TEST_BINARY
 TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 
@@ -59,6 +63,16 @@ TMPFS_KMODULE_TEST_BINARY = layout.initrd.BOOT_TMPFS_KMODULE_TEST_BINARY
 # These rules test initramfs provenance, not dm/fs-verity or module signatures.
 # Tmpfs cases use byte-for-byte copies of their initramfs inputs.
 INITRAMFS_CASES = (
+    # Policy: POLICY default DENY; ALLOW boot_verified=TRUE.
+    # Input: the original policy text file from the verified boot initramfs.
+    # Match: its boot_verified property is TRUE -> ALLOW; retain the exact bytes.
+    policy_op.read_case(
+        id="policy_op_kernel_read_ipe_test_policy_op_boot_verified_true_initramfs_ok",
+        policy=POLICY_OP_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
+        binary=layout.initrd.POLICY_OP_TEST_BINARY,
+        expected_errno=0,
+        expected_content=layout.initrd.POLICY_OP_TEST_BINARY,
+    ),
     # Policy: KMODULE default DENY; ALLOW boot_verified=TRUE.
     # Input: the original initramfs .ko, whose file context has boot_verified=TRUE.
     # Match: TRUE matches -> the ALLOW rule applies.
