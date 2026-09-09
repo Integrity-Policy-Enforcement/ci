@@ -1,0 +1,3 @@
+policy_name=ipe_test_dmverity_kexec_initramfs_signature_false policy_version=0.0.1
+DEFAULT action=ALLOW
+op=KEXEC_INITRAMFS dmverity_signature=FALSE action=DENY

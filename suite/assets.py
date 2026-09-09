@@ -107,6 +107,10 @@ KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     name="ipe_test_dmverity_kexec_image_signature_true",
 )
 
+KEXEC_INITRAMFS_DMVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
+    asset="dmverity/kexec_initramfs_signature_false_deny",
+    name="ipe_test_dmverity_kexec_initramfs_signature_false",
+)
 KEXEC_INITRAMFS_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY = policy(
     asset="dmverity/kexec_initramfs_signature_true_allow",
     name="ipe_test_dmverity_kexec_initramfs_signature_true",
