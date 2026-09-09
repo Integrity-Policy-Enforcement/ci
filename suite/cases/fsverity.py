@@ -1558,6 +1558,26 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW a different fsverity_digest.
+                # Input: a signed fs-verity static ELF whose digest differs from the rule.
+                # Match: digest mismatch -> default DENY despite the built-in signature.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_"
+                            f"fsverity_digest_{algorithm}_mismatch_denied"
+                        ),
+                        policy=execute_fsverity_digest_policy(
+                            algorithm=algorithm, matching=False
+                        ),
+                        binary=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
