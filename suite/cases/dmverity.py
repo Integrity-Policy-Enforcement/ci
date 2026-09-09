@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 import errno
+import mmap
 import shutil
 from functools import partial
 
@@ -36,7 +37,7 @@ from assets import (
 from command import run
 from model import Batch, Case
 
-from . import execute, firmware, kexec, kmodule, policy_op, x509
+from . import execute, execute_mmap, firmware, kexec, kmodule, policy_op, x509
 
 # Signed/unsigned refers to the mapping's root-hash signature, not an
 # embedded module signature or a signature attached to an input file.
@@ -1445,6 +1446,20 @@ def build() -> tuple[Batch, ...]:
                         ),
                         expected_errno=errno.EACCES,
                         expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: ELF on dm-verity with a verified root-hash signature; private R mapping.
+                # Match: PROT_EXEC is absent -> the hook skips EXECUTE evaluation -> ALLOW.
+                *(
+                    execute_mmap.mmap_case(
+                        id=f"execute_mmap_mmap_file_private_r_dmverity_signature_true_trusted_ok_{algorithm}",
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_execute_test_binary(algorithm=algorithm, signed=True),
+                        protection=mmap.PROT_READ,
+                        shared=False,
+                        expected_errno=0,
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
