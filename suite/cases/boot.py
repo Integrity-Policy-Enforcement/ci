@@ -401,6 +401,16 @@ INITRAMFS_CASES = (
         expected_errno=0,
         expected_returncode=0,
     ),
+    # Policy: EXECUTE default ALLOW; DENY boot_verified=FALSE.
+    # Input: the executable ELF copy on a separate tmpfs, not the boot filesystem.
+    # Match: boot_verified is FALSE -> explicit DENY.
+    execute.execve_case(
+        id="execute_bprm_check_execve_boot_verified_false_tmpfs_denied",
+        policy=EXECUTE_BOOT_VERIFIED_FALSE_DENY_POLICY,
+        binary=layout.initrd.BOOT_TMPFS_EXECUTE_TEST_BINARY,
+        expected_errno=errno.EACCES,
+        expected_returncode=None,
+    ),
 )
 
 
