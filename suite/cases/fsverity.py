@@ -327,6 +327,28 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: KEXEC_INITRAMFS default DENY; ALLOW a different fsverity_digest.
+                # Input: signed fs-verity CPIO whose digest differs from the rule;
+                #        the fixed kernel remains permitted under KEXEC_IMAGE.
+                # Match: digest mismatch -> default DENY despite the built-in signature.
+                *(
+                    kexec.initramfs_load_case(
+                        id=(
+                            "kexec_initramfs_kernel_read_kexec_file_load_"
+                            f"fsverity_digest_{algorithm}_mismatch_denied"
+                        ),
+                        policy=kexec_initramfs_fsverity_digest_policy(
+                            algorithm=algorithm, matching=False
+                        ),
+                        kernel=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                        binary=layout.guest.fsverity_kexec_initramfs_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_loaded=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_IMAGE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: a real kernel image with a verified built-in fs-verity signature.
                 # Match: TRUE matches -> ALLOW; check staging before unloading.

@@ -1,0 +1,4 @@
+policy_name=ipe_test_fsverity_kexec_initramfs_digest_sha256_mismatch policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=KEXEC_INITRAMFS action=DENY
+op=KEXEC_INITRAMFS fsverity_digest=@FSVERITY_KEXEC_INITRAMFS_OTHER_DIGEST_SHA256@ action=ALLOW
