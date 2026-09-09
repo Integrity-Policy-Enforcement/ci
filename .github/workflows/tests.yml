@@ -67,10 +67,16 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update -qq
+          # Use Ubuntu sources only, not repositories for runner-preinstalled tools.
+          test -s /etc/apt/sources.list.d/ubuntu.sources
+          apt_sources=(
+              -o Dir::Etc::sourcelist=/etc/apt/sources.list.d/ubuntu.sources
+              -o Dir::Etc::sourceparts=-
+          )
+          sudo apt-get "${apt_sources[@]}" update -qq
           cat config/host-packages.txt \
               "config/host-packages-${{ matrix.architecture }}.txt" \
-              | xargs sudo apt-get install -y --no-install-recommends
+              | xargs sudo apt-get "${apt_sources[@]}" install -y --no-install-recommends
           sudo python3 -m pip install --break-system-packages \
               "git+https://github.com/systemd/mkosi@$(cat config/mkosi.version)"
 
