@@ -405,6 +405,9 @@ class guest:
     FSVERITY_PLAIN_KEXEC_IMAGE_TEST_BINARY = (
         FSVERITY_KEXEC_IMAGES_DIR / f"plain-{test_media.KEXEC_IMAGE_TEST_BINARY.name}"
     )
+    FSVERITY_PLAIN_KEXEC_INITRAMFS_TEST_BINARY = (
+        FSVERITY_KEXEC_IMAGES_DIR / f"plain-{test_media.KEXEC_INITRAMFS_TEST_BINARY.name}"
+    )
 
     @staticmethod
     def fsverity_kexec_image_test_binary(algorithm: str, signed: bool) -> Path:
