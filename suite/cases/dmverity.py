@@ -145,6 +145,16 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: identical executable ELF bytes copied to a separate plain tmpfs.
+                # Match: no dm-verity signature -> no TRUE match -> default DENY.
+                execute.execve_case(
+                    id="execute_bprm_check_execve_dmverity_signature_true_plain_denied",
+                    policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
+                    expected_errno=errno.EACCES,
+                    expected_returncode=None,
+                ),
                 # Policy: X509_CERT default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: DER file on dm-verity with a trusted root-hash signature.
                 # Match: the mapping's TRUE signature -> ALLOW; retain bytes, import no key.
@@ -1362,6 +1372,11 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.X509_TEST_BINARY,
                     target=layout.guest.PLAIN_X509_TEST_BINARY,
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.EXECUTE_TEST_BINARY,
+                    target=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
                 ),
             ),
             extra_scopes=(
