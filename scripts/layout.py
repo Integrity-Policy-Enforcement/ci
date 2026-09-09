@@ -297,6 +297,22 @@ class build:
             / _fsverity_digest_name(algorithm=algorithm, compressed=False)
         )
 
+    @staticmethod
+    def fsverity_kexec_initramfs_signature(algorithm: str) -> Path:
+        """The fs-verity signature over the CPIO archive digest."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.KEXEC_DIR / "initramfs"
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
+    @staticmethod
+    def fsverity_kexec_initramfs_digest(algorithm: str) -> Path:
+        """The CPIO archive digest made with this hash."""
+        return (
+            build.FSVERITY_ASSETS_DIR / test_media.KEXEC_DIR / "initramfs"
+            / _fsverity_digest_name(algorithm=algorithm, compressed=False)
+        )
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -377,6 +393,14 @@ class guest:
             / _fsverity_signature_name(algorithm=algorithm, compressed=False)
         )
 
+    @staticmethod
+    def fsverity_kexec_initramfs_signature(algorithm: str) -> Path:
+        """The guest signature path for the CPIO archive digest."""
+        return (
+            guest.FSVERITY_ASSETS_DIR / test_media.KEXEC_DIR / "initramfs"
+            / _fsverity_signature_name(algorithm=algorithm, compressed=False)
+        )
+
     FSVERITY_KEXEC_IMAGES_DIR = PAYLOAD_DIR / "fsverity-kexec"
     FSVERITY_PLAIN_KEXEC_IMAGE_TEST_BINARY = (
         FSVERITY_KEXEC_IMAGES_DIR / f"plain-{test_media.KEXEC_IMAGE_TEST_BINARY.name}"
@@ -389,6 +413,15 @@ class guest:
         return (
             guest.FSVERITY_KEXEC_IMAGES_DIR
             / f"{state}-{algorithm}-{test_media.KEXEC_IMAGE_TEST_BINARY.name}"
+        )
+
+    @staticmethod
+    def fsverity_kexec_initramfs_test_binary(algorithm: str, signed: bool) -> Path:
+        """The CPIO archive with signed or unsigned fs-verity enabled."""
+        state = "signed" if signed else "unsigned"
+        return (
+            guest.FSVERITY_KEXEC_IMAGES_DIR
+            / f"{state}-{algorithm}-{test_media.KEXEC_INITRAMFS_TEST_BINARY.name}"
         )
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"

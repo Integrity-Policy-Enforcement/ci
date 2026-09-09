@@ -12,6 +12,7 @@ from assets import (
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KEXEC_IMAGE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KEXEC_IMAGE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    KEXEC_INITRAMFS_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_fsverity_digest_policy,
@@ -156,6 +157,26 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="fsverity",
             cases=(
+                # Policy: KEXEC_INITRAMFS default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: CPIO with fs-verity enabled and a built-in signature over its digest;
+                #        the fixed kernel remains permitted under KEXEC_IMAGE.
+                # Match: the CPIO's verified signature is TRUE -> ALLOW; stage then unload.
+                *(
+                    kexec.initramfs_load_case(
+                        id=(
+                            "kexec_initramfs_kernel_read_kexec_file_load_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=KEXEC_INITRAMFS_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        kernel=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                        binary=layout.guest.fsverity_kexec_initramfs_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_IMAGE default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: a real kernel image with a verified built-in fs-verity signature.
                 # Match: TRUE matches -> ALLOW; check staging before unloading.
@@ -958,6 +979,20 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.KEXEC_IMAGE_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_KEXEC_IMAGE_TEST_BINARY,
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.KEXEC_INITRAMFS_TEST_BINARY,
+                        target=layout.guest.fsverity_kexec_initramfs_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_kexec_initramfs_signature(
+                            algorithm=algorithm
+                        ),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             extra_scopes=(
