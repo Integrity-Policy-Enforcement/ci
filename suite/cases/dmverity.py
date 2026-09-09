@@ -21,6 +21,7 @@ from assets import (
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     POLICY_OP_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    X509_CERT_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     X509_CERT_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_dmverity_roothash_policy,
     kexec_image_dmverity_roothash_policy,
@@ -153,6 +154,26 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_X509_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_content=b"",
+                ),
+                # Policy: X509_CERT default ALLOW; DENY dmverity_signature=FALSE.
+                # Input: DER file on dm-verity with a verified root-hash signature.
+                # Match: FALSE does not match -> default ALLOW; retain the exact DER bytes.
+                *(
+                    x509.read_case(
+                        id=(
+                            "x509_cert_kernel_read_ipe_test_x509_"
+                            f"dmverity_signature_false_{algorithm}_signed_ok"
+                        ),
+                        policy=X509_CERT_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
+                        binary=layout.guest.dmverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.dmverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 # Policy: POLICY default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: policy text on dm-verity with a trusted root-hash signature;
