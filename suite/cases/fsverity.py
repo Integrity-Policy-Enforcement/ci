@@ -322,6 +322,26 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: POLICY default DENY; ALLOW a different fsverity_digest.
+                # Input: signed fs-verity policy text whose digest differs from the rule.
+                # Match: digest mismatch -> default DENY despite the built-in signature.
+                *(
+                    policy_op.read_case(
+                        id=(
+                            "policy_op_kernel_read_ipe_test_policy_op_"
+                            f"fsverity_digest_{algorithm}_mismatch_denied"
+                        ),
+                        policy=policy_op_fsverity_digest_policy(
+                            algorithm=algorithm, matching=False
+                        ),
+                        binary=layout.guest.fsverity_policy_op_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_content=b"",
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_INITRAMFS default DENY; ALLOW fsverity_signature=TRUE.
                 # Input: CPIO with fs-verity enabled and a built-in signature over its digest;
                 #        the fixed kernel remains permitted under KEXEC_IMAGE.

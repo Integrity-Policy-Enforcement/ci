@@ -1,0 +1,4 @@
+policy_name=ipe_test_fsverity_policy_op_digest_sha256_mismatch policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=POLICY action=DENY
+op=POLICY fsverity_digest=@FSVERITY_POLICY_OP_OTHER_DIGEST_SHA256@ action=ALLOW
