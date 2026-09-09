@@ -65,6 +65,10 @@ def make_payload(output: Path) -> None:
             layout.build.KEXEC_IMAGE_TEST_BINARY,
             staging_path(layout.guest.KEXEC_IMAGE_TEST_BINARY),
         )
+        shutil.copy(
+            layout.build.KEXEC_INITRAMFS_TEST_BINARY,
+            staging_path(layout.guest.KEXEC_INITRAMFS_TEST_BINARY),
+        )
         shutil.copytree(
             layout.build.FSVERITY_ASSETS_DIR,
             staging_path(layout.guest.FSVERITY_ASSETS_DIR),

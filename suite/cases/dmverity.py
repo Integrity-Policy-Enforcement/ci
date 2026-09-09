@@ -14,6 +14,7 @@ from assets import (
     FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KEXEC_IMAGE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    KEXEC_INITRAMFS_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KMODULE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KMODULE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     firmware_dmverity_roothash_policy,
@@ -25,7 +26,7 @@ from model import Batch, Case
 from . import firmware, kexec, kmodule
 
 # Signed/unsigned refers to the mapping's root-hash signature, not an
-# embedded module signature or a signature attached to the firmware file.
+# embedded module signature or a signature attached to an input file.
 
 # dm-verity mappings under this prefix are reserved for batch cleanup.
 DMVERITY_DEVICE_PREFIX = "ipe-dmverity-"
@@ -96,6 +97,26 @@ def build() -> tuple[Batch, ...]:
         Batch(
             id="dmverity",
             cases=(
+                # Policy: KEXEC_INITRAMFS default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: CPIO on dm-verity with a trusted root-hash signature, by original fd;
+                #        the fixed kernel is on the payload and KEXEC_IMAGE is allowed.
+                # Match: the initramfs mapping's TRUE signature -> ALLOW; stage then unload.
+                *(
+                    kexec.initramfs_load_case(
+                        id=(
+                            "kexec_initramfs_kernel_read_kexec_file_load_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=KEXEC_INITRAMFS_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        kernel=layout.guest.KEXEC_IMAGE_TEST_BINARY,
+                        binary=layout.guest.dmverity_kexec_initramfs_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_loaded=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
                 # Policy: KEXEC_IMAGE default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: the real kernel image on signed dm-verity, passed by original fd.
                 # Match: TRUE matches -> ALLOW; stage the image, then unload without executing.

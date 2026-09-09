@@ -38,6 +38,7 @@ class _KexecSegment(ctypes.Structure):
 
 def _file_load_syscall(
     kernel_fd: int,
+    initramfs_fd: int,
     command_line: bytes | None,
     flags: int,
 ) -> int:
@@ -46,7 +47,7 @@ def _file_load_syscall(
     result = _LIBC.syscall(
         _KEXEC_FILE_LOAD_NR,
         ctypes.c_int(kernel_fd),
-        ctypes.c_int(-1),
+        ctypes.c_int(initramfs_fd),
         ctypes.c_ulong(len(command_line) if command_line is not None else 0),
         ctypes.c_char_p(command_line),
         ctypes.c_ulong(flags),
@@ -72,8 +73,21 @@ def load_file(binary: Path, state: CaseState) -> Observation:
     with binary.open("rb") as image:
         error = _file_load_syscall(
             kernel_fd=image.fileno(),
+            initramfs_fd=-1,
             command_line=b"\0",
             flags=KEXEC_FILE_NO_INITRAMFS,
+        )
+    return Observation(errno=error)
+
+
+def load_initramfs(kernel: Path, binary: Path, state: CaseState) -> Observation:
+    """Load an initramfs beside a fixed kernel, preserving both original fds."""
+    with kernel.open("rb") as image, binary.open("rb") as initramfs:
+        error = _file_load_syscall(
+            kernel_fd=image.fileno(),
+            initramfs_fd=initramfs.fileno(),
+            command_line=b"\0",
+            flags=0,
         )
     return Observation(errno=error)
 
@@ -128,6 +142,7 @@ def image_scope() -> Generator[None, None, None]:
         if loaded():
             error = _file_load_syscall(
                 kernel_fd=-1,
+                initramfs_fd=-1,
                 command_line=None,
                 flags=KEXEC_FILE_UNLOAD,
             )

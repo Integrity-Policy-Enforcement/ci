@@ -32,6 +32,7 @@ build: what the build scripts make from it.
         ipe_test.ko               binary loaded by the KMODULE cases
       kexec/                      build-kexec-assets.py
         ipe_test.kernel          real kernel image loaded by KEXEC_IMAGE cases
+        ipe_test.cpio            CPIO archive loaded by KEXEC_INITRAMFS cases
       dmverity/                   build-dmverity-image.py
         dmverity.squashfs         squashfs used by the dm-verity cases
         dmverity-<hash>.hash      Merkle tree over dmverity.squashfs
@@ -82,7 +83,7 @@ guest: what the tests find after the switch.
         policies/                         signed copy of the source policy tree
         dmverity/                          dm-verity image and its hashes
             dmverity.squashfs                  holds ipe_test.ko, ipe_test.ko.gz,
-                                              ipe_test.fw and ipe_test.kernel
+                                              ipe_test.fw, ipe_test.kernel and ipe_test.cpio
             dmverity-<hash>.hash               Merkle tree
             dmverity-<hash>.roothash           root hash
             dmverity-<hash>.p7s                signature over the root hash
@@ -166,6 +167,7 @@ class test_media:
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
     KEXEC_DIR = Path("kexec")
     KEXEC_IMAGE_TEST_BINARY = KEXEC_DIR / "ipe_test.kernel"
+    KEXEC_INITRAMFS_TEST_BINARY = KEXEC_DIR / "ipe_test.cpio"
 
 
 class source:
@@ -205,6 +207,7 @@ class build:
 
     KEXEC_ASSETS_DIR = ROOT_DIR / test_media.KEXEC_DIR
     KEXEC_IMAGE_TEST_BINARY = ROOT_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
+    KEXEC_INITRAMFS_TEST_BINARY = ROOT_DIR / test_media.KEXEC_INITRAMFS_TEST_BINARY
 
     POLICIES_DIR = ROOT_DIR / _POLICIES_DIR_NAME
     SECONDARY_POLICY_TEXT = (
@@ -314,6 +317,7 @@ class guest:
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
     KEXEC_IMAGE_TEST_BINARY = PAYLOAD_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
+    KEXEC_INITRAMFS_TEST_BINARY = PAYLOAD_DIR / test_media.KEXEC_INITRAMFS_TEST_BINARY
 
     POLICIES_DIR = PAYLOAD_DIR / _POLICIES_DIR_NAME
 
@@ -468,6 +472,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
             / test_media.KEXEC_IMAGE_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_kexec_initramfs_test_binary(algorithm: str, signed: bool) -> Path:
+        """The CPIO archive on a mounted dm-verity filesystem."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.KEXEC_INITRAMFS_TEST_BINARY
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"

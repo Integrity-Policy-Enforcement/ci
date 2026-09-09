@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Copy the real built kernel image for KEXEC tests."""
+"""Prepare the real kernel image and a valid CPIO for KEXEC load-only tests."""
 
 import shutil
+import subprocess
 
 import layout
 
@@ -15,7 +16,16 @@ def main() -> int:
         raise SystemExit("expected one installed kernel image; run build-kernel.py")
     layout.build.KEXEC_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
     shutil.copy(images[0], layout.build.KEXEC_IMAGE_TEST_BINARY)
-    print("    Prepared the KEXEC kernel image")
+    # An empty archive is sufficient: the tests stage it, but never boot it.
+    subprocess.run(
+        [
+            layout.build.KERNEL_DIR / "usr/gen_init_cpio",
+            "-t", "0", "-o", layout.build.KEXEC_INITRAMFS_TEST_BINARY,
+            "/dev/null",
+        ],
+        check=True,
+    )
+    print("    Prepared the KEXEC kernel image and initramfs")
     return 0
 
 

@@ -34,6 +34,31 @@ def file_load_case(
     )
 
 
+def initramfs_load_case(
+    id: str,
+    policy: ipe.Policy,
+    kernel: Path,
+    binary: Path,
+    expected_errno: int,
+    expected_loaded: bool,
+) -> Case:
+    """Load an initramfs with a fixed kernel and check the syscall and slot."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(kexec.load_initramfs, kernel=kernel, binary=binary),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(kexec.check_loaded, expected_loaded=expected_loaded),
+        ),
+        extra_scopes=(kexec.image_scope,),
+    )
+
+
 def buffer_load_case(
     id: str,
     policy: ipe.Policy,
