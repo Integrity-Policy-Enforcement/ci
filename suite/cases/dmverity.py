@@ -28,6 +28,7 @@ from assets import (
     kexec_initramfs_dmverity_roothash_policy,
     kmodule_dmverity_roothash_policy,
     policy_op_dmverity_roothash_policy,
+    x509_cert_dmverity_roothash_policy,
 )
 from command import run
 from model import Batch, Case
@@ -202,6 +203,28 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_X509_TEST_BINARY,
                     expected_errno=errno.EACCES,
                     expected_content=b"",
+                ),
+                # Policy: X509_CERT default DENY; ALLOW matching dmverity_roothash.
+                # Input: DER file on signed dm-verity whose root hash matches the rule.
+                # Match: root-hash rule -> ALLOW; no mapping signature is required by it.
+                *(
+                    x509.read_case(
+                        id=(
+                            "x509_cert_kernel_read_ipe_test_x509_"
+                            f"dmverity_roothash_{algorithm}_signed_ok"
+                        ),
+                        policy=x509_cert_dmverity_roothash_policy(
+                            algorithm=algorithm, matching=True
+                        ),
+                        binary=layout.guest.dmverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=0,
+                        expected_content=layout.guest.dmverity_x509_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
                 # Policy: POLICY default DENY; ALLOW dmverity_signature=TRUE.
                 # Input: policy text on dm-verity with a trusted root-hash signature;
