@@ -23,6 +23,7 @@ from assets import (
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    PRELOAD_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     execute_fsverity_digest_policy,
@@ -46,6 +47,7 @@ from . import (
     execute_memfd,
     execute_mmap,
     execute_mprotect,
+    execute_preload,
     firmware,
     kexec,
     kmodule,
@@ -2914,6 +2916,19 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; fsverity_signature=TRUE permits the library; signed root permits the runtime.
+                # Input: library on the unsigned payload with a verified built-in fs-verity digest signature.
+                # Match: library ALLOW -> constructor prints preload; the client exits zero.
+                *(
+                    execute_preload.preload_case(
+                        id=f'execute_mmap_ld_preload_fsverity_signature_true_{algorithm}_signed_ok',
+                        policy=PRELOAD_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        library=layout.guest.fsverity_preload_library(algorithm=algorithm),
+                        expected_returncode=0,
+                        expected_preloaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -3191,6 +3206,16 @@ def build() -> tuple[Batch, ...]:
                         target=layout.guest.fsverity_memfd_test_binary(algorithm=algorithm),
                         algorithm=algorithm,
                         signature=layout.guest.fsverity_memfd_signature(algorithm=algorithm),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.PRELOAD_LIBRARY,
+                        target=layout.guest.fsverity_preload_library(algorithm=algorithm),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_preload_signature(algorithm=algorithm),
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),

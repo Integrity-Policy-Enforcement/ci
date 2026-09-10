@@ -153,6 +153,14 @@ def main() -> int:
             digest_path=layout.build.fsverity_memfd_digest(algorithm=algorithm),
         )
 
+    for algorithm in hashes.FSVERITY_ALGORITHMS:
+        prepare_input(
+            binary=layout.build.PRELOAD_LIBRARY,
+            algorithm=algorithm,
+            signature_path=layout.build.fsverity_preload_signature(algorithm=algorithm),
+            digest_path=layout.build.fsverity_preload_digest(algorithm=algorithm),
+        )
+
     # Only this fixed digest permits the interpreter under script-test policies.
     digest = subprocess.run(
         [

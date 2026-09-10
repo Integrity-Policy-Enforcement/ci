@@ -1,0 +1,7 @@
+policy_name=ipe_test_fsverity_preload_signature_true policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+# The normal client, ELF loader and libc are on the signed root.
+op=EXECUTE dmverity_signature=TRUE action=ALLOW
+# The target library is on the unsigned payload, not the signed root.
+op=EXECUTE fsverity_signature=TRUE action=ALLOW
