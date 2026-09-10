@@ -37,7 +37,16 @@ from assets import (
 from command import run
 from model import Batch, Case
 
-from . import execute, execute_mmap, firmware, kexec, kmodule, policy_op, x509
+from . import (
+    execute,
+    execute_mmap,
+    execute_mprotect,
+    firmware,
+    kexec,
+    kmodule,
+    policy_op,
+    x509,
+)
 
 # Signed/unsigned refers to the mapping's root-hash signature, not an
 # embedded module signature or a signature attached to an input file.
@@ -2148,6 +2157,20 @@ def build() -> tuple[Batch, ...]:
                         protection=mmap.PROT_READ | mmap.PROT_EXEC,
                         shared=True,
                         expected_errno=errno.EACCES,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: private mapping of ELF on dm-verity with a verified root-hash signature; W -> X.
+                # Match: the file-property rule matches -> ALLOW; mprotect succeeds.
+                *(
+                    execute_mprotect.mprotect_case(
+                        id=f"execute_mprotect_mprotect_private_w_x_dmverity_signature_true_trusted_ok_{algorithm}",
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_execute_test_binary(algorithm=algorithm, signed=True),
+                        initial_protection=mmap.PROT_WRITE,
+                        protection=mmap.PROT_EXEC,
+                        expected_errno=0,
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
