@@ -36,6 +36,7 @@ from assets import (
     x509_cert_fsverity_digest_policy,
 )
 from command import run
+from execute_memfd import hugepages_scope
 from model import Batch, Case
 
 from . import (
@@ -2822,6 +2823,21 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: unsealed 2 MiB hugetlb memfd copied from a source with a verified built-in fs-verity digest signature.
+                # Match: a new memfd has no source-file provenance -> default DENY (EACCES).
+                *(
+                    execute_memfd.memfd_case(
+                        id=f"execute_bprm_check_execve_memfd_hugetlb_fsverity_signature_true_{algorithm}_denied",
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_memfd_test_binary(algorithm=algorithm),
+                        huge=True,
+                        sealed=False,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -3104,6 +3120,7 @@ def build() -> tuple[Batch, ...]:
                 ),
             ),
             extra_scopes=(
+                hugepages_scope,
                 partial(
                     files.directory_scope,
                     directory=layout.guest.FSVERITY_EXECUTE_DIR,
