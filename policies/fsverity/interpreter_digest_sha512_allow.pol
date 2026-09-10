@@ -1,0 +1,5 @@
+policy_name=ipe_test_fsverity_interpreter_digest_sha512 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+op=EXECUTE fsverity_digest=@INTERPRETER_DIGEST@ action=ALLOW
+op=EXECUTE fsverity_digest=@FSVERITY_SCRIPT_DIGEST_SHA512@ action=ALLOW

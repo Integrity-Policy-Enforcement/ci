@@ -27,6 +27,7 @@ from assets import (
     X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     execute_fsverity_digest_policy,
     firmware_fsverity_digest_policy,
+    interpreter_fsverity_digest_policy,
     kexec_image_fsverity_digest_policy,
     kexec_initramfs_fsverity_digest_policy,
     kmodule_fsverity_digest_policy,
@@ -2667,6 +2668,22 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_returncode=1,
                     expected_output='',
+                ),
+                # Policy: EXECUTE default DENY; ALLOW the matching fsverity_digest.
+                #         Only the interpreter has a separate exact fs-verity digest allowance.
+                # Input: '+' script with signed fs-verity and a matching script digest; open the script path in the interpreter.
+                # Match: script property matches -> check errno 0 -> interpret and print 1.
+                *(
+                    execute_interpreter.interpreter_case(
+                        id=f'execute_bprm_creds_for_exec_interpreter_file_fsverity_digest_{algorithm}_signed_ok',
+                        policy=interpreter_fsverity_digest_policy(algorithm=algorithm),
+                        script=layout.guest.fsverity_script_test_binary(algorithm=algorithm),
+                        from_stdin=False,
+                        expected_errno=0,
+                        expected_returncode=0,
+                        expected_output='1\n',
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
