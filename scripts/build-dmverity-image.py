@@ -106,6 +106,10 @@ def main() -> int:
         shutil.copy(layout.build.X509_TEST_BINARY, x509_target)
         shutil.copy(layout.build.EXECUTE_TEST_BINARY, execute_target)
         shutil.copy(
+            layout.build.SHEBANG_TEST_SCRIPT,
+            content_dir / layout.test_media.SHEBANG_TEST_SCRIPT,
+        )
+        shutil.copy(
             layout.source.SCRIPT_TEST_BINARY,
             content_dir / layout.test_media.SCRIPT_TEST_BINARY,
         )

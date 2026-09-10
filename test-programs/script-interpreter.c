@@ -35,7 +35,11 @@ int main(int argc, char **argv)
 
 	/* This deliberately small language only increments a counter. */
 	while ((ch = fgetc(input)) != EOF) {
-		if (ch == '+')
+		if (ch == '#') {
+			/* Skip the shebang/comment line after the permission check. */
+			while ((ch = fgetc(input)) != EOF && ch != '\n')
+				;
+		} else if (ch == '+')
 			value++;
 		else if (ch != '\n')
 			return 2;

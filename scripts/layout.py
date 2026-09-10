@@ -173,6 +173,7 @@ class test_media:
     EXECUTE_TEST_BINARY = EXECUTE_DIR / "target"
     INTERPRETER_TEST_BINARY = EXECUTE_DIR / "interpreter"
     SCRIPT_TEST_BINARY = EXECUTE_DIR / "script"
+    SHEBANG_TEST_SCRIPT = EXECUTE_DIR / "shebang"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
@@ -228,6 +229,7 @@ class build:
 
     EXECUTE_TEST_BINARY = ROOT_DIR / test_media.EXECUTE_TEST_BINARY
     INTERPRETER_TEST_BINARY = ROOT_DIR / test_media.INTERPRETER_TEST_BINARY
+    SHEBANG_TEST_SCRIPT = ROOT_DIR / test_media.SHEBANG_TEST_SCRIPT
 
     KEXEC_ASSETS_DIR = ROOT_DIR / test_media.KEXEC_DIR
     KEXEC_IMAGE_TEST_BINARY = ROOT_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
@@ -418,6 +420,7 @@ class guest:
     EXECUTE_TEST_BINARY = PAYLOAD_DIR / test_media.EXECUTE_TEST_BINARY
     INTERPRETER_TEST_BINARY = PAYLOAD_DIR / test_media.INTERPRETER_TEST_BINARY
     SCRIPT_TEST_BINARY = PAYLOAD_DIR / test_media.SCRIPT_TEST_BINARY
+    SHEBANG_TEST_SCRIPT = PAYLOAD_DIR / test_media.SHEBANG_TEST_SCRIPT
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
     POLICY_OP_TEST_MODULE = PAYLOAD_DIR / test_media.POLICY_OP_TEST_MODULE
@@ -716,6 +719,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
             / test_media.SCRIPT_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_shebang_test_script(algorithm: str, signed: bool) -> Path:
+        """The shebang script on a selected dm-verity mapping."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.SHEBANG_TEST_SCRIPT
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"

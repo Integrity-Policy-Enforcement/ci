@@ -78,6 +78,10 @@ def make_payload(output: Path) -> None:
             layout.source.SCRIPT_TEST_BINARY,
             staging_path(layout.guest.SCRIPT_TEST_BINARY),
         )
+        shutil.copy(
+            layout.build.SHEBANG_TEST_SCRIPT,
+            staging_path(layout.guest.SHEBANG_TEST_SCRIPT),
+        )
         staging_path(layout.guest.KERNEL_MODULES_DIR).mkdir()
         shutil.copy(
             layout.build.KMODULE_TEST_BINARY,

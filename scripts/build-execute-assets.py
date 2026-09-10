@@ -20,7 +20,10 @@ def main() -> int:
             ],
             check=True,
         )
-    print("    Prepared the static EXECUTE target and interpreter")
+    script = layout.build.SHEBANG_TEST_SCRIPT
+    script.write_text(f"#!{layout.guest.FSVERITY_INTERPRETER_TEST_BINARY}\n+\n")
+    script.chmod(0o755)
+    print("    Prepared the static EXECUTE target, interpreter and shebang script")
     return 0
 
 

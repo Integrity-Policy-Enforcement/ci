@@ -4,10 +4,38 @@ from functools import partial
 from pathlib import Path
 
 import checks
+import execute
 import execute_interpreter
 import ipe
 import steps
 from model import Case
+
+
+def shebang_case(
+    id: str,
+    policy: ipe.Policy,
+    script: Path,
+    expected_errno: int,
+    expected_returncode: int | None,
+    expected_output: str | None,
+) -> Case:
+    """Exec a shebang script, separating kernel refusal from interpreter failure."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(execute_interpreter.exec_shebang, script=script),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(execute.check_returncode, expected=expected_returncode),
+        ) + (
+            (partial(execute_interpreter.check_shebang_output, expected=expected_output),)
+            if expected_output is not None else ()
+        ),
+    )
 
 
 def interpreter_case(
