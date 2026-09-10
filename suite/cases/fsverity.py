@@ -2510,6 +2510,20 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching fsverity_digest.
+                # Input: private mapping of identical ELF bytes without the required file property; R -> X.
+                # Match: no matching file property -> default DENY; mprotect fails with EACCES.
+                *(
+                    execute_mprotect.mprotect_case(
+                        id=f"execute_mprotect_mprotect_private_r_x_fsverity_digest_plain_denied_{algorithm}",
+                        policy=execute_fsverity_digest_policy(algorithm=algorithm, matching=True),
+                        binary=layout.guest.FSVERITY_PLAIN_EXECUTE_TEST_BINARY,
+                        initial_protection=mmap.PROT_READ,
+                        protection=mmap.PROT_EXEC,
+                        expected_errno=errno.EACCES,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
