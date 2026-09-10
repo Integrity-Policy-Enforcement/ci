@@ -31,6 +31,7 @@ from assets import (
     kexec_image_fsverity_digest_policy,
     kexec_initramfs_fsverity_digest_policy,
     kmodule_fsverity_digest_policy,
+    memfd_source_fsverity_digest_policy,
     policy_op_fsverity_digest_policy,
     shebang_fsverity_digest_policy,
     x509_cert_fsverity_digest_policy,
@@ -2848,6 +2849,21 @@ def build() -> tuple[Batch, ...]:
                         binary=layout.guest.fsverity_memfd_test_binary(algorithm=algorithm),
                         huge=True,
                         sealed=True,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW the matching fsverity_digest.
+                # Input: unsealed ordinary memfd copied from a signed fs-verity source with a matching ELF digest.
+                # Match: a new memfd has no source-file provenance -> default DENY (EACCES).
+                *(
+                    execute_memfd.memfd_case(
+                        id=f"execute_bprm_check_execve_memfd_unsealed_fsverity_digest_{algorithm}_denied",
+                        policy=memfd_source_fsverity_digest_policy(algorithm=algorithm),
+                        binary=layout.guest.fsverity_memfd_test_binary(algorithm=algorithm),
+                        huge=False,
+                        sealed=False,
                         expected_errno=errno.EACCES,
                         expected_returncode=None,
                     )

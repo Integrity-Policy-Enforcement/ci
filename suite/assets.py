@@ -318,6 +318,14 @@ def kmodule_dmverity_roothash_policy(
     )
 
 
+def memfd_source_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
+    """An EXECUTE digest rule matching only the original file, not its memfd copy."""
+    return policy(
+        asset=f"fsverity/memfd_source_digest_{algorithm}_allow",
+        name=f"ipe_test_fsverity_memfd_source_digest_{algorithm}",
+    )
+
+
 def shebang_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
     """Permit the fixed interpreter and the digest of the complete shebang script."""
     return policy(
