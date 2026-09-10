@@ -84,6 +84,27 @@ def build() -> tuple[Batch, ...]:
                         partial(execute.check_returncode, expected=0),
                     ),
                 ),
+                # Policy: the existing baseline allows EXECUTE unconditionally.
+                # Input: the valid ELF in a 2 MiB hugetlb memfd, unsealed.
+                # Match: default ALLOW -> real exec succeeds -> exit(0), not a loader error.
+                Case(
+                    id="execute_bprm_check_execve_memfd_hugetlb_control_ok",
+                    setup=(
+                        partial(steps.activate_policy, name=BASELINE_POLICY.name),
+                        partial(steps.set_enforcement, enabled=True),
+                    ),
+                    trigger=partial(
+                        execute_memfd.execute,
+                        binary=layout.guest.MEMFD_TEST_BINARY,
+                        huge=True,
+                        sealed=False,
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(execute.check_returncode, expected=0),
+                    ),
+                ),
             ),
+            extra_scopes=(execute_memfd.hugepages_scope,),
         ),
     )
