@@ -331,6 +331,14 @@ def kmodule_dmverity_roothash_policy(
     )
 
 
+def preload_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
+    """Permit the signed-root runtime and only the matching constructor-library digest."""
+    return policy(
+        asset=f"fsverity/preload_digest_{algorithm}_allow",
+        name=f"ipe_test_fsverity_preload_digest_{algorithm}",
+    )
+
+
 def memfd_source_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
     """An EXECUTE digest rule matching only the original file, not its memfd copy."""
     return policy(

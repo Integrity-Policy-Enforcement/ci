@@ -34,6 +34,7 @@ from assets import (
     kmodule_fsverity_digest_policy,
     memfd_source_fsverity_digest_policy,
     policy_op_fsverity_digest_policy,
+    preload_fsverity_digest_policy,
     shebang_fsverity_digest_policy,
     x509_cert_fsverity_digest_policy,
 )
@@ -2938,6 +2939,19 @@ def build() -> tuple[Batch, ...]:
                     library=layout.guest.FSVERITY_PLAIN_PRELOAD_LIBRARY,
                     expected_returncode=0,
                     expected_preloaded=False,
+                ),
+                # Policy: EXECUTE default DENY; matching fsverity_digest permits the library; signed root permits the runtime.
+                # Input: library on the unsigned payload with signed fs-verity and a matching digest.
+                # Match: library ALLOW -> constructor prints preload; the client exits zero.
+                *(
+                    execute_preload.preload_case(
+                        id=f'execute_mmap_ld_preload_fsverity_digest_{algorithm}_signed_ok',
+                        policy=preload_fsverity_digest_policy(algorithm=algorithm),
+                        library=layout.guest.fsverity_preload_library(algorithm=algorithm),
+                        expected_returncode=0,
+                        expected_preloaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
