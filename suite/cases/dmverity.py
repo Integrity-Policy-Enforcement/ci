@@ -2635,6 +2635,21 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=None,
                     expected_output=None,
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching dmverity_roothash.
+                #         A separate exact fs-verity digest permits only the interpreter.
+                # Input: execve the shebang script itself; a matching root hash without a mapping signature.
+                # Match: script rule matches -> exec and interpretation succeed.
+                *(
+                    execute_interpreter.shebang_case(
+                        id=f'execute_bprm_check_execve_shebang_dmverity_roothash_{algorithm}_unsigned_ok',
+                        policy=interpreter_dmverity_roothash_policy(algorithm=algorithm),
+                        script=layout.guest.dmverity_shebang_test_script(algorithm=algorithm, signed=False),
+                        expected_errno=0,
+                        expected_returncode=0,
+                        expected_output='1\n',
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
