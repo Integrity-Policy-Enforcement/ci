@@ -2655,6 +2655,19 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                #         Only the interpreter has a separate exact fs-verity digest allowance.
+                # Input: identical '+' script without the required file property; pass its original fd as stdin.
+                # Match: no script property match -> EACCES -> no interpretation or stdout.
+                execute_interpreter.interpreter_case(
+                    id='execute_bprm_creds_for_exec_interpreter_stdin_fsverity_signature_true_plain_denied',
+                    policy=INTERPRETER_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    script=layout.guest.FSVERITY_PLAIN_SCRIPT_TEST_BINARY,
+                    from_stdin=True,
+                    expected_errno=errno.EACCES,
+                    expected_returncode=1,
+                    expected_output='',
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
