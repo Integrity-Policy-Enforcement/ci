@@ -2929,6 +2929,16 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; fsverity_signature=TRUE permits the library; signed root permits the runtime.
+                # Input: identical library bytes without either permitted property.
+                # Match: library default DENY -> no constructor output; loader refuses its segment mapping.
+                execute_preload.preload_case(
+                    id='execute_mmap_ld_preload_fsverity_signature_true_plain_denied',
+                    policy=PRELOAD_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    library=layout.guest.FSVERITY_PLAIN_PRELOAD_LIBRARY,
+                    expected_returncode=0,
+                    expected_preloaded=False,
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -3218,6 +3228,11 @@ def build() -> tuple[Batch, ...]:
                         signature=layout.guest.fsverity_preload_signature(algorithm=algorithm),
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.PRELOAD_LIBRARY,
+                    target=layout.guest.FSVERITY_PLAIN_PRELOAD_LIBRARY,
                 ),
             ),
             extra_scopes=(
