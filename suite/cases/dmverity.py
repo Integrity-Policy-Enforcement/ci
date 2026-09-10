@@ -2592,6 +2592,22 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching dmverity_roothash.
+                #         Only the interpreter has a separate exact fs-verity digest allowance.
+                # Input: identical '+' script without the required file property; pass its original fd as stdin.
+                # Match: no script property match -> EACCES -> no interpretation or stdout.
+                *(
+                    execute_interpreter.interpreter_case(
+                        id=f'execute_bprm_creds_for_exec_interpreter_stdin_dmverity_roothash_{algorithm}_plain_denied',
+                        policy=interpreter_dmverity_roothash_policy(algorithm=algorithm),
+                        script=layout.guest.PLAIN_SCRIPT_TEST_BINARY,
+                        from_stdin=True,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=1,
+                        expected_output='',
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
