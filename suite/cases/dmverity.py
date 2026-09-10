@@ -2825,6 +2825,19 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; matching dmverity_roothash permits the library; signed root permits the runtime.
+                # Input: identical library bytes without either permitted property.
+                # Match: library default DENY -> no constructor output; loader refuses its segment mapping.
+                *(
+                    execute_preload.preload_case(
+                        id=f'execute_mmap_ld_preload_dmverity_roothash_{algorithm}_plain_denied',
+                        policy=preload_dmverity_roothash_policy(algorithm=algorithm),
+                        library=layout.guest.PLAIN_PRELOAD_LIBRARY,
+                        expected_returncode=0,
+                        expected_preloaded=False,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
