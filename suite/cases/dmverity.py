@@ -37,6 +37,7 @@ from assets import (
     x509_cert_dmverity_roothash_policy,
 )
 from command import run
+from execute_memfd import hugepages_scope
 from model import Batch, Case
 
 from . import (
@@ -2696,6 +2697,21 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: unsealed 2 MiB hugetlb memfd copied from a dm-verity source with a verified root-hash signature.
+                # Match: a new memfd has no source-file provenance -> default DENY (EACCES).
+                *(
+                    execute_memfd.memfd_case(
+                        id=f"execute_bprm_check_execve_memfd_hugetlb_dmverity_signature_true_{algorithm}_denied",
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_memfd_test_binary(algorithm=algorithm, signed=True),
+                        huge=True,
+                        sealed=False,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
@@ -2770,6 +2786,7 @@ def build() -> tuple[Batch, ...]:
                 ),
             ),
             extra_scopes=(
+                hugepages_scope,
                 partial(
                     files.directory_scope,
                     directory=layout.guest.FSVERITY_EXECUTE_DIR,
