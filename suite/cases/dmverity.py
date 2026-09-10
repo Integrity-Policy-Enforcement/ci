@@ -16,6 +16,7 @@ from assets import (
     EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    INTERPRETER_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KEXEC_IMAGE_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KEXEC_IMAGE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KEXEC_INITRAMFS_DMVERITY_SIGNATURE_FALSE_DENY_POLICY,
@@ -39,6 +40,7 @@ from model import Batch, Case
 
 from . import (
     execute,
+    execute_interpreter,
     execute_mmap,
     execute_mprotect,
     firmware,
@@ -2478,9 +2480,36 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE;
+                #         a separate exact fs-verity digest permits only the interpreter.
+                # Input: '+' script path on dm-verity with a verified root-hash signature.
+                # Match: the script signature is TRUE -> check returns 0 -> interpret '+'.
+                *(
+                    execute_interpreter.interpreter_case(
+                        id=(
+                            "execute_bprm_creds_for_exec_interpreter_file_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=INTERPRETER_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        script=layout.guest.dmverity_script_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        from_stdin=False,
+                        expected_errno=0,
+                        expected_returncode=0,
+                        expected_output="1\n",
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
+                partial(
+                    files.prepare_fsverity_test_binary,
+                    source=layout.guest.INTERPRETER_TEST_BINARY,
+                    target=layout.guest.FSVERITY_INTERPRETER_TEST_BINARY,
+                    algorithm=layout.INTERPRETER_HASH,
+                ),
                 partial(run, "insmod", layout.guest.POLICY_OP_TEST_MODULE),
                 partial(run, "insmod", layout.guest.X509_TEST_MODULE),
                 *(
@@ -2536,6 +2565,10 @@ def build() -> tuple[Batch, ...]:
                 ),
             ),
             extra_scopes=(
+                partial(
+                    files.directory_scope,
+                    directory=layout.guest.FSVERITY_EXECUTE_DIR,
+                ),
                 partial(
                     mounts.dmverity_scope,
                     prefix=DMVERITY_DEVICE_PREFIX,

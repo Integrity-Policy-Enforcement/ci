@@ -105,6 +105,10 @@ def main() -> int:
         shutil.copy(layout.source.POLICY_OP_TEST_BINARY, policy_op_target)
         shutil.copy(layout.build.X509_TEST_BINARY, x509_target)
         shutil.copy(layout.build.EXECUTE_TEST_BINARY, execute_target)
+        shutil.copy(
+            layout.source.SCRIPT_TEST_BINARY,
+            content_dir / layout.test_media.SCRIPT_TEST_BINARY,
+        )
         shutil.copy(layout.build.KEXEC_IMAGE_TEST_BINARY, kexec_target)
         shutil.copy(layout.build.KEXEC_INITRAMFS_TEST_BINARY, initramfs_target)
         build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)

@@ -119,6 +119,9 @@ guest: what the tests find after the switch.
 
 from pathlib import Path
 
+# The interpreter is fixed test infrastructure, not a script hash variant.
+INTERPRETER_HASH = "sha256"
+
 _KMODULE_TEST_BINARY_NAME = "ipe_test.ko"
 _FIRMWARE_TEST_BINARY_NAME = "ipe_test.fw"
 _DMVERITY_DIR_NAME = "dmverity"
@@ -168,6 +171,8 @@ class test_media:
     X509_TEST_BINARY = X509_DIR / "ipe_test.der"
     EXECUTE_DIR = Path("execute")
     EXECUTE_TEST_BINARY = EXECUTE_DIR / "target"
+    INTERPRETER_TEST_BINARY = EXECUTE_DIR / "interpreter"
+    SCRIPT_TEST_BINARY = EXECUTE_DIR / "script"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
@@ -192,6 +197,8 @@ class source:
     POLICY_OP_TEST_BINARY = TEST_MEDIA_DIR / test_media.POLICY_OP_TEST_BINARY
     KERNEL_MODULES_DIR = ROOT_DIR / "kernel-modules"
     EXECUTE_TARGET_SOURCE = ROOT_DIR / "test-programs" / "execute-target.c"
+    INTERPRETER_SOURCE = ROOT_DIR / "test-programs" / "script-interpreter.c"
+    SCRIPT_TEST_BINARY = TEST_MEDIA_DIR / test_media.SCRIPT_TEST_BINARY
     KERNEL_CONFIG = ROOT_DIR / "config" / "ipe-tests.config"
     BOOT_POLICY = ROOT_DIR / "config" / "boot-policy.pol"
 
@@ -220,6 +227,7 @@ class build:
     X509_TEST_MODULE = ROOT_DIR / test_media.X509_TEST_MODULE
 
     EXECUTE_TEST_BINARY = ROOT_DIR / test_media.EXECUTE_TEST_BINARY
+    INTERPRETER_TEST_BINARY = ROOT_DIR / test_media.INTERPRETER_TEST_BINARY
 
     KEXEC_ASSETS_DIR = ROOT_DIR / test_media.KEXEC_DIR
     KEXEC_IMAGE_TEST_BINARY = ROOT_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
@@ -263,6 +271,7 @@ class build:
         return build.DMVERITY_ASSETS_DIR / _root_hash_signature_name(algorithm)
 
     FSVERITY_ASSETS_DIR = ROOT_DIR / _FSVERITY_DIR_NAME
+    INTERPRETER_DIGEST = FSVERITY_ASSETS_DIR / "interpreter.digest"
     FSVERITY_COMPRESSED_KMODULE_TEST_BINARY = (
         FSVERITY_ASSETS_DIR / test_media.KMODULE_COMPRESSED_TEST_BINARY.name
     )
@@ -397,6 +406,8 @@ class guest:
     POLICY_OP_TEST_BINARY = PAYLOAD_DIR / test_media.POLICY_OP_TEST_BINARY
     X509_TEST_BINARY = PAYLOAD_DIR / test_media.X509_TEST_BINARY
     EXECUTE_TEST_BINARY = PAYLOAD_DIR / test_media.EXECUTE_TEST_BINARY
+    INTERPRETER_TEST_BINARY = PAYLOAD_DIR / test_media.INTERPRETER_TEST_BINARY
+    SCRIPT_TEST_BINARY = PAYLOAD_DIR / test_media.SCRIPT_TEST_BINARY
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
     POLICY_OP_TEST_MODULE = PAYLOAD_DIR / test_media.POLICY_OP_TEST_MODULE
@@ -549,6 +560,7 @@ class guest:
         )
 
     FSVERITY_EXECUTE_DIR = PAYLOAD_DIR / "fsverity-execute"
+    FSVERITY_INTERPRETER_TEST_BINARY = FSVERITY_EXECUTE_DIR / "interpreter"
     FSVERITY_PLAIN_EXECUTE_TEST_BINARY = (
         FSVERITY_EXECUTE_DIR / f"plain-{test_media.EXECUTE_TEST_BINARY.name}"
     )
@@ -675,6 +687,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
             / test_media.EXECUTE_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_script_test_binary(algorithm: str, signed: bool) -> Path:
+        """The interpreter script on the selected dm-verity mapping."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.SCRIPT_TEST_BINARY
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"
