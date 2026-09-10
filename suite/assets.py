@@ -214,6 +214,14 @@ KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
 )
 
 
+def interpreter_dmverity_roothash_policy(algorithm: str) -> ipe.Policy:
+    """Permit the fixed interpreter and scripts from this dm-verity root hash."""
+    return policy(
+        asset=f"dmverity/roothash/{algorithm}/interpreter_allow",
+        name=f"ipe_test_dmverity_interpreter_roothash_{algorithm}",
+    )
+
+
 def execute_dmverity_roothash_policy(
     algorithm: str,
     matching: bool,

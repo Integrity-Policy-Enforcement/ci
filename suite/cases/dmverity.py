@@ -29,6 +29,7 @@ from assets import (
     X509_CERT_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     execute_dmverity_roothash_policy,
     firmware_dmverity_roothash_policy,
+    interpreter_dmverity_roothash_policy,
     kexec_image_dmverity_roothash_policy,
     kexec_initramfs_dmverity_roothash_policy,
     kmodule_dmverity_roothash_policy,
@@ -2542,6 +2543,22 @@ def build() -> tuple[Batch, ...]:
                     expected_errno=errno.EACCES,
                     expected_returncode=1,
                     expected_output='',
+                ),
+                # Policy: EXECUTE default DENY; ALLOW the matching dmverity_roothash.
+                #         Only the interpreter has a separate exact fs-verity digest allowance.
+                # Input: '+' script with a matching root hash, without a mapping signature; open the script path in the interpreter.
+                # Match: script property matches -> check errno 0 -> interpret and print 1.
+                *(
+                    execute_interpreter.interpreter_case(
+                        id=f'execute_bprm_creds_for_exec_interpreter_file_dmverity_roothash_{algorithm}_unsigned_ok',
+                        policy=interpreter_dmverity_roothash_policy(algorithm=algorithm),
+                        script=layout.guest.dmverity_script_test_binary(algorithm=algorithm, signed=False),
+                        from_stdin=False,
+                        expected_errno=0,
+                        expected_returncode=0,
+                        expected_output='1\n',
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
             ),
             setup=(

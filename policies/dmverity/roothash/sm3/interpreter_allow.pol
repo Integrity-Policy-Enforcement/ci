@@ -1,0 +1,5 @@
+policy_name=ipe_test_dmverity_interpreter_roothash_sm3 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+op=EXECUTE fsverity_digest=@INTERPRETER_DIGEST@ action=ALLOW
+op=EXECUTE dmverity_roothash=@DMVERITY_ROOTHASH_SM3@ action=ALLOW
