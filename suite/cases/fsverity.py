@@ -35,7 +35,16 @@ from assets import (
 from command import run
 from model import Batch, Case
 
-from . import execute, execute_mmap, firmware, kexec, kmodule, policy_op, x509
+from . import (
+    execute,
+    execute_mmap,
+    execute_mprotect,
+    firmware,
+    kexec,
+    kmodule,
+    policy_op,
+    x509,
+)
 
 # Here "signed" means fs-verity's built-in signature, not module signing.
 # For DER inputs it is not the certificate issuer signature.
@@ -2278,6 +2287,20 @@ def build() -> tuple[Batch, ...]:
                         protection=mmap.PROT_READ | mmap.PROT_EXEC,
                         shared=True,
                         expected_errno=errno.EACCES,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: private mapping of ELF with a verified built-in signature over its fs-verity digest; W -> X.
+                # Match: the file-property rule matches -> ALLOW; mprotect succeeds.
+                *(
+                    execute_mprotect.mprotect_case(
+                        id=f"execute_mprotect_mprotect_private_w_x_fsverity_signature_true_trusted_ok_{algorithm}",
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(algorithm=algorithm, signed=True),
+                        initial_protection=mmap.PROT_WRITE,
+                        protection=mmap.PROT_EXEC,
+                        expected_errno=0,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
