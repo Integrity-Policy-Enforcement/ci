@@ -2623,6 +2623,18 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                #         A separate exact fs-verity digest permits only the interpreter.
+                # Input: execve the shebang script itself; no required file property.
+                # Match: no script match -> exec returns EACCES before the interpreter can run.
+                execute_interpreter.shebang_case(
+                    id='execute_bprm_check_execve_shebang_dmverity_signature_true_plain_denied',
+                    policy=INTERPRETER_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    script=layout.guest.PLAIN_SHEBANG_TEST_SCRIPT,
+                    expected_errno=errno.EACCES,
+                    expected_returncode=None,
+                    expected_output=None,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
@@ -2689,6 +2701,11 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.SCRIPT_TEST_BINARY,
                     target=layout.guest.PLAIN_SCRIPT_TEST_BINARY,
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.SHEBANG_TEST_SCRIPT,
+                    target=layout.guest.PLAIN_SHEBANG_TEST_SCRIPT,
                 ),
             ),
             extra_scopes=(
