@@ -1,0 +1,7 @@
+policy_name=ipe_test_dmverity_preload_roothash_sha256 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+# The normal client, ELF loader and libc are on the signed root.
+op=EXECUTE dmverity_signature=TRUE action=ALLOW
+# The target library is on an unsigned mapping and cannot use that rule.
+op=EXECUTE dmverity_roothash=@DMVERITY_ROOTHASH_SHA256@ action=ALLOW

@@ -219,6 +219,14 @@ KMODULE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY = policy(
 )
 
 
+def preload_dmverity_roothash_policy(algorithm: str) -> ipe.Policy:
+    """Permit the signed-root runtime and an unsigned library mapping with this hash."""
+    return policy(
+        asset=f"dmverity/roothash/{algorithm}/preload_allow",
+        name=f"ipe_test_dmverity_preload_roothash_{algorithm}",
+    )
+
+
 def interpreter_dmverity_roothash_policy(algorithm: str) -> ipe.Policy:
     """Permit the fixed interpreter and scripts from this dm-verity root hash."""
     return policy(

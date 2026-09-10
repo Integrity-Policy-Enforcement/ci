@@ -34,6 +34,7 @@ from assets import (
     kexec_initramfs_dmverity_roothash_policy,
     kmodule_dmverity_roothash_policy,
     policy_op_dmverity_roothash_policy,
+    preload_dmverity_roothash_policy,
     x509_cert_dmverity_roothash_policy,
 )
 from command import run
@@ -2810,6 +2811,19 @@ def build() -> tuple[Batch, ...]:
                     library=layout.guest.PLAIN_PRELOAD_LIBRARY,
                     expected_returncode=0,
                     expected_preloaded=False,
+                ),
+                # Policy: EXECUTE default DENY; matching dmverity_roothash permits the library; signed root permits the runtime.
+                # Input: library on matching unsigned dm-verity, so the signed-root allowance cannot match it.
+                # Match: library ALLOW -> constructor prints preload; the client exits zero.
+                *(
+                    execute_preload.preload_case(
+                        id=f'execute_mmap_ld_preload_dmverity_roothash_{algorithm}_unsigned_ok',
+                        policy=preload_dmverity_roothash_policy(algorithm=algorithm),
+                        library=layout.guest.dmverity_preload_library(algorithm=algorithm, signed=False),
+                        expected_returncode=0,
+                        expected_preloaded=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
             ),
             setup=(
