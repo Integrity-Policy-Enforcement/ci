@@ -46,6 +46,7 @@ from . import (
     execute_memfd,
     execute_mmap,
     execute_mprotect,
+    execute_preload,
     firmware,
     kexec,
     kmodule,
@@ -2784,6 +2785,19 @@ def build() -> tuple[Batch, ...]:
                         sealed=True,
                         expected_errno=errno.EACCES,
                         expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; dmverity_signature=TRUE permits both the root runtime and the library.
+                # Input: library on dm-verity with a verified root-hash signature.
+                # Match: library ALLOW -> constructor prints preload; the client exits zero.
+                *(
+                    execute_preload.preload_case(
+                        id=f'execute_mmap_ld_preload_dmverity_signature_true_{algorithm}_signed_ok',
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        library=layout.guest.dmverity_preload_library(algorithm=algorithm, signed=True),
+                        expected_returncode=0,
+                        expected_preloaded=True,
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),

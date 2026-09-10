@@ -175,6 +175,7 @@ class test_media:
     SCRIPT_TEST_BINARY = EXECUTE_DIR / "script"
     SHEBANG_TEST_SCRIPT = EXECUTE_DIR / "shebang"
     MEMFD_TEST_BINARY = EXECUTE_DIR / "memfd-target"
+    PRELOAD_LIBRARY = EXECUTE_DIR / "preload.so"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
@@ -200,6 +201,7 @@ class source:
     KERNEL_MODULES_DIR = ROOT_DIR / "kernel-modules"
     EXECUTE_TARGET_SOURCE = ROOT_DIR / "test-programs" / "execute-target.c"
     INTERPRETER_SOURCE = ROOT_DIR / "test-programs" / "script-interpreter.c"
+    PRELOAD_LIBRARY_SOURCE = ROOT_DIR / "test-programs" / "preload-library.c"
     MEMFD_TARGET_SOURCE = ROOT_DIR / "test-programs" / "memfd-target.S"
     MEMFD_TARGET_LINKER_SCRIPT = ROOT_DIR / "test-programs" / "memfd-target.ld"
     SCRIPT_TEST_BINARY = TEST_MEDIA_DIR / test_media.SCRIPT_TEST_BINARY
@@ -234,6 +236,8 @@ class build:
     INTERPRETER_TEST_BINARY = ROOT_DIR / test_media.INTERPRETER_TEST_BINARY
     SHEBANG_TEST_SCRIPT = ROOT_DIR / test_media.SHEBANG_TEST_SCRIPT
     MEMFD_TEST_BINARY = ROOT_DIR / test_media.MEMFD_TEST_BINARY
+    PRELOAD_CLIENT = ROOT_DIR / test_media.EXECUTE_DIR / "preload-target"
+    PRELOAD_LIBRARY = ROOT_DIR / test_media.PRELOAD_LIBRARY
 
     KEXEC_ASSETS_DIR = ROOT_DIR / test_media.KEXEC_DIR
     KEXEC_IMAGE_TEST_BINARY = ROOT_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
@@ -429,6 +433,7 @@ class guest:
     # ipe-root-policy.service reads /usr/lib/ipe/root-policy.p7s directly.
     IPE_DIR = Path("/usr/lib/ipe")
     ROOT_POLICY = IPE_DIR / "root-policy.p7s"
+    PRELOAD_CLIENT = Path("/usr/lib/ipe-tests/preload-target")
 
     RESULT_CHANNEL = Path("/dev/virtio-ports/ipe-tests-result")
     SECURITYFS_DIR = Path("/sys/kernel/security/ipe")
@@ -446,6 +451,7 @@ class guest:
     SCRIPT_TEST_BINARY = PAYLOAD_DIR / test_media.SCRIPT_TEST_BINARY
     SHEBANG_TEST_SCRIPT = PAYLOAD_DIR / test_media.SHEBANG_TEST_SCRIPT
     MEMFD_TEST_BINARY = PAYLOAD_DIR / test_media.MEMFD_TEST_BINARY
+    PRELOAD_LIBRARY = PAYLOAD_DIR / test_media.PRELOAD_LIBRARY
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
     POLICY_OP_TEST_MODULE = PAYLOAD_DIR / test_media.POLICY_OP_TEST_MODULE
@@ -781,6 +787,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
             / test_media.MEMFD_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_preload_library(algorithm: str, signed: bool) -> Path:
+        """The constructor library on the selected dm-verity mapping."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.PRELOAD_LIBRARY
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"

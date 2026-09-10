@@ -106,6 +106,10 @@ def main() -> int:
         shutil.copy(layout.build.X509_TEST_BINARY, x509_target)
         shutil.copy(layout.build.EXECUTE_TEST_BINARY, execute_target)
         shutil.copy(
+            layout.build.PRELOAD_LIBRARY,
+            content_dir / layout.test_media.PRELOAD_LIBRARY,
+        )
+        shutil.copy(
             layout.build.MEMFD_TEST_BINARY,
             content_dir / layout.test_media.MEMFD_TEST_BINARY,
         )

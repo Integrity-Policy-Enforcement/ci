@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Build the self-contained ELF target and the small static script interpreter."""
+"""Build the EXECUTE targets, static interpreter and preload test library."""
 
 import subprocess
 
@@ -32,10 +32,25 @@ def main() -> int:
         ],
         check=True,
     )
+    # Use a normal dynamic link: no copied libc/loader, PT_INTERP rewrite or RPATH.
+    subprocess.run(
+        [
+            "gcc", "-Os", "-Wall", "-Wextra", "-Werror",
+            layout.source.EXECUTE_TARGET_SOURCE, "-o", layout.build.PRELOAD_CLIENT,
+        ],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "gcc", "-shared", "-fPIC", "-Os", "-Wall", "-Wextra", "-Werror",
+            layout.source.PRELOAD_LIBRARY_SOURCE, "-o", layout.build.PRELOAD_LIBRARY,
+        ],
+        check=True,
+    )
     script = layout.build.SHEBANG_TEST_SCRIPT
     script.write_text(f"#!{layout.guest.FSVERITY_INTERPRETER_TEST_BINARY}\n+\n")
     script.chmod(0o755)
-    print("    Prepared the static EXECUTE target, interpreter and shebang script")
+    print("    Prepared the EXECUTE targets, interpreter scripts and preload library")
     return 0
 
 
