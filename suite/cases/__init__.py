@@ -8,6 +8,7 @@ def build() -> tuple[Batch, ...]:
     from . import (
         boot,
         dmverity,
+        execute_memfd,
         fsverity,
         policy,
         policy_signature,
@@ -16,7 +17,10 @@ def build() -> tuple[Batch, ...]:
     )
 
     batches = []
-    for module in (securityfs, policy, policy_signature, policy_text, dmverity, fsverity, boot):
+    for module in (
+        securityfs, policy, policy_signature, policy_text, execute_memfd,
+        dmverity, fsverity, boot,
+    ):
         batches.extend(module.build())
     for batch in batches:
         for case in batch.cases:

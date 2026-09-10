@@ -20,6 +20,18 @@ def main() -> int:
             ],
             check=True,
         )
+    # A single hugepage-sized LOAD avoids libc/BSS/RELRO mappings whose offsets
+    # and lengths cannot be used with a hugetlb memfd. The code only exits zero.
+    subprocess.run(
+        [
+            "gcc", "-nostdlib", "-static",
+            "-Wl,--build-id=none,-z,max-page-size=0x200000",
+            f"-Wl,-T,{layout.source.MEMFD_TARGET_LINKER_SCRIPT}",
+            layout.source.MEMFD_TARGET_SOURCE,
+            "-o", layout.build.MEMFD_TEST_BINARY,
+        ],
+        check=True,
+    )
     script = layout.build.SHEBANG_TEST_SCRIPT
     script.write_text(f"#!{layout.guest.FSVERITY_INTERPRETER_TEST_BINARY}\n+\n")
     script.chmod(0o755)
