@@ -412,6 +412,16 @@ class build:
         """The shebang script's own fs-verity digest."""
         return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"shebang-{algorithm}.digest"
 
+    @staticmethod
+    def fsverity_memfd_signature(algorithm: str) -> Path:
+        """The built-in signature for the source ELF, before its memfd copy."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"memfd-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_memfd_digest(algorithm: str) -> Path:
+        """The fs-verity digest of the original memfd test ELF."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"memfd-{algorithm}.digest"
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -623,6 +633,16 @@ class guest:
     def fsverity_shebang_test_script(algorithm: str) -> Path:
         """The shebang script with enabled fs-verity and a built-in signature."""
         return guest.FSVERITY_EXECUTE_DIR / f"signed-{algorithm}-shebang"
+
+    @staticmethod
+    def fsverity_memfd_signature(algorithm: str) -> Path:
+        """The guest signature path for the original memfd test ELF."""
+        return guest.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"memfd-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_memfd_test_binary(algorithm: str) -> Path:
+        """The signed fs-verity source from which the memfd takes its bytes."""
+        return guest.FSVERITY_EXECUTE_DIR / f"signed-{algorithm}-memfd-target"
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"
     FSVERITY_PLAIN_FIRMWARE_TEST_BINARY = (
