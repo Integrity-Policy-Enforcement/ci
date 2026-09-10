@@ -1,0 +1,5 @@
+policy_name=ipe_test_fsverity_shebang_digest_sha256 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+op=EXECUTE fsverity_digest=@INTERPRETER_DIGEST@ action=ALLOW
+op=EXECUTE fsverity_digest=@FSVERITY_SHEBANG_DIGEST_SHA256@ action=ALLOW

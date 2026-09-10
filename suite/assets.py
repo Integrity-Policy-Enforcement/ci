@@ -318,6 +318,14 @@ def kmodule_dmverity_roothash_policy(
     )
 
 
+def shebang_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
+    """Permit the fixed interpreter and the digest of the complete shebang script."""
+    return policy(
+        asset=f"fsverity/shebang_digest_{algorithm}_allow",
+        name=f"ipe_test_fsverity_shebang_digest_{algorithm}",
+    )
+
+
 def interpreter_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
     """Permit the fixed interpreter and the matching script digest."""
     return policy(
