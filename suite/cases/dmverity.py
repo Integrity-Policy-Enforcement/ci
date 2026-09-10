@@ -2801,6 +2801,16 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; dmverity_signature=TRUE permits both the root runtime and the library.
+                # Input: identical library bytes without either permitted property.
+                # Match: library default DENY -> no constructor output; loader refuses its segment mapping.
+                execute_preload.preload_case(
+                    id='execute_mmap_ld_preload_dmverity_signature_true_plain_denied',
+                    policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    library=layout.guest.PLAIN_PRELOAD_LIBRARY,
+                    expected_returncode=0,
+                    expected_preloaded=False,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
@@ -2872,6 +2882,11 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.SHEBANG_TEST_SCRIPT,
                     target=layout.guest.PLAIN_SHEBANG_TEST_SCRIPT,
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.PRELOAD_LIBRARY,
+                    target=layout.guest.PLAIN_PRELOAD_LIBRARY,
                 ),
             ),
             extra_scopes=(
