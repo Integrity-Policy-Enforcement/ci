@@ -2199,6 +2199,17 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: private mapping of identical ELF bytes without the required file property; W -> RX.
+                # Match: no matching file property -> default DENY; mprotect fails with EACCES.
+                execute_mprotect.mprotect_case(
+                    id="execute_mprotect_mprotect_private_w_rx_dmverity_signature_true_plain_denied",
+                    policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
+                    initial_protection=mmap.PROT_WRITE,
+                    protection=mmap.PROT_READ | mmap.PROT_EXEC,
+                    expected_errno=errno.EACCES,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
