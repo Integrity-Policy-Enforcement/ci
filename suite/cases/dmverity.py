@@ -2501,6 +2501,19 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                #         Only the interpreter has a separate exact fs-verity digest allowance.
+                # Input: identical '+' script without the required file property; open the script path in the interpreter.
+                # Match: no script property match -> EACCES -> no interpretation or stdout.
+                execute_interpreter.interpreter_case(
+                    id='execute_bprm_creds_for_exec_interpreter_file_dmverity_signature_true_plain_denied',
+                    policy=INTERPRETER_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    script=layout.guest.PLAIN_SCRIPT_TEST_BINARY,
+                    from_stdin=False,
+                    expected_errno=errno.EACCES,
+                    expected_returncode=1,
+                    expected_output='',
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
@@ -2562,6 +2575,11 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.EXECUTE_TEST_BINARY,
                     target=layout.guest.PLAIN_EXECUTE_TEST_BINARY,
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.SCRIPT_TEST_BINARY,
+                    target=layout.guest.PLAIN_SCRIPT_TEST_BINARY,
                 ),
             ),
             extra_scopes=(
