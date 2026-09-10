@@ -2701,6 +2701,22 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching fsverity_digest.
+                #         Only the interpreter has a separate exact fs-verity digest allowance.
+                # Input: '+' script with signed fs-verity and a matching script digest; pass its original fd as stdin.
+                # Match: script property matches -> check errno 0 -> interpret and print 1.
+                *(
+                    execute_interpreter.interpreter_case(
+                        id=f'execute_bprm_creds_for_exec_interpreter_stdin_fsverity_digest_{algorithm}_signed_ok',
+                        policy=interpreter_fsverity_digest_policy(algorithm=algorithm),
+                        script=layout.guest.fsverity_script_test_binary(algorithm=algorithm),
+                        from_stdin=True,
+                        expected_errno=0,
+                        expected_returncode=0,
+                        expected_output='1\n',
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
