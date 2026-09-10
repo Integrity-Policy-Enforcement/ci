@@ -2390,6 +2390,20 @@ def build() -> tuple[Batch, ...]:
                     protection=mmap.PROT_WRITE | mmap.PROT_EXEC,
                     expected_errno=errno.EACCES,
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                # Input: private mapping of ELF with a verified built-in signature over its fs-verity digest; W -> R.
+                # Match: no requested PROT_EXEC -> skip EXECUTE evaluation -> ALLOW.
+                *(
+                    execute_mprotect.mprotect_case(
+                        id=f"execute_mprotect_mprotect_private_w_r_fsverity_signature_true_trusted_ok_{algorithm}",
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(algorithm=algorithm, signed=True),
+                        initial_protection=mmap.PROT_WRITE,
+                        protection=mmap.PROT_READ,
+                        expected_errno=0,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
