@@ -2869,6 +2869,21 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching fsverity_digest.
+                # Input: fully sealed ordinary memfd copied from a signed fs-verity source with a matching ELF digest.
+                # Match: a new memfd has no source-file provenance -> default DENY (EACCES).
+                *(
+                    execute_memfd.memfd_case(
+                        id=f"execute_bprm_check_execve_memfd_sealed_fsverity_digest_{algorithm}_denied",
+                        policy=memfd_source_fsverity_digest_policy(algorithm=algorithm),
+                        binary=layout.guest.fsverity_memfd_test_binary(algorithm=algorithm),
+                        huge=False,
+                        sealed=True,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
