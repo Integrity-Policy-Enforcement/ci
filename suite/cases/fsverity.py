@@ -2733,6 +2733,21 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                #         A separate exact fs-verity digest permits only the interpreter.
+                # Input: execve the shebang script itself; a verified built-in fs-verity signature over the shebang script.
+                # Match: script rule matches -> exec and interpretation succeed.
+                *(
+                    execute_interpreter.shebang_case(
+                        id=f'execute_bprm_check_execve_shebang_fsverity_signature_true_{algorithm}_signed_ok',
+                        policy=INTERPRETER_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        script=layout.guest.fsverity_shebang_test_script(algorithm=algorithm),
+                        expected_errno=0,
+                        expected_returncode=0,
+                        expected_output='1\n',
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -2987,6 +3002,16 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.SCRIPT_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_SCRIPT_TEST_BINARY,
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.SHEBANG_TEST_SCRIPT,
+                        target=layout.guest.fsverity_shebang_test_script(algorithm=algorithm),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_shebang_signature(algorithm=algorithm),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             extra_scopes=(

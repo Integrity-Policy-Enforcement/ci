@@ -398,6 +398,16 @@ class build:
         """The script's own fs-verity digest."""
         return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"script-{algorithm}.digest"
 
+    @staticmethod
+    def fsverity_shebang_signature(algorithm: str) -> Path:
+        """The built-in signature over the entire script, including its shebang."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"shebang-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_shebang_digest(algorithm: str) -> Path:
+        """The shebang script's own fs-verity digest."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"shebang-{algorithm}.digest"
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -597,6 +607,16 @@ class guest:
     def fsverity_script_test_binary(algorithm: str) -> Path:
         """The script with enabled fs-verity and a verified built-in signature."""
         return guest.FSVERITY_EXECUTE_DIR / f"signed-{algorithm}-script"
+
+    @staticmethod
+    def fsverity_shebang_signature(algorithm: str) -> Path:
+        """The guest signature path for the shebang script's digest."""
+        return guest.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"shebang-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_shebang_test_script(algorithm: str) -> Path:
+        """The shebang script with enabled fs-verity and a built-in signature."""
+        return guest.FSVERITY_EXECUTE_DIR / f"signed-{algorithm}-shebang"
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"
     FSVERITY_PLAIN_FIRMWARE_TEST_BINARY = (
