@@ -129,6 +129,18 @@ def main() -> int:
             digest_path=layout.build.fsverity_execute_digest(algorithm=algorithm),
         )
 
+    # Only this fixed digest permits the interpreter under script-test policies.
+    digest = subprocess.run(
+        [
+            "fsverity", "digest", layout.build.INTERPRETER_TEST_BINARY,
+            f"--hash-alg={layout.INTERPRETER_HASH}", "--compact",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    layout.build.INTERPRETER_DIGEST.write_text(digest + "\n")
+
     relative = layout.build.FSVERITY_ASSETS_DIR.relative_to(layout.source.ROOT_DIR)
     print(f"    Prepared the fs-verity signatures in {relative}")
     return 0

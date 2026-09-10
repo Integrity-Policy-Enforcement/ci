@@ -155,6 +155,8 @@ def measurements() -> dict[str, str]:
         upper = algorithm.upper()
         table[f"@FSVERITY_EXECUTE_DIGEST_{upper}@"] = f"{algorithm}:{digest}"
         table[f"@FSVERITY_EXECUTE_OTHER_DIGEST_{upper}@"] = f"{algorithm}:{shift(digest)}"
+    digest = layout.build.INTERPRETER_DIGEST.read_text().strip()
+    table["@INTERPRETER_DIGEST@"] = f"{layout.INTERPRETER_HASH}:{digest}"
     return table
 
 
