@@ -2394,6 +2394,20 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching dmverity_roothash.
+                # Input: private mapping of ELF on matching dm-verity without a root-hash signature; R -> WX.
+                # Match: the file-property rule matches -> ALLOW; mprotect succeeds.
+                *(
+                    execute_mprotect.mprotect_case(
+                        id=f"execute_mprotect_mprotect_private_r_wx_dmverity_roothash_trusted_ok_{algorithm}",
+                        policy=execute_dmverity_roothash_policy(algorithm=algorithm, matching=True),
+                        binary=layout.guest.dmverity_execute_test_binary(algorithm=algorithm, signed=False),
+                        initial_protection=mmap.PROT_READ,
+                        protection=mmap.PROT_WRITE | mmap.PROT_EXEC,
+                        expected_errno=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
