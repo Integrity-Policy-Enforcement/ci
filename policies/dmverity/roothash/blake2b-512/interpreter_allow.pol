@@ -1,0 +1,5 @@
+policy_name=ipe_test_dmverity_interpreter_roothash_blake2b-512 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+op=EXECUTE fsverity_digest=@INTERPRETER_DIGEST@ action=ALLOW
+op=EXECUTE dmverity_roothash=@DMVERITY_ROOTHASH_BLAKE2B-512@ action=ALLOW
