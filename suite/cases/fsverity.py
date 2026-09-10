@@ -2496,6 +2496,20 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching fsverity_digest.
+                # Input: private mapping of signed fs-verity ELF whose digest matches the rule; R -> X.
+                # Match: the file-property rule matches -> ALLOW; mprotect succeeds.
+                *(
+                    execute_mprotect.mprotect_case(
+                        id=f"execute_mprotect_mprotect_private_r_x_fsverity_digest_trusted_ok_{algorithm}",
+                        policy=execute_fsverity_digest_policy(algorithm=algorithm, matching=True),
+                        binary=layout.guest.fsverity_execute_test_binary(algorithm=algorithm, signed=True),
+                        initial_protection=mmap.PROT_READ,
+                        protection=mmap.PROT_EXEC,
+                        expected_errno=0,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
