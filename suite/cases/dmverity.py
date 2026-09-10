@@ -42,6 +42,7 @@ from model import Batch, Case
 from . import (
     execute,
     execute_interpreter,
+    execute_memfd,
     execute_mmap,
     execute_mprotect,
     firmware,
@@ -2662,6 +2663,21 @@ def build() -> tuple[Batch, ...]:
                         expected_errno=errno.EACCES,
                         expected_returncode=None,
                         expected_output=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                # Input: unsealed ordinary memfd copied from a dm-verity source with a verified root-hash signature.
+                # Match: a new memfd has no source-file provenance -> default DENY (EACCES).
+                *(
+                    execute_memfd.memfd_case(
+                        id=f"execute_bprm_check_execve_memfd_unsealed_dmverity_signature_true_{algorithm}_denied",
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_memfd_test_binary(algorithm=algorithm, signed=True),
+                        huge=False,
+                        sealed=False,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),

@@ -755,6 +755,14 @@ class guest:
             / test_media.SHEBANG_TEST_SCRIPT
         )
 
+    @staticmethod
+    def dmverity_memfd_test_binary(algorithm: str, signed: bool) -> Path:
+        """The trusted source ELF whose bytes will be copied into a new memfd."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.MEMFD_TEST_BINARY
+        )
+
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"
     PLAIN_KMODULE_TEST_BINARY = PLAIN_MOUNT_DIR / test_media.KMODULE_TEST_BINARY
     PLAIN_FIRMWARE_TEST_BINARY = PLAIN_MOUNT_DIR / test_media.FIRMWARE_TEST_BINARY
