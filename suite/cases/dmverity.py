@@ -2514,6 +2514,22 @@ def build() -> tuple[Batch, ...]:
                     expected_returncode=1,
                     expected_output='',
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                #         Only the interpreter has a separate exact fs-verity digest allowance.
+                # Input: '+' script with a verified mapping root-hash signature; pass its original fd as stdin.
+                # Match: script property matches -> check errno 0 -> interpret and print 1.
+                *(
+                    execute_interpreter.interpreter_case(
+                        id=f'execute_bprm_creds_for_exec_interpreter_stdin_dmverity_signature_true_{algorithm}_signed_ok',
+                        policy=INTERPRETER_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        script=layout.guest.dmverity_script_test_binary(algorithm=algorithm, signed=True),
+                        from_stdin=True,
+                        expected_errno=0,
+                        expected_returncode=0,
+                        expected_output='1\n',
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
