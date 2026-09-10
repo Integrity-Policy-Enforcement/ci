@@ -2776,6 +2776,21 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching fsverity_digest.
+                #         A separate exact fs-verity digest permits only the interpreter.
+                # Input: execve the shebang script itself; no required file property.
+                # Match: no script match -> exec returns EACCES before the interpreter can run.
+                *(
+                    execute_interpreter.shebang_case(
+                        id=f'execute_bprm_check_execve_shebang_fsverity_digest_{algorithm}_plain_denied',
+                        policy=shebang_fsverity_digest_policy(algorithm=algorithm),
+                        script=layout.guest.FSVERITY_PLAIN_SHEBANG_TEST_SCRIPT,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                        expected_output=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
