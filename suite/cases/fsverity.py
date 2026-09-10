@@ -2953,6 +2953,19 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; matching fsverity_digest permits the library; signed root permits the runtime.
+                # Input: identical library bytes without either permitted property.
+                # Match: library default DENY -> no constructor output; loader refuses its segment mapping.
+                *(
+                    execute_preload.preload_case(
+                        id=f'execute_mmap_ld_preload_fsverity_digest_{algorithm}_plain_denied',
+                        policy=preload_fsverity_digest_policy(algorithm=algorithm),
+                        library=layout.guest.FSVERITY_PLAIN_PRELOAD_LIBRARY,
+                        expected_returncode=0,
+                        expected_preloaded=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
