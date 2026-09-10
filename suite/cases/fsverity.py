@@ -14,6 +14,7 @@ from assets import (
     EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     FIRMWARE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    INTERPRETER_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KEXEC_IMAGE_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     KEXEC_IMAGE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     KEXEC_INITRAMFS_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
@@ -37,6 +38,7 @@ from model import Batch, Case
 
 from . import (
     execute,
+    execute_interpreter,
     execute_mmap,
     execute_mprotect,
     firmware,
@@ -2608,11 +2610,33 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE.
+                #         Only the interpreter has a separate exact fs-verity digest allowance.
+                # Input: '+' script with a verified built-in fs-verity signature over the script digest; open the script path in the interpreter.
+                # Match: script property matches -> check errno 0 -> interpret and print 1.
+                *(
+                    execute_interpreter.interpreter_case(
+                        id=f'execute_bprm_creds_for_exec_interpreter_file_fsverity_signature_true_{algorithm}_signed_ok',
+                        policy=INTERPRETER_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        script=layout.guest.fsverity_script_test_binary(algorithm=algorithm),
+                        from_stdin=False,
+                        expected_errno=0,
+                        expected_returncode=0,
+                        expected_output='1\n',
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
+                partial(
+                    files.prepare_fsverity_test_binary,
+                    source=layout.guest.INTERPRETER_TEST_BINARY,
+                    target=layout.guest.FSVERITY_INTERPRETER_TEST_BINARY,
+                    algorithm=layout.INTERPRETER_HASH,
+                ),
                 partial(run, "insmod", layout.guest.POLICY_OP_TEST_MODULE),
                 partial(run, "insmod", layout.guest.X509_TEST_MODULE),
                 *(
@@ -2841,6 +2865,16 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.EXECUTE_TEST_BINARY,
                     target=layout.guest.FSVERITY_PLAIN_EXECUTE_TEST_BINARY,
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.SCRIPT_TEST_BINARY,
+                        target=layout.guest.fsverity_script_test_binary(algorithm=algorithm),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_script_signature(algorithm=algorithm),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             extra_scopes=(

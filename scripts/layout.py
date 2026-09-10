@@ -386,6 +386,16 @@ class build:
             / _fsverity_digest_name(algorithm=algorithm, compressed=False)
         )
 
+    @staticmethod
+    def fsverity_script_signature(algorithm: str) -> Path:
+        """The built-in fs-verity signature over the script, not its interpreter."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"script-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_script_digest(algorithm: str) -> Path:
+        """The script's own fs-verity digest."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"script-{algorithm}.digest"
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -573,6 +583,16 @@ class guest:
             guest.FSVERITY_EXECUTE_DIR
             / f"{state}-{algorithm}-{test_media.EXECUTE_TEST_BINARY.name}"
         )
+
+    @staticmethod
+    def fsverity_script_signature(algorithm: str) -> Path:
+        """The guest signature path for the script's fs-verity digest."""
+        return guest.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"script-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_script_test_binary(algorithm: str) -> Path:
+        """The script with enabled fs-verity and a verified built-in signature."""
+        return guest.FSVERITY_EXECUTE_DIR / f"signed-{algorithm}-script"
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"
     FSVERITY_PLAIN_FIRMWARE_TEST_BINARY = (
