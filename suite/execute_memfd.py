@@ -25,8 +25,10 @@ HUGE_POOL = Path("/sys/kernel/mm/hugepages/hugepages-2048kB")
 
 @contextmanager
 def hugepages_scope() -> Generator[None, None, None]:
-    """Temporarily add four 2 MiB pages for the source and private exec mappings.
+    """Reserve four 2 MiB pages only for the current hugetlb memfd case.
 
+    Ordinary mappings and kexec must not hold this pool. The case child exits
+    before restoration, releasing its source and private exec mappings.
     Check both pool size and free-page count on restoration. A short allocation
     or retained hugepage is a setup/cleanup failure, never an IPE refusal.
     """

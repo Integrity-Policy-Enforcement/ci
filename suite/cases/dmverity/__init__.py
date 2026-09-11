@@ -11,7 +11,6 @@ import layout
 import modules
 import mounts
 from command import run
-from execute_memfd import hugepages_scope
 from model import Batch
 
 from . import (
@@ -137,7 +136,6 @@ def build() -> tuple[Batch, ...]:
                 ),
             ),
             extra_scopes=(
-                hugepages_scope,
                 partial(
                     files.directory_scope,
                     directory=layout.guest.FSVERITY_EXECUTE_DIR,

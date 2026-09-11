@@ -35,6 +35,7 @@ def memfd_case(
             partial(checks.errno_is, expected=expected_errno),
             partial(execute.check_returncode, expected=expected_returncode),
         ),
+        extra_scopes=(execute_memfd.hugepages_scope,) if huge else (),
     )
 
 
@@ -103,6 +104,7 @@ def build() -> tuple[Batch, ...]:
                         partial(checks.errno_is, expected=0),
                         partial(execute.check_returncode, expected=0),
                     ),
+                    extra_scopes=(execute_memfd.hugepages_scope,),
                 ),
                 # Policy: the existing baseline allows EXECUTE unconditionally.
                 # Input: the valid ELF in a 2 MiB hugetlb memfd, fully sealed.
@@ -123,8 +125,8 @@ def build() -> tuple[Batch, ...]:
                         partial(checks.errno_is, expected=0),
                         partial(execute.check_returncode, expected=0),
                     ),
+                    extra_scopes=(execute_memfd.hugepages_scope,),
                 ),
             ),
-            extra_scopes=(execute_memfd.hugepages_scope,),
         ),
     )
