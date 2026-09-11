@@ -16,11 +16,10 @@ import json
 import shutil
 
 import layout
-import modules
-import mounts
 import runner
 from cases.boot import INITRAMFS_CASES
 from command import run
+from resources import modules, mounts
 
 
 def main() -> int:

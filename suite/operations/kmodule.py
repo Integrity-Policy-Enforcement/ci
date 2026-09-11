@@ -7,9 +7,9 @@ from pathlib import Path
 import checks
 import ipe
 import layout
-import modules
 import steps
 from model import Case, CaseState, Observation
+from resources import modules
 
 # insmod reports a failed insertion with process return code 1, not an errno.
 INSMOD_REFUSED_RETURN_CODE = 1

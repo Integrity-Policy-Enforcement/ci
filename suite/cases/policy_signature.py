@@ -5,7 +5,6 @@ from functools import partial
 
 import checks
 import ipe
-import keyring
 import layout
 import triggers
 from assets import (
@@ -16,6 +15,7 @@ from assets import (
     UNTRUSTED_SIGNATURE_POLICY,
 )
 from model import Batch, Case
+from resources import keyring
 
 SECONDARY_KEYRING = "%:.secondary_trusted_keys"
 
