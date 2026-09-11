@@ -11,8 +11,7 @@ from assets import (
     policy_op_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import policy_op
+from operations import policy_op
 
 
 def cases() -> tuple[Case, ...]:

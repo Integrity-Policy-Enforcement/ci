@@ -1,13 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""firmware operation: case construction, execution and result checks."""
 
 import errno
 from collections.abc import Generator
 from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
 
+import checks
+import ipe
 import layout
 import nodeio
-from model import CaseState, Observation
+import steps
+from model import Case, CaseState, Observation
 from scope import setting
 from triggers import error_observation
 
@@ -74,3 +79,37 @@ def request_firmware_scope() -> Generator[None, None, None]:
             yield
         finally:
             clear_requested_firmware()
+
+
+def request_firmware_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    expected_errno: int,
+    expected_content_match: bool,
+) -> Case:
+    """Request firmware and check its errno and content."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(
+            request_firmware,
+            binary=binary,
+        ),
+        checks=(
+            partial(
+                checks.errno_is,
+                expected=expected_errno,
+            ),
+            partial(
+                check_requested_firmware,
+                expected_binary=binary,
+                expected_content_match=expected_content_match,
+            ),
+        ),
+        extra_scopes=(request_firmware_scope,),
+    )

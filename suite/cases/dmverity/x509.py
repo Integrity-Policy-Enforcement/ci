@@ -11,8 +11,7 @@ from assets import (
     x509_cert_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import x509
+from operations import x509
 
 
 def cases() -> tuple[Case, ...]:

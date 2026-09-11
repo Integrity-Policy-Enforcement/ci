@@ -10,8 +10,7 @@ from assets import (
     execute_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import execute_memfd
+from operations import memfd as execute_memfd
 
 
 def cases() -> tuple[Case, ...]:

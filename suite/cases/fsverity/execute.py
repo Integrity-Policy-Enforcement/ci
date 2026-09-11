@@ -11,8 +11,7 @@ from assets import (
     execute_fsverity_digest_policy,
 )
 from model import Case
-
-from .. import execute
+from operations import execve as execute
 
 
 def cases() -> tuple[Case, ...]:

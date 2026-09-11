@@ -11,8 +11,7 @@ from assets import (
     execute_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import execute_mprotect
+from operations import mprotect as execute_mprotect
 
 
 def cases() -> tuple[Case, ...]:

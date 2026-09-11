@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""memfd operation: case construction, execution and result checks."""
 
 import fcntl
 import mmap
@@ -6,11 +7,17 @@ import os
 import subprocess
 from collections.abc import Generator
 from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
 
+import checks
+import ipe
 import nodeio
-from model import CaseState, Observation
+import steps
+from model import Case, CaseState, Observation
 from triggers import error_observation
+
+from . import execve
 
 # Linux UAPI constants not yet exposed by Python's os/fcntl modules.
 MFD_EXEC = 0x0010
@@ -90,3 +97,29 @@ def execute(binary: Path, huge: bool, sealed: bool, state: CaseState) -> Observa
     except OSError as failure:
         return error_observation(failure)
     return Observation(errno=0, returncode=result.returncode, message=result.stderr)
+
+
+def memfd_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    huge: bool,
+    sealed: bool,
+    expected_errno: int,
+    expected_returncode: int | None,
+) -> Case:
+    """Exec a memfd copy, checking syscall refusal separately from program exit."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(execute, binary=binary, huge=huge, sealed=sealed),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(execve.check_returncode, expected=expected_returncode),
+        ),
+        extra_scopes=(hugepages_scope,) if huge else (),
+    )

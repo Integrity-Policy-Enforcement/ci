@@ -1,11 +1,16 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""mprotect operation: case construction, execution and result checks."""
 
 import ctypes
 import mmap
 import os
+from functools import partial
 from pathlib import Path
 
-from model import CaseState, Observation
+import checks
+import ipe
+import steps
+from model import Case, CaseState, Observation
 
 MAP_FAILED = ctypes.c_void_p(-1).value
 
@@ -47,3 +52,29 @@ def protect_file(
     if result != 0 and not error:
         raise RuntimeError("mprotect failed without setting errno")
     return Observation(errno=error)
+
+
+def mprotect_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    initial_protection: int,
+    protection: int,
+    expected_errno: int,
+) -> Case:
+    """Change a private file mapping and check success or the exact failure errno."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(
+            protect_file,
+            binary=binary,
+            initial_protection=initial_protection,
+            protection=protection,
+        ),
+        checks=(partial(checks.errno_is, expected=expected_errno),),
+    )

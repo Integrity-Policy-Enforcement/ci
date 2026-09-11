@@ -8,8 +8,7 @@ from assets import (
     preload_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import execute_preload
+from operations import preload as execute_preload
 
 
 def cases() -> tuple[Case, ...]:

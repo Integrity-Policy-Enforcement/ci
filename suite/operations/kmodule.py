@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""kmodule operation: case construction, execution and result checks."""
 
 from functools import partial
 from pathlib import Path
@@ -30,6 +31,18 @@ def call_init_module(binary: Path, state: CaseState) -> Observation:
     return Observation(errno=modules.init_module_from_buffer(binary.read_bytes()))
 
 
+def check_loaded(
+    name: str,
+    expected_loaded: bool,
+    observation: Observation,
+) -> str | None:
+    """Check whether the named module has the expected loaded state."""
+    actual_loaded = name in modules.names()
+    if actual_loaded != expected_loaded:
+        return f"module {name} loaded={actual_loaded}, expected {expected_loaded}"
+    return None
+
+
 def insmod_case(
     id: str,
     policy: ipe.Policy,
@@ -52,7 +65,7 @@ def insmod_case(
                 expected=expected_returncode,
             ),
             partial(
-                modules.check_loaded,
+                check_loaded,
                 name=KMODULE_TEST_BINARY_NAME,
                 expected_loaded=expected_loaded,
             ),
@@ -85,7 +98,7 @@ def init_module_case(
         checks=(
             partial(checks.errno_is, expected=expected_errno),
             partial(
-                modules.check_loaded,
+                check_loaded,
                 name=KMODULE_TEST_BINARY_NAME,
                 expected_loaded=expected_loaded,
             ),

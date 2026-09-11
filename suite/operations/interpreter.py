@@ -1,13 +1,20 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""interpreter operation: case construction, execution and result checks."""
 
 import re
 import subprocess
 from contextlib import nullcontext
+from functools import partial
 from pathlib import Path
 
+import checks
+import ipe
 import layout
-from model import CaseState, Observation
+import steps
+from model import Case, CaseState, Observation
 from triggers import error_observation
+
+from . import execve
 
 
 def interpret(script: Path, from_stdin: bool, state: CaseState) -> Observation:
@@ -61,3 +68,56 @@ def check_output(expected: str, observation: Observation) -> str | None:
     if observation.observed != (expected,):
         return f"interpreter output {observation.observed!r}, expected {(expected,)!r}"
     return None
+
+
+def shebang_case(
+    id: str,
+    policy: ipe.Policy,
+    script: Path,
+    expected_errno: int,
+    expected_returncode: int | None,
+    expected_output: str | None,
+) -> Case:
+    """Exec a shebang script, separating kernel refusal from interpreter failure."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(exec_shebang, script=script),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(execve.check_returncode, expected=expected_returncode),
+        ) + (
+            (partial(check_shebang_output, expected=expected_output),)
+            if expected_output is not None else ()
+        ),
+    )
+
+
+def interpreter_case(
+    id: str,
+    policy: ipe.Policy,
+    script: Path,
+    from_stdin: bool,
+    expected_errno: int,
+    expected_returncode: int,
+    expected_output: str,
+) -> Case:
+    """Check script authorization and whether the interpreter executed its command."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(interpret, script=script, from_stdin=from_stdin),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(checks.returncode_is, expected=expected_returncode),
+            partial(check_output, expected=expected_output),
+        ),
+    )

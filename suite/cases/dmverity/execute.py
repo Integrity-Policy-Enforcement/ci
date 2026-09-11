@@ -11,8 +11,7 @@ from assets import (
     execute_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import execute
+from operations import execve as execute
 
 
 def signature_true_cases() -> tuple[Case, ...]:

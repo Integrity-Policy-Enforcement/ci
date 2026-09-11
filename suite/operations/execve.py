@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""execve operation: case construction, execution and result checks."""
 
 import subprocess
+from functools import partial
 from pathlib import Path
 
-from model import CaseState, Observation
+import checks
+import ipe
+import steps
+from model import Case, CaseState, Observation
 from triggers import error_observation
 
 
@@ -24,3 +29,26 @@ def check_returncode(expected: int | None, observation: Observation) -> str | No
     if observation.returncode != expected:
         return f"program return code {observation.returncode}, expected {expected}"
     return None
+
+
+def execve_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    expected_errno: int,
+    expected_returncode: int | None,
+) -> Case:
+    """Execute a static ELF and independently check exec errno and exit status."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(execve, binary=binary),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(check_returncode, expected=expected_returncode),
+        ),
+    )

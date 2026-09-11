@@ -1,12 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""mmap operation: case construction, execution and result checks."""
 
 import ctypes
 import mmap
 import os
 from contextlib import nullcontext
+from functools import partial
 from pathlib import Path
 
-from model import CaseState, Observation
+import checks
+import ipe
+import steps
+from model import Case, CaseState, Observation
 
 PAGE_SIZE = os.sysconf("SC_PAGE_SIZE")
 MAP_FAILED = ctypes.c_void_p(-1).value
@@ -46,3 +51,29 @@ def map_memory(
             raise RuntimeError("mmap failed without setting errno")
         return Observation(errno=error)
     return Observation(errno=0)
+
+
+def mmap_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path | None,
+    protection: int,
+    shared: bool,
+    expected_errno: int,
+) -> Case:
+    """Request a mapping and check success or the exact failure errno."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(
+            map_memory,
+            binary=binary,
+            protection=protection,
+            shared=shared,
+        ),
+        checks=(partial(checks.errno_is, expected=expected_errno),),
+    )

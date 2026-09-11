@@ -1,11 +1,16 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""kexec operation: case construction, execution and result checks."""
 
 import ctypes
 from collections.abc import Generator
 from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
 
-from model import CaseState, Observation
+import checks
+import ipe
+import steps
+from model import Case, CaseState, Observation
 
 LOADED_NODE = Path("/sys/kernel/kexec/loaded")
 # These UAPI flag bits are architecture-independent; syscall numbers are not.
@@ -150,3 +155,76 @@ def image_scope() -> Generator[None, None, None]:
                 raise OSError(error, "kexec_file_load unload failed")
         if loaded():
             raise RuntimeError("kexec image remained loaded after cleanup")
+
+
+def file_load_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    expected_errno: int,
+    expected_loaded: bool,
+) -> Case:
+    """Load a kernel file, check the syscall and staged state, then unload it."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(load_file, binary=binary),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(check_loaded, expected_loaded=expected_loaded),
+        ),
+        extra_scopes=(image_scope,),
+    )
+
+
+def initramfs_load_case(
+    id: str,
+    policy: ipe.Policy,
+    kernel: Path,
+    binary: Path,
+    expected_errno: int,
+    expected_loaded: bool,
+) -> Case:
+    """Load an initramfs with a fixed kernel and check the syscall and slot."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(load_initramfs, kernel=kernel, binary=binary),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(check_loaded, expected_loaded=expected_loaded),
+        ),
+        extra_scopes=(image_scope,),
+    )
+
+
+def buffer_load_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    expected_errno: int,
+    expected_loaded: bool,
+) -> Case:
+    """Try the userspace-segment syscall and check its errno and staged state."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(load_buffer, binary=binary),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(check_loaded, expected_loaded=expected_loaded),
+        ),
+        extra_scopes=(image_scope,),
+    )

@@ -11,8 +11,7 @@ from assets import (
     kexec_image_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import kexec
+from operations import kexec
 
 
 def cases() -> tuple[Case, ...]:

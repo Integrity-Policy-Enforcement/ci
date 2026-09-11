@@ -17,8 +17,8 @@ import checks
 import ipe
 import layout
 from model import Batch, Case
-
-from . import execute, firmware, kexec, kmodule, policy_op, x509
+from operations import execve as execute
+from operations import firmware, kexec, kmodule, policy_op, x509
 
 KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,

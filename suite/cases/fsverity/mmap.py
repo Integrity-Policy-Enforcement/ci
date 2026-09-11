@@ -11,8 +11,7 @@ from assets import (
     execute_fsverity_digest_policy,
 )
 from model import Case
-
-from .. import execute_mmap
+from operations import mmap as execute_mmap
 
 
 def cases() -> tuple[Case, ...]:

@@ -11,8 +11,7 @@ from assets import (
     shebang_fsverity_digest_policy,
 )
 from model import Case
-
-from .. import execute_interpreter
+from operations import interpreter as execute_interpreter
 
 
 def cases() -> tuple[Case, ...]:

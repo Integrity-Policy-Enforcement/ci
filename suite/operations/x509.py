@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""x509 operation: case construction, execution and result checks."""
 
+from functools import partial
 from pathlib import Path
 
+import checks
+import ipe
 import nodeio
-from model import CaseState, Observation
+import steps
+from model import Case, CaseState, Observation
 from triggers import error_observation
 
 DEVICE = Path("/dev/ipe_test_x509")
@@ -29,3 +34,26 @@ def check_contents(expected: Path | bytes, observation: Observation) -> str | No
             f"expected {len(wanted)} bytes"
         )
     return None
+
+
+def read_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    expected_errno: int,
+    expected_content: Path | bytes,
+) -> Case:
+    """Read a file as X509_CERT and check its errno and actual retained bytes."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(read_file, binary=binary),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(check_contents, expected=expected_content),
+        ),
+    )
