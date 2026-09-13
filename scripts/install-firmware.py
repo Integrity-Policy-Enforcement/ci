@@ -28,7 +28,10 @@ def download(url: str, destination: Path) -> None:
 
 
 def fetch(url: str, destination: Path, sha256: str) -> bool:
-    for attempt in range(1, DOWNLOAD_ATTEMPTS + 1):
+    for attempt in range(DOWNLOAD_ATTEMPTS):
+        if attempt:
+            time.sleep(DOWNLOAD_RETRY_DELAY)
+
         try:
             download(url, destination)
         except (OSError, http.client.HTTPException) as error:
@@ -39,9 +42,7 @@ def fetch(url: str, destination: Path, sha256: str) -> bool:
                 return True
             reason = f"digest {digest} does not match the pinned value"
 
-        print(f"attempt {attempt}/{DOWNLOAD_ATTEMPTS}: {reason}", file=sys.stderr)
-        if attempt < DOWNLOAD_ATTEMPTS:
-            time.sleep(DOWNLOAD_RETRY_DELAY)
+        print(reason, file=sys.stderr)
 
     return False
 
