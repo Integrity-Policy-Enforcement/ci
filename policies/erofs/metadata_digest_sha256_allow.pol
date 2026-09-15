@@ -1,0 +1,4 @@
+policy_name=ipe_test_erofs_metadata_digest_sha256_allow policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+op=EXECUTE metadata_backing_file_fsverity_digest=@EROFS_DIGEST_SHA256@ action=ALLOW

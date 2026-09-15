@@ -53,6 +53,9 @@ def main(argv: list[str] | None = None) -> int:
     step("Prepare the EXECUTE test binary")
     run_checked([PYTHON, SCRIPTS / "build-execute-assets.py"])
 
+    step("Prepare the EROFS image")
+    run_checked([PYTHON, SCRIPTS / "build-erofs-image.py"])
+
     step("Prepare the dm-verity image")
     run_checked([PYTHON, SCRIPTS / "build-dmverity-image.py"])
 

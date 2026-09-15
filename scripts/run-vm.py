@@ -65,6 +65,7 @@ def make_payload(output: Path) -> None:
             layout.build.DMVERITY_ASSETS_DIR,
             staging_path(layout.guest.DMVERITY_ASSETS_DIR),
         )
+        shutil.copytree(layout.build.EROFS_DIR, staging_path(layout.guest.EROFS_DIR))
         staging_path(layout.guest.EXECUTE_TEST_BINARY).parent.mkdir()
         shutil.copy(
             layout.build.EXECUTE_TEST_BINARY,

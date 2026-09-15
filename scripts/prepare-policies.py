@@ -167,6 +167,9 @@ def measurements() -> dict[str, str]:
     for algorithm in hashes.FSVERITY_ALGORITHMS:
         digest = layout.build.fsverity_preload_digest(algorithm=algorithm).read_text().strip()
         table[f"@FSVERITY_PRELOAD_DIGEST_{algorithm.upper()}@"] = f"{algorithm}:{digest}"
+    for algorithm in hashes.FSVERITY_ALGORITHMS:
+        digest = layout.build.erofs_digest(algorithm).read_text().strip()
+        table[f"@EROFS_DIGEST_{algorithm.upper()}@"] = f"{algorithm}:{digest}"
     digest = layout.build.INTERPRETER_DIGEST.read_text().strip()
     table["@INTERPRETER_DIGEST@"] = f"{layout.INTERPRETER_HASH}:{digest}"
     return table
@@ -197,6 +200,7 @@ def main() -> int:
                     "capability",
                     "dmverity",
                     "fsverity",
+                    "erofs",
                     "policy",
                     "policy_text",
                 ),

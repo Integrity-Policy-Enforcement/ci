@@ -176,6 +176,8 @@ class test_media:
     SHEBANG_TEST_SCRIPT = EXECUTE_DIR / "shebang"
     MEMFD_TEST_BINARY = EXECUTE_DIR / "memfd-target"
     PRELOAD_LIBRARY = EXECUTE_DIR / "preload.so"
+    EROFS_DIR = Path("erofs")
+    EROFS_IMAGE = EROFS_DIR / "image.erofs"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
@@ -238,6 +240,13 @@ class build:
     MEMFD_TEST_BINARY = ROOT_DIR / test_media.MEMFD_TEST_BINARY
     PRELOAD_CLIENT = ROOT_DIR / test_media.EXECUTE_DIR / "preload-target"
     PRELOAD_LIBRARY = ROOT_DIR / test_media.PRELOAD_LIBRARY
+    EROFS_DIR = ROOT_DIR / test_media.EROFS_DIR
+    EROFS_IMAGE = ROOT_DIR / test_media.EROFS_IMAGE
+
+    @staticmethod
+    def erofs_digest(algorithm: str) -> Path:
+        """The fs-verity digest of the EROFS image, not its inner executable."""
+        return build.EROFS_DIR / f"image-{algorithm}.digest"
 
     KEXEC_ASSETS_DIR = ROOT_DIR / test_media.KEXEC_DIR
     KEXEC_IMAGE_TEST_BINARY = ROOT_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
@@ -462,6 +471,8 @@ class guest:
     SHEBANG_TEST_SCRIPT = PAYLOAD_DIR / test_media.SHEBANG_TEST_SCRIPT
     MEMFD_TEST_BINARY = PAYLOAD_DIR / test_media.MEMFD_TEST_BINARY
     PRELOAD_LIBRARY = PAYLOAD_DIR / test_media.PRELOAD_LIBRARY
+    EROFS_DIR = PAYLOAD_DIR / test_media.EROFS_DIR
+    EROFS_IMAGE = PAYLOAD_DIR / test_media.EROFS_IMAGE
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
     POLICY_OP_TEST_MODULE = PAYLOAD_DIR / test_media.POLICY_OP_TEST_MODULE
