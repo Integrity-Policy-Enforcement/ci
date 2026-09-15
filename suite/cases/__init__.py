@@ -7,6 +7,7 @@ def build() -> tuple[Batch, ...]:
     """Collect every batch, reject duplicates and cases that assert nothing."""
     from . import (
         boot,
+        composefs,
         dmverity,
         erofs,
         fsverity,
@@ -20,7 +21,7 @@ def build() -> tuple[Batch, ...]:
     batches = []
     for module in (
         securityfs, policy, policy_signature, policy_text, memfd_controls,
-        dmverity, fsverity, erofs, boot,
+        dmverity, fsverity, erofs, composefs, boot,
     ):
         batches.extend(module.build())
     for batch in batches:

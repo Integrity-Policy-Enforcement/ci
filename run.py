@@ -56,6 +56,9 @@ def main(argv: list[str] | None = None) -> int:
     step("Prepare the EROFS image")
     run_checked([PYTHON, SCRIPTS / "build-erofs-image.py"])
 
+    step("Prepare the Composefs image and objects")
+    run_checked([PYTHON, SCRIPTS / "build-composefs-image.py"])
+
     step("Prepare the dm-verity image")
     run_checked([PYTHON, SCRIPTS / "build-dmverity-image.py"])
 

@@ -2,6 +2,7 @@ bc
 bison
 build-essential
 ca-certificates
+composefs
 cpio
 cryptsetup-bin
 dnf

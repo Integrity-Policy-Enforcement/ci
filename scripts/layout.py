@@ -178,6 +178,9 @@ class test_media:
     PRELOAD_LIBRARY = EXECUTE_DIR / "preload.so"
     EROFS_DIR = Path("erofs")
     EROFS_IMAGE = EROFS_DIR / "image.erofs"
+    COMPOSEFS_DIR = Path("composefs")
+    COMPOSEFS_IMAGE = COMPOSEFS_DIR / "image.cfs"
+    COMPOSEFS_OBJECTS = COMPOSEFS_DIR / "objects"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
@@ -242,6 +245,14 @@ class build:
     PRELOAD_LIBRARY = ROOT_DIR / test_media.PRELOAD_LIBRARY
     EROFS_DIR = ROOT_DIR / test_media.EROFS_DIR
     EROFS_IMAGE = ROOT_DIR / test_media.EROFS_IMAGE
+    COMPOSEFS_DIR = ROOT_DIR / test_media.COMPOSEFS_DIR
+    COMPOSEFS_IMAGE = ROOT_DIR / test_media.COMPOSEFS_IMAGE
+    COMPOSEFS_OBJECTS = ROOT_DIR / test_media.COMPOSEFS_OBJECTS
+
+    @staticmethod
+    def composefs_digest(algorithm: str) -> Path:
+        """The fs-verity digest of the Composefs metadata image, not a data object."""
+        return build.COMPOSEFS_DIR / f"image-{algorithm}.digest"
 
     @staticmethod
     def erofs_digest(algorithm: str) -> Path:
@@ -473,6 +484,9 @@ class guest:
     PRELOAD_LIBRARY = PAYLOAD_DIR / test_media.PRELOAD_LIBRARY
     EROFS_DIR = PAYLOAD_DIR / test_media.EROFS_DIR
     EROFS_IMAGE = PAYLOAD_DIR / test_media.EROFS_IMAGE
+    COMPOSEFS_DIR = PAYLOAD_DIR / test_media.COMPOSEFS_DIR
+    COMPOSEFS_IMAGE = PAYLOAD_DIR / test_media.COMPOSEFS_IMAGE
+    COMPOSEFS_OBJECTS = PAYLOAD_DIR / test_media.COMPOSEFS_OBJECTS
     KERNEL_MODULES_DIR = PAYLOAD_DIR / test_media.KERNEL_MODULES_DIR
     KMODULE_TEST_BINARY = PAYLOAD_DIR / test_media.KMODULE_TEST_BINARY
     POLICY_OP_TEST_MODULE = PAYLOAD_DIR / test_media.POLICY_OP_TEST_MODULE
