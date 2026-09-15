@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 """Metadata-backing properties through real Composefs metadata and object layers."""
 
+import errno
 from functools import partial
 
 import hashes
@@ -33,6 +34,22 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the metadata image's fs-verity digest.
+                # Input: the same fs-verity image and objects, mounted without the verity option.
+                # Match: metacopy lacks verity=require -> no trusted metadata backing -> default DENY.
+                *(
+                    execve.execve_case(
+                        id=f"composefs_metadata_fsverity_digest_{algorithm}_without_require_denied",
+                        policy=policy(
+                            asset=f"composefs/metadata_digest_{algorithm}_allow",
+                            name=f"ipe_test_composefs_metadata_digest_{algorithm}_allow",
+                        ),
+                        binary=composefs.MOUNT / f"{algorithm}-noverity" / "target",
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
@@ -52,6 +69,15 @@ def build() -> tuple[Batch, ...]:
                         image=composefs.fsverity_image(algorithm),
                         point=composefs.MOUNT / f"{algorithm}-verity",
                         verity=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        composefs.mount,
+                        image=composefs.fsverity_image(algorithm),
+                        point=composefs.MOUNT / f"{algorithm}-noverity",
+                        verity=False,
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
