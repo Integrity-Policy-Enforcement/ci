@@ -227,6 +227,14 @@ def interpreter_dmverity_roothash_policy(algorithm: str) -> ipe.Policy:
     )
 
 
+def shebang_dmverity_roothash_policy(algorithm: str) -> ipe.Policy:
+    """Permit /bin/sh on the signed root and scripts from this dm-verity root hash."""
+    return policy(
+        asset=f"dmverity/roothash/{algorithm}/shebang_allow",
+        name=f"ipe_test_dmverity_shebang_roothash_{algorithm}",
+    )
+
+
 def execute_dmverity_roothash_policy(
     algorithm: str,
     matching: bool,

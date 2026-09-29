@@ -34,6 +34,7 @@ from assets import (
     kexec_initramfs_dmverity_roothash_policy,
     kmodule_dmverity_roothash_policy,
     policy_op_dmverity_roothash_policy,
+    shebang_dmverity_roothash_policy,
     x509_cert_dmverity_roothash_policy,
 )
 from command import run
@@ -2645,6 +2646,25 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.PLAIN_SHEBANG_TEST_SCRIPT,
                     expected_errno=errno.EACCES,
                     expected_returncode=None,
+                ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /bin/sh on the
+                #         signed root; ALLOW the matching dmverity_roothash.
+                # Input: execve a '#!/bin/sh' script on unsigned dm-verity with a matching root hash.
+                # Match: the root-hash rule matches the script; the signed-root rule matches /bin/sh -> ALLOW; exit 0.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_shebang_"
+                            f"dmverity_roothash_{algorithm}_unsigned_ok"
+                        ),
+                        policy=shebang_dmverity_roothash_policy(algorithm=algorithm),
+                        binary=layout.guest.dmverity_shebang_test_script(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
             ),
             setup=(
