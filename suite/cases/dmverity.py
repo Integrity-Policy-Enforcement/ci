@@ -2703,6 +2703,25 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the matching dmverity_roothash. The
+                #         same policy allows the original static ELF on each unsigned mapping.
+                # Input: that ELF's bytes copied into a new unsealed memfd.
+                # Match: the memfd has no dm-verity root hash -> default DENY -> EACCES.
+                *(
+                    execute_memfd.memfd_case(
+                        id=(
+                            "execute_bprm_check_execve_memfd_unsealed_"
+                            f"dmverity_roothash_{algorithm}_denied"
+                        ),
+                        policy=execute_dmverity_roothash_policy(algorithm=algorithm, matching=True),
+                        binary=layout.guest.dmverity_execute_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
