@@ -2666,6 +2666,23 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /bin/sh on the
+                #         signed root; ALLOW the matching dmverity_roothash.
+                # Input: execve the identical script from plain tmpfs, without dm-verity.
+                # Match: the script matches no rule -> default DENY -> EACCES; /bin/sh never starts.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_shebang_"
+                            f"dmverity_roothash_{algorithm}_plain_denied"
+                        ),
+                        policy=shebang_dmverity_roothash_policy(algorithm=algorithm),
+                        binary=layout.guest.PLAIN_SHEBANG_TEST_SCRIPT,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
