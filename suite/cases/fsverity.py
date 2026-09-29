@@ -23,6 +23,7 @@ from assets import (
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    SHEBANG_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     execute_fsverity_digest_policy,
@@ -2733,6 +2734,28 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Shebang cases exec test-media/execute/shebang.sh directly. IPE checks the
+                # script at bprm_check; /bin/sh from '#!' and its ELF loader and shared
+                # libraries are the guest root's bash, permitted by the signed-root
+                # dmverity_signature=TRUE rule. The script copies on the payload disk cannot
+                # match that rule, so only the property under test can allow them.
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /bin/sh on the
+                #         signed root; ALLOW fsverity_signature=TRUE.
+                # Input: execve a '#!/bin/sh' script with a verified built-in fs-verity signature.
+                # Match: fsverity_signature=TRUE matches the script; the signed-root rule matches /bin/sh -> ALLOW; exit 0.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_shebang_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=SHEBANG_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_shebang_test_script(algorithm=algorithm),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -2987,6 +3010,16 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.INTERPRETER_TEST_SCRIPT,
                     target=layout.guest.FSVERITY_PLAIN_INTERPRETER_TEST_SCRIPT,
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.SHEBANG_TEST_SCRIPT,
+                        target=layout.guest.fsverity_shebang_test_script(algorithm=algorithm),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_shebang_signature(algorithm=algorithm),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             extra_scopes=(
