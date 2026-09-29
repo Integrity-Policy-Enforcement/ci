@@ -1,0 +1,7 @@
+policy_name=ipe_test_fsverity_shebang_digest_sha512 policy_version=0.0.1
+DEFAULT action=ALLOW
+DEFAULT op=EXECUTE action=DENY
+# /bin/sh, its ELF loader and shared libraries are on the signed root.
+op=EXECUTE dmverity_signature=TRUE action=ALLOW
+# The script is on the unsigned payload, not the signed root.
+op=EXECUTE fsverity_digest=@FSVERITY_SHEBANG_DIGEST_SHA512@ action=ALLOW

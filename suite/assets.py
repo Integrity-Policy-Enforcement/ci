@@ -339,6 +339,14 @@ def interpreter_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
     )
 
 
+def shebang_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
+    """Permit /bin/sh on the signed root and the digest of the complete shebang script."""
+    return policy(
+        asset=f"fsverity/shebang_digest_{algorithm}_allow",
+        name=f"ipe_test_fsverity_shebang_digest_{algorithm}",
+    )
+
+
 def execute_fsverity_digest_policy(
     algorithm: str,
     matching: bool,

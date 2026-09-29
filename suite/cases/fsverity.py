@@ -33,6 +33,7 @@ from assets import (
     kexec_initramfs_fsverity_digest_policy,
     kmodule_fsverity_digest_policy,
     policy_op_fsverity_digest_policy,
+    shebang_fsverity_digest_policy,
     x509_cert_fsverity_digest_policy,
 )
 from command import run
@@ -2766,6 +2767,25 @@ def build() -> tuple[Batch, ...]:
                     binary=layout.guest.FSVERITY_PLAIN_SHEBANG_TEST_SCRIPT,
                     expected_errno=errno.EACCES,
                     expected_returncode=None,
+                ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /bin/sh on the
+                #         signed root; ALLOW the script's exact fsverity_digest.
+                # Input: execve the '#!/bin/sh' script copy with fs-verity and a built-in signature
+                #        ("signed" in the ID). No fsverity_signature rule exists here, so only its
+                #        digest can allow it.
+                # Match: the digest rule matches the script; the signed-root rule matches /bin/sh -> ALLOW; exit 0.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_shebang_"
+                            f"fsverity_digest_{algorithm}_signed_ok"
+                        ),
+                        policy=shebang_fsverity_digest_policy(algorithm=algorithm),
+                        binary=layout.guest.fsverity_shebang_test_script(algorithm=algorithm),
+                        expected_errno=0,
+                        expected_returncode=0,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
