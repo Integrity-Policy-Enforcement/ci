@@ -2756,6 +2756,17 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /bin/sh on the
+                #         signed root; ALLOW fsverity_signature=TRUE.
+                # Input: execve the identical script without fs-verity on the payload disk.
+                # Match: the script matches no rule -> default DENY -> EACCES; /bin/sh never starts.
+                execute.execve_case(
+                    id="execute_bprm_check_execve_shebang_fsverity_signature_true_plain_denied",
+                    policy=SHEBANG_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    binary=layout.guest.FSVERITY_PLAIN_SHEBANG_TEST_SCRIPT,
+                    expected_errno=errno.EACCES,
+                    expected_returncode=None,
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -3020,6 +3031,11 @@ def build() -> tuple[Batch, ...]:
                         signature=layout.guest.fsverity_shebang_signature(algorithm=algorithm),
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.SHEBANG_TEST_SCRIPT,
+                    target=layout.guest.FSVERITY_PLAIN_SHEBANG_TEST_SCRIPT,
                 ),
             ),
             extra_scopes=(
