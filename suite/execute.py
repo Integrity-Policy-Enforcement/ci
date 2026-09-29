@@ -8,7 +8,7 @@ from triggers import error_observation
 
 
 def execve(binary: Path, state: CaseState) -> Observation:
-    """Execute the original ELF, preserving exec errors separately from exit status."""
+    """Execute the original file, preserving exec errors separately from exit status."""
     try:
         result = subprocess.run(
             [str(binary)], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,

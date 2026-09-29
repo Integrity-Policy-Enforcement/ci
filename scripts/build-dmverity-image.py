@@ -109,6 +109,10 @@ def main() -> int:
             layout.source.INTERPRETER_TEST_SCRIPT,
             content_dir / layout.test_media.INTERPRETER_TEST_SCRIPT,
         )
+        shutil.copy(
+            layout.source.SHEBANG_TEST_SCRIPT,
+            content_dir / layout.test_media.SHEBANG_TEST_SCRIPT,
+        )
         shutil.copy(layout.build.KEXEC_IMAGE_TEST_BINARY, kexec_target)
         shutil.copy(layout.build.KEXEC_INITRAMFS_TEST_BINARY, initramfs_target)
         build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)

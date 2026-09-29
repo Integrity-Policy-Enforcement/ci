@@ -173,6 +173,7 @@ class test_media:
     EXECUTE_TEST_BINARY = EXECUTE_DIR / "target"
     INTERPRETER_TEST_BINARY = EXECUTE_DIR / "interpreter"
     INTERPRETER_TEST_SCRIPT = EXECUTE_DIR / "script"
+    SHEBANG_TEST_SCRIPT = EXECUTE_DIR / "shebang.sh"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
@@ -199,6 +200,7 @@ class source:
     EXECUTE_TARGET_SOURCE = ROOT_DIR / "test-programs" / "execute-target.c"
     INTERPRETER_SOURCE = ROOT_DIR / "test-programs" / "script-interpreter.c"
     INTERPRETER_TEST_SCRIPT = TEST_MEDIA_DIR / test_media.INTERPRETER_TEST_SCRIPT
+    SHEBANG_TEST_SCRIPT = TEST_MEDIA_DIR / test_media.SHEBANG_TEST_SCRIPT
     KERNEL_CONFIG = ROOT_DIR / "config" / "ipe-tests.config"
     BOOT_POLICY = ROOT_DIR / "config" / "boot-policy.pol"
 
@@ -716,6 +718,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
             / test_media.INTERPRETER_TEST_SCRIPT
+        )
+
+    @staticmethod
+    def dmverity_shebang_test_script(algorithm: str, signed: bool) -> Path:
+        """The '#!/bin/sh' script on the selected dm-verity mapping."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.SHEBANG_TEST_SCRIPT
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"

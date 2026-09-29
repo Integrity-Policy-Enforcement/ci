@@ -17,7 +17,7 @@ def execve_case(
     expected_errno: int,
     expected_returncode: int | None,
 ) -> Case:
-    """Execute a static ELF and independently check exec errno and exit status."""
+    """Execute a file directly and independently check exec errno and exit status."""
     return Case(
         id=id,
         setup=(
