@@ -2787,6 +2787,23 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /bin/sh on the
+                #         signed root; ALLOW the script's exact fsverity_digest.
+                # Input: execve the identical script without fs-verity on the payload disk.
+                # Match: the script matches no rule -> default DENY -> EACCES; /bin/sh never starts.
+                *(
+                    execute.execve_case(
+                        id=(
+                            "execute_bprm_check_execve_shebang_"
+                            f"fsverity_digest_{algorithm}_plain_denied"
+                        ),
+                        policy=shebang_fsverity_digest_policy(algorithm=algorithm),
+                        binary=layout.guest.FSVERITY_PLAIN_SHEBANG_TEST_SCRIPT,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
