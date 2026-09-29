@@ -2824,6 +2824,26 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the static ELF's exact fsverity_digest.
+                #         The same policy allows the original fs-verity ELF without a
+                #         built-in signature.
+                # Input: that ELF's bytes copied into a new unsealed memfd.
+                # Match: the memfd has no fs-verity digest -> default DENY -> EACCES.
+                *(
+                    execute_memfd.memfd_case(
+                        id=(
+                            "execute_bprm_check_execve_memfd_unsealed_"
+                            f"fsverity_digest_{algorithm}_denied"
+                        ),
+                        policy=execute_fsverity_digest_policy(algorithm=algorithm, matching=True),
+                        binary=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
