@@ -43,6 +43,7 @@ from model import Batch, Case
 from . import (
     execute,
     execute_interpreter,
+    execute_memfd,
     execute_mmap,
     execute_mprotect,
     firmware,
@@ -2678,6 +2679,25 @@ def build() -> tuple[Batch, ...]:
                         ),
                         policy=shebang_dmverity_roothash_policy(algorithm=algorithm),
                         binary=layout.guest.PLAIN_SHEBANG_TEST_SCRIPT,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE. The same
+                #         policy allows the original static ELF on each signed mapping.
+                # Input: that ELF's bytes copied into a new unsealed memfd.
+                # Match: the memfd has no dm-verity signature -> default DENY -> EACCES.
+                *(
+                    execute_memfd.memfd_case(
+                        id=(
+                            "execute_bprm_check_execve_memfd_unsealed_"
+                            f"dmverity_signature_true_{algorithm}_denied"
+                        ),
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.dmverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
                         expected_errno=errno.EACCES,
                         expected_returncode=None,
                     )
