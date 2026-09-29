@@ -42,6 +42,7 @@ from model import Batch, Case
 from . import (
     execute,
     execute_interpreter,
+    execute_memfd,
     execute_mmap,
     execute_mprotect,
     firmware,
@@ -2799,6 +2800,25 @@ def build() -> tuple[Batch, ...]:
                         ),
                         policy=shebang_fsverity_digest_policy(algorithm=algorithm),
                         binary=layout.guest.FSVERITY_PLAIN_SHEBANG_TEST_SCRIPT,
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE. The same
+                #         policy allows the original signed fs-verity static ELF.
+                # Input: that ELF's bytes copied into a new unsealed memfd.
+                # Match: the memfd has no fs-verity signature -> default DENY -> EACCES.
+                *(
+                    execute_memfd.memfd_case(
+                        id=(
+                            "execute_bprm_check_execve_memfd_unsealed_"
+                            f"fsverity_signature_true_{algorithm}_denied"
+                        ),
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
                         expected_errno=errno.EACCES,
                         expected_returncode=None,
                     )
