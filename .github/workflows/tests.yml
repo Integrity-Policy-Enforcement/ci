@@ -26,10 +26,15 @@ jobs:
         include:
           - architecture: x86_64
             runner: ubuntu-26.04
+            job-timeout-minutes: 180
+          # The arm64 runner has no KVM, so its VM runs under TCG. Use the full
+          # 360-minute GitHub-hosted job limit; run-vm.py stops TCG VMs after
+          # 300 minutes, leaving time for setup, build and evidence upload.
           - architecture: arm64
             runner: ubuntu-26.04-arm
+            job-timeout-minutes: 360
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 180
+    timeout-minutes: ${{ matrix.job-timeout-minutes }}
     steps:
       - uses: actions/checkout@v6
 

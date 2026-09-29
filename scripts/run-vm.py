@@ -149,7 +149,9 @@ def main(argv: list[str] | None = None) -> int:
 
     kvm = os.access("/dev/kvm", os.R_OK | os.W_OK)
     acceleration = "kvm" if kvm else "tcg"
-    timeout = os.environ.get("IPE_TEST_TIMEOUT", "300" if kvm else "7200")
+    # TCG is what the GitHub arm64 runner uses. Its 360-minute job limit leaves
+    # about an hour for setup, the kernel/image build and evidence upload.
+    timeout = os.environ.get("IPE_TEST_TIMEOUT", "300" if kvm else "18000")
     command = [
         "timeout",
         timeout,
