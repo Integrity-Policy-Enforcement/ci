@@ -28,6 +28,7 @@ from assets import (
     X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     execute_fsverity_digest_policy,
     firmware_fsverity_digest_policy,
+    hugetlb_fsverity_digest_policy,
     interpreter_fsverity_digest_policy,
     kexec_image_fsverity_digest_policy,
     kexec_initramfs_fsverity_digest_policy,
@@ -2898,6 +2899,25 @@ def build() -> tuple[Batch, ...]:
                             f"fsverity_signature_true_{algorithm}_denied"
                         ),
                         policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_hugetlb_test_binary(algorithm=algorithm),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                        huge=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                # Policy: EXECUTE default DENY; ALLOW the hugetlb ELF's exact fsverity_digest.
+                #         No fsverity_signature rule exists, so only the digest matches the
+                #         signed fs-verity copy.
+                # Input: that copy's bytes in a new unsealed hugetlb memfd.
+                # Match: the memfd has no fs-verity digest -> default DENY -> EACCES.
+                *(
+                    execute_memfd.memfd_case(
+                        id=(
+                            "execute_bprm_check_execve_memfd_hugetlb_"
+                            f"fsverity_digest_{algorithm}_denied"
+                        ),
+                        policy=hugetlb_fsverity_digest_policy(algorithm=algorithm),
                         binary=layout.guest.fsverity_hugetlb_test_binary(algorithm=algorithm),
                         expected_errno=errno.EACCES,
                         expected_returncode=None,

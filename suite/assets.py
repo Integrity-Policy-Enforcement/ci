@@ -347,6 +347,14 @@ def shebang_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
     )
 
 
+def hugetlb_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
+    """Permit EXECUTE only for the hugetlb ELF's exact fs-verity digest."""
+    return policy(
+        asset=f"fsverity/hugetlb_digest_{algorithm}_allow",
+        name=f"ipe_test_fsverity_hugetlb_digest_{algorithm}",
+    )
+
+
 def execute_fsverity_digest_policy(
     algorithm: str,
     matching: bool,
