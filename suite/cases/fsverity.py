@@ -2844,6 +2844,27 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW fsverity_signature=TRUE. The same
+                #         policy allows the original signed fs-verity static ELF.
+                # Input: that ELF's bytes copied into a new memfd, then fully sealed.
+                # Match: sealing makes the copy immutable, not trusted: it has no fs-verity
+                #        signature -> default DENY -> EACCES.
+                *(
+                    execute_memfd.memfd_case(
+                        id=(
+                            "execute_bprm_check_execve_memfd_sealed_"
+                            f"fsverity_signature_true_{algorithm}_denied"
+                        ),
+                        policy=EXECUTE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        binary=layout.guest.fsverity_execute_test_binary(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                        sealed=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
