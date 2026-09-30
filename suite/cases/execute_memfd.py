@@ -61,6 +61,26 @@ def build() -> tuple[Batch, ...]:
                         partial(execute.check_returncode, expected=0),
                     ),
                 ),
+                # Policy: the baseline policy allows EXECUTE unconditionally.
+                # Input: the same static ELF in a new MFD_EXEC memfd with all seals added.
+                # Match: baseline ALLOW -> exec succeeds -> exit 0, so sealing itself does
+                #        not stop exec and a later EACCES comes from IPE policy.
+                Case(
+                    id="execute_bprm_check_execve_memfd_sealed_control_ok",
+                    setup=(
+                        partial(steps.activate_policy, name=BASELINE_POLICY.name),
+                        partial(steps.set_enforcement, enabled=True),
+                    ),
+                    trigger=partial(
+                        execute_memfd.execute,
+                        binary=layout.guest.EXECUTE_TEST_BINARY,
+                        sealed=True,
+                    ),
+                    checks=(
+                        partial(checks.errno_is, expected=0),
+                        partial(execute.check_returncode, expected=0),
+                    ),
+                ),
             ),
         ),
     )
