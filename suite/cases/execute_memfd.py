@@ -19,6 +19,7 @@ def memfd_case(
     binary: Path,
     expected_errno: int,
     expected_returncode: int | None,
+    sealed: bool = False,
 ) -> Case:
     """Exec a memfd copy, checking exec refusal separately from program exit."""
     return Case(
@@ -28,7 +29,7 @@ def memfd_case(
             partial(steps.activate_policy, name=policy.name),
             partial(steps.set_enforcement, enabled=True),
         ),
-        trigger=partial(execute_memfd.execute, binary=binary),
+        trigger=partial(execute_memfd.execute, binary=binary, sealed=sealed),
         checks=(
             partial(checks.errno_is, expected=expected_errno),
             partial(execute.check_returncode, expected=expected_returncode),
