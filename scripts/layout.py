@@ -412,6 +412,16 @@ class build:
         """The shebang script's own fs-verity digest."""
         return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"shebang-{algorithm}.digest"
 
+    @staticmethod
+    def fsverity_hugetlb_signature(algorithm: str) -> Path:
+        """The built-in fs-verity signature over the hugetlb ELF."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"hugetlb-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_hugetlb_digest(algorithm: str) -> Path:
+        """The hugetlb ELF's own fs-verity digest."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"hugetlb-{algorithm}.digest"
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -627,6 +637,19 @@ class guest:
         return (
             guest.FSVERITY_EXECUTE_DIR
             / f"signed-{algorithm}-{test_media.SHEBANG_TEST_SCRIPT.name}"
+        )
+
+    @staticmethod
+    def fsverity_hugetlb_signature(algorithm: str) -> Path:
+        """The guest signature path for the hugetlb ELF's digest."""
+        return guest.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"hugetlb-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_hugetlb_test_binary(algorithm: str) -> Path:
+        """The hugetlb ELF with enabled fs-verity and a verified built-in signature."""
+        return (
+            guest.FSVERITY_EXECUTE_DIR
+            / f"signed-{algorithm}-{test_media.HUGETLB_TEST_BINARY.name}"
         )
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"
