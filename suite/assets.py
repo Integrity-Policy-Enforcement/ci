@@ -240,6 +240,14 @@ def shebang_dmverity_roothash_policy(algorithm: str) -> ipe.Policy:
     )
 
 
+def preload_dmverity_roothash_policy(algorithm: str) -> ipe.Policy:
+    """Permit /usr/bin/true on the signed root and preload.so from this root hash."""
+    return policy(
+        asset=f"dmverity/roothash/{algorithm}/preload_allow",
+        name=f"ipe_test_dmverity_preload_roothash_{algorithm}",
+    )
+
+
 def execute_dmverity_roothash_policy(
     algorithm: str,
     matching: bool,

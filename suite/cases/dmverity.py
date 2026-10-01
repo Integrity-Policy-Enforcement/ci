@@ -34,6 +34,7 @@ from assets import (
     kexec_initramfs_dmverity_roothash_policy,
     kmodule_dmverity_roothash_policy,
     policy_op_dmverity_roothash_policy,
+    preload_dmverity_roothash_policy,
     shebang_dmverity_roothash_policy,
     x509_cert_dmverity_roothash_policy,
 )
@@ -2889,6 +2890,25 @@ def build() -> tuple[Batch, ...]:
                     policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
                     library=layout.guest.PLAIN_PRELOAD_LIBRARY,
                     expected_preloaded=False,
+                ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /usr/bin/true
+                #         on the signed root; ALLOW the matching dmverity_roothash.
+                # Input: LD_PRELOAD a library on unsigned dm-verity with a matching root hash.
+                # Match: the root-hash rule matches the library -> ALLOW; its constructor
+                #        prints "preload"; exit 0.
+                *(
+                    execute_preload.preload_case(
+                        id=(
+                            "execute_mmap_ld_preload_"
+                            f"dmverity_roothash_{algorithm}_unsigned_ok"
+                        ),
+                        policy=preload_dmverity_roothash_policy(algorithm=algorithm),
+                        library=layout.guest.dmverity_preload_library(
+                            algorithm=algorithm, signed=False
+                        ),
+                        expected_preloaded=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
             ),
             setup=(
