@@ -3022,6 +3022,23 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /usr/bin/true
+                #         on the signed root; ALLOW the library's exact fsverity_digest.
+                # Input: LD_PRELOAD the identical library without fs-verity on the payload disk.
+                # Match: the library matches no rule -> default DENY -> the loader cannot map
+                #        it, reports that and skips it; no "preload"; exit 0.
+                *(
+                    execute_preload.preload_case(
+                        id=(
+                            "execute_mmap_ld_preload_"
+                            f"fsverity_digest_{algorithm}_plain_denied"
+                        ),
+                        policy=preload_fsverity_digest_policy(algorithm=algorithm),
+                        library=layout.guest.FSVERITY_PLAIN_PRELOAD_LIBRARY,
+                        expected_preloaded=False,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
