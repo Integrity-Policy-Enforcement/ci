@@ -46,6 +46,7 @@ from . import (
     execute_memfd,
     execute_mmap,
     execute_mprotect,
+    execute_preload,
     firmware,
     kexec,
     kmodule,
@@ -2845,6 +2846,36 @@ def build() -> tuple[Batch, ...]:
                         expected_returncode=None,
                         sealed=True,
                         huge=True,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
+                # LD_PRELOAD cases run /usr/bin/true with LD_PRELOAD naming preload.so, built
+                # from test-programs/preload-library.c. IPE checks three components:
+                #   1. /usr/bin/true, at bprm_check;
+                #   2. its ELF loader and libc, at their executable mmaps;
+                #   3. preload.so, when the loader maps it executable: only the property
+                #      under test can allow it.
+                # 1 and 2 are the guest root's coreutils (declared in image/mkosi.conf) and
+                # glibc. mkosi builds that root with a signed dm-verity root hash
+                # (Verity=signed), so the dmverity_signature=TRUE rule in every preload
+                # policy permits them. When IPE denies 3, the loader reports the failed
+                # mapping, skips preload.so and still runs /usr/bin/true, which exits 0.
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                #         The same rule permits /usr/bin/true and its runtime on the signed root.
+                # Input: LD_PRELOAD a library on dm-verity with a verified root-hash signature.
+                # Match: dmverity_signature=TRUE matches the library -> ALLOW; its constructor
+                #        prints "preload"; exit 0.
+                *(
+                    execute_preload.preload_case(
+                        id=(
+                            "execute_mmap_ld_preload_"
+                            f"dmverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        library=layout.guest.dmverity_preload_library(
+                            algorithm=algorithm, signed=True
+                        ),
+                        expected_preloaded=True,
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),

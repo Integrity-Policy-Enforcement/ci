@@ -175,6 +175,7 @@ class test_media:
     INTERPRETER_TEST_SCRIPT = EXECUTE_DIR / "script"
     SHEBANG_TEST_SCRIPT = EXECUTE_DIR / "shebang.sh"
     HUGETLB_TEST_BINARY = EXECUTE_DIR / "hugetlb-target"
+    PRELOAD_LIBRARY = EXECUTE_DIR / "preload.so"
     KERNEL_MODULES_DIR = Path("kernel-modules")
     KMODULE_TEST_BINARY = KERNEL_MODULES_DIR / _KMODULE_TEST_BINARY_NAME
     KMODULE_COMPRESSED_TEST_BINARY = KMODULE_TEST_BINARY.with_suffix(".ko.gz")
@@ -202,6 +203,7 @@ class source:
     INTERPRETER_SOURCE = ROOT_DIR / "test-programs" / "script-interpreter.c"
     HUGETLB_TARGET_SOURCE = ROOT_DIR / "test-programs" / "hugetlb-target.S"
     HUGETLB_TARGET_LINKER_SCRIPT = ROOT_DIR / "test-programs" / "hugetlb-target.ld"
+    PRELOAD_LIBRARY_SOURCE = ROOT_DIR / "test-programs" / "preload-library.c"
     INTERPRETER_TEST_SCRIPT = TEST_MEDIA_DIR / test_media.INTERPRETER_TEST_SCRIPT
     SHEBANG_TEST_SCRIPT = TEST_MEDIA_DIR / test_media.SHEBANG_TEST_SCRIPT
     KERNEL_CONFIG = ROOT_DIR / "config" / "ipe-tests.config"
@@ -234,6 +236,7 @@ class build:
     EXECUTE_TEST_BINARY = ROOT_DIR / test_media.EXECUTE_TEST_BINARY
     INTERPRETER_TEST_BINARY = ROOT_DIR / test_media.INTERPRETER_TEST_BINARY
     HUGETLB_TEST_BINARY = ROOT_DIR / test_media.HUGETLB_TEST_BINARY
+    PRELOAD_LIBRARY = ROOT_DIR / test_media.PRELOAD_LIBRARY
 
     KEXEC_ASSETS_DIR = ROOT_DIR / test_media.KEXEC_DIR
     KEXEC_IMAGE_TEST_BINARY = ROOT_DIR / test_media.KEXEC_IMAGE_TEST_BINARY
@@ -429,6 +432,8 @@ class guest:
     # ipe-root-policy.service reads /usr/lib/ipe/root-policy.p7s directly.
     IPE_DIR = Path("/usr/lib/ipe")
     ROOT_POLICY = IPE_DIR / "root-policy.p7s"
+    # A dynamic ELF from the guest root's coreutils; LD_PRELOAD cases run it.
+    PRELOAD_CLIENT = Path("/usr/bin/true")
 
     RESULT_CHANNEL = Path("/dev/virtio-ports/ipe-tests-result")
     SECURITYFS_DIR = Path("/sys/kernel/security/ipe")
@@ -789,6 +794,14 @@ class guest:
         return (
             guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
             / test_media.HUGETLB_TEST_BINARY
+        )
+
+    @staticmethod
+    def dmverity_preload_library(algorithm: str, signed: bool) -> Path:
+        """The LD_PRELOAD library on the selected dm-verity mapping."""
+        return (
+            guest.dmverity_mount_dir(algorithm=algorithm, signed=signed)
+            / test_media.PRELOAD_LIBRARY
         )
 
     PLAIN_MOUNT_DIR = MEDIA_DIR / "plain"

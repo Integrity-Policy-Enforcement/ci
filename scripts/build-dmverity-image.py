@@ -117,6 +117,10 @@ def main() -> int:
             layout.build.HUGETLB_TEST_BINARY,
             content_dir / layout.test_media.HUGETLB_TEST_BINARY,
         )
+        shutil.copy(
+            layout.build.PRELOAD_LIBRARY,
+            content_dir / layout.test_media.PRELOAD_LIBRARY,
+        )
         shutil.copy(layout.build.KEXEC_IMAGE_TEST_BINARY, kexec_target)
         shutil.copy(layout.build.KEXEC_INITRAMFS_TEST_BINARY, initramfs_target)
         build_squashfs(content_dir=content_dir, image=layout.build.SQUASHFS)

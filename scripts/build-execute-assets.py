@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
-"""Build the self-contained ELF targets and the small static script interpreter."""
+"""Build the ELF targets, the small static script interpreter and the preload library."""
 
 import subprocess
 
@@ -34,7 +34,15 @@ def main() -> int:
         ],
         check=True,
     )
-    print("    Prepared the static EXECUTE and hugetlb targets and interpreter")
+    # LD_PRELOAD cases load this shared library into /usr/bin/true.
+    subprocess.run(
+        [
+            "gcc", "-shared", "-fPIC", "-Os", "-Wall", "-Wextra", "-Werror",
+            layout.source.PRELOAD_LIBRARY_SOURCE, "-o", layout.build.PRELOAD_LIBRARY,
+        ],
+        check=True,
+    )
+    print("    Prepared the EXECUTE and hugetlb targets, interpreter and preload library")
     return 0
 
 
