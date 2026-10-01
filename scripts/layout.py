@@ -619,6 +619,9 @@ class guest:
     FSVERITY_PLAIN_SHEBANG_TEST_SCRIPT = (
         FSVERITY_EXECUTE_DIR / f"plain-{test_media.SHEBANG_TEST_SCRIPT.name}"
     )
+    FSVERITY_PLAIN_PRELOAD_LIBRARY = (
+        FSVERITY_EXECUTE_DIR / f"plain-{test_media.PRELOAD_LIBRARY.name}"
+    )
     FSVERITY_PLAIN_EXECUTE_TEST_BINARY = (
         FSVERITY_EXECUTE_DIR / f"plain-{test_media.EXECUTE_TEST_BINARY.name}"
     )
