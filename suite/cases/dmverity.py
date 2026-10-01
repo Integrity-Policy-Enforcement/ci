@@ -2910,6 +2910,23 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /usr/bin/true
+                #         on the signed root; ALLOW the matching dmverity_roothash.
+                # Input: LD_PRELOAD the identical library from plain tmpfs, without dm-verity.
+                # Match: the library matches no rule -> default DENY -> the loader cannot map
+                #        it, reports that and skips it; no "preload"; exit 0.
+                *(
+                    execute_preload.preload_case(
+                        id=(
+                            "execute_mmap_ld_preload_"
+                            f"dmverity_roothash_{algorithm}_plain_denied"
+                        ),
+                        policy=preload_dmverity_roothash_policy(algorithm=algorithm),
+                        library=layout.guest.PLAIN_PRELOAD_LIBRARY,
+                        expected_preloaded=False,
+                    )
+                    for algorithm in hashes.DMVERITY_ALGORITHMS
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
