@@ -2945,6 +2945,27 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW the hugetlb ELF's exact fsverity_digest.
+                #         No fsverity_signature rule exists, so only the digest matches the
+                #         signed fs-verity copy.
+                # Input: that copy's bytes in a new hugetlb memfd, then fully sealed.
+                # Match: sealing makes the copy immutable, not trusted: it has no fs-verity
+                #        digest -> default DENY -> EACCES.
+                *(
+                    execute_memfd.memfd_case(
+                        id=(
+                            "execute_bprm_check_execve_memfd_hugetlb_sealed_"
+                            f"fsverity_digest_{algorithm}_denied"
+                        ),
+                        policy=hugetlb_fsverity_digest_policy(algorithm=algorithm),
+                        binary=layout.guest.fsverity_hugetlb_test_binary(algorithm=algorithm),
+                        expected_errno=errno.EACCES,
+                        expected_returncode=None,
+                        sealed=True,
+                        huge=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
