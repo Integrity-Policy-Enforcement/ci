@@ -23,6 +23,7 @@ from assets import (
     KMODULE_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     POLICY_OP_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+    PRELOAD_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     SHEBANG_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_FALSE_DENY_POLICY,
     X509_CERT_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
@@ -46,6 +47,7 @@ from . import (
     execute_memfd,
     execute_mmap,
     execute_mprotect,
+    execute_preload,
     firmware,
     kexec,
     kmodule,
@@ -2966,6 +2968,29 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),
+                # LD_PRELOAD cases run /usr/bin/true with LD_PRELOAD naming a copy of
+                # preload.so. IPE checks /usr/bin/true at bprm_check and its ELF loader and
+                # libc at their executable mmaps; all three are on the guest root and are
+                # permitted by the signed-root dmverity_signature=TRUE rule. The library
+                # copies on the payload disk cannot match that rule, so only the property
+                # under test can allow the loader to map them.
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE for /usr/bin/true
+                #         on the signed root; ALLOW fsverity_signature=TRUE.
+                # Input: LD_PRELOAD a library with a verified built-in fs-verity signature.
+                # Match: fsverity_signature=TRUE matches the library -> ALLOW; its constructor
+                #        prints "preload"; exit 0.
+                *(
+                    execute_preload.preload_case(
+                        id=(
+                            "execute_mmap_ld_preload_"
+                            f"fsverity_signature_true_{algorithm}_signed_ok"
+                        ),
+                        policy=PRELOAD_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                        library=layout.guest.fsverity_preload_library(algorithm=algorithm),
+                        expected_preloaded=True,
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
             ),
             # Prepare fixtures with enforcement off; each case then activates
             # its selected policy and enables enforcement for its operation.
@@ -3243,6 +3268,16 @@ def build() -> tuple[Batch, ...]:
                         target=layout.guest.fsverity_hugetlb_test_binary(algorithm=algorithm),
                         algorithm=algorithm,
                         signature=layout.guest.fsverity_hugetlb_signature(algorithm=algorithm),
+                    )
+                    for algorithm in hashes.FSVERITY_ALGORITHMS
+                ),
+                *(
+                    partial(
+                        files.prepare_fsverity_test_binary,
+                        source=layout.guest.PRELOAD_LIBRARY,
+                        target=layout.guest.fsverity_preload_library(algorithm=algorithm),
+                        algorithm=algorithm,
+                        signature=layout.guest.fsverity_preload_signature(algorithm=algorithm),
                     )
                     for algorithm in hashes.FSVERITY_ALGORITHMS
                 ),

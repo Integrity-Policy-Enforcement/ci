@@ -425,6 +425,16 @@ class build:
         """The hugetlb ELF's own fs-verity digest."""
         return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"hugetlb-{algorithm}.digest"
 
+    @staticmethod
+    def fsverity_preload_signature(algorithm: str) -> Path:
+        """The built-in fs-verity signature over the LD_PRELOAD library."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"preload-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_preload_digest(algorithm: str) -> Path:
+        """The LD_PRELOAD library's own fs-verity digest."""
+        return build.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"preload-{algorithm}.digest"
+
     GUEST_IMAGE = source.IMAGE_DIR / "output" / "ipe-tests.raw"
 
 
@@ -656,6 +666,19 @@ class guest:
         return (
             guest.FSVERITY_EXECUTE_DIR
             / f"signed-{algorithm}-{test_media.HUGETLB_TEST_BINARY.name}"
+        )
+
+    @staticmethod
+    def fsverity_preload_signature(algorithm: str) -> Path:
+        """The guest signature path for the LD_PRELOAD library's digest."""
+        return guest.FSVERITY_ASSETS_DIR / test_media.EXECUTE_DIR / f"preload-{algorithm}.p7s"
+
+    @staticmethod
+    def fsverity_preload_library(algorithm: str) -> Path:
+        """The LD_PRELOAD library with enabled fs-verity and a verified built-in signature."""
+        return (
+            guest.FSVERITY_EXECUTE_DIR
+            / f"signed-{algorithm}-{test_media.PRELOAD_LIBRARY.name}"
         )
 
     FSVERITY_FIRMWARE_DIR = PAYLOAD_DIR / "fsverity-firmware"
