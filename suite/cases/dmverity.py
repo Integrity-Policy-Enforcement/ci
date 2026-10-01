@@ -2879,6 +2879,17 @@ def build() -> tuple[Batch, ...]:
                     )
                     for algorithm in hashes.DMVERITY_ALGORITHMS
                 ),
+                # Policy: EXECUTE default DENY; ALLOW dmverity_signature=TRUE.
+                #         The same rule permits /usr/bin/true and its runtime on the signed root.
+                # Input: LD_PRELOAD the identical library from plain tmpfs, without dm-verity.
+                # Match: the library matches no rule -> default DENY -> the loader cannot map
+                #        it, reports that and skips it; no "preload"; exit 0.
+                execute_preload.preload_case(
+                    id="execute_mmap_ld_preload_dmverity_signature_true_plain_denied",
+                    policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
+                    library=layout.guest.PLAIN_PRELOAD_LIBRARY,
+                    expected_preloaded=False,
+                ),
             ),
             setup=(
                 partial(ipe.set_enforcement, enabled=False),
@@ -2950,6 +2961,11 @@ def build() -> tuple[Batch, ...]:
                     files.copy_test_binary,
                     source=layout.guest.SHEBANG_TEST_SCRIPT,
                     target=layout.guest.PLAIN_SHEBANG_TEST_SCRIPT,
+                ),
+                partial(
+                    files.copy_test_binary,
+                    source=layout.guest.PRELOAD_LIBRARY,
+                    target=layout.guest.PLAIN_PRELOAD_LIBRARY,
                 ),
             ),
             extra_scopes=(

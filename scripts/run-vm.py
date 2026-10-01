@@ -86,6 +86,10 @@ def make_payload(output: Path) -> None:
             layout.build.HUGETLB_TEST_BINARY,
             staging_path(layout.guest.HUGETLB_TEST_BINARY),
         )
+        shutil.copy(
+            layout.build.PRELOAD_LIBRARY,
+            staging_path(layout.guest.PRELOAD_LIBRARY),
+        )
         staging_path(layout.guest.KERNEL_MODULES_DIR).mkdir()
         shutil.copy(
             layout.build.KMODULE_TEST_BINARY,
