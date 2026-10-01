@@ -3,13 +3,12 @@
 
 from functools import partial
 
-import files
 import hashes
 import ipe
 import layout
-import modules
 from command import run
 from model import Batch
+from resources import files, modules
 
 from . import (
     execute,

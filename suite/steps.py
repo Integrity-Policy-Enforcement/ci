@@ -61,20 +61,20 @@ def unshare_user_namespace(state: CaseState) -> None:
 
 def clear_mac_admin(state: CaseState) -> None:
     """Remove CAP_MAC_ADMIN from the effective set, keeping it permitted."""
-    import capabilities
+    from resources import capabilities
 
     capabilities.set_mac_admin_effective(False)
 
 
 def raise_mac_admin(state: CaseState) -> None:
     """Restore CAP_MAC_ADMIN to the effective set from the permitted set."""
-    import capabilities
+    from resources import capabilities
 
     capabilities.set_mac_admin_effective(True)
 
 
 def drop_mac_admin(state: CaseState) -> None:
     """Remove CAP_MAC_ADMIN from both effective and permitted, irrecoverably."""
-    import capabilities
+    from resources import capabilities
 
     capabilities.drop_mac_admin()

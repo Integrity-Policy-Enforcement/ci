@@ -4,14 +4,12 @@
 import shutil
 from functools import partial
 
-import files
 import hashes
 import ipe
 import layout
-import modules
-import mounts
 from command import run
 from model import Batch
+from resources import files, modules, mounts
 
 from . import (
     execute,
