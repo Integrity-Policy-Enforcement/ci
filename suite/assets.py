@@ -367,6 +367,14 @@ def hugetlb_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
     )
 
 
+def preload_fsverity_digest_policy(algorithm: str) -> ipe.Policy:
+    """Permit /usr/bin/true on the signed root and preload.so with this exact digest."""
+    return policy(
+        asset=f"fsverity/preload_digest_{algorithm}_allow",
+        name=f"ipe_test_fsverity_preload_digest_{algorithm}",
+    )
+
+
 def execute_fsverity_digest_policy(
     algorithm: str,
     matching: bool,
