@@ -10,8 +10,7 @@ from assets import (
     shebang_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import execute
+from operations import execve
 
 
 def cases() -> tuple[Case, ...]:
@@ -30,7 +29,7 @@ def cases() -> tuple[Case, ...]:
         # Input: execve a '#!/bin/sh' script on dm-verity with a verified root-hash signature.
         # Match: dmverity_signature=TRUE matches both the script and /bin/sh -> ALLOW; exit 0.
         *(
-            execute.execve_case(
+            execve.execve_case(
                 id=(
                     "execute_bprm_check_execve_shebang_"
                     f"dmverity_signature_true_{algorithm}_signed_ok"
@@ -48,7 +47,7 @@ def cases() -> tuple[Case, ...]:
         #         The same rule permits /bin/sh and its runtime on the signed root.
         # Input: execve the identical script from plain tmpfs, without dm-verity.
         # Match: the script matches no rule -> default DENY -> EACCES; /bin/sh never starts.
-        execute.execve_case(
+        execve.execve_case(
             id="execute_bprm_check_execve_shebang_dmverity_signature_true_plain_denied",
             policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
             binary=layout.guest.PLAIN_SHEBANG_TEST_SCRIPT,
@@ -60,7 +59,7 @@ def cases() -> tuple[Case, ...]:
         # Input: execve a '#!/bin/sh' script on unsigned dm-verity with a matching root hash.
         # Match: the root-hash rule matches the script; the signed-root rule matches /bin/sh -> ALLOW; exit 0.
         *(
-            execute.execve_case(
+            execve.execve_case(
                 id=(
                     "execute_bprm_check_execve_shebang_"
                     f"dmverity_roothash_{algorithm}_unsigned_ok"
@@ -79,7 +78,7 @@ def cases() -> tuple[Case, ...]:
         # Input: execve the identical script from plain tmpfs, without dm-verity.
         # Match: the script matches no rule -> default DENY -> EACCES; /bin/sh never starts.
         *(
-            execute.execve_case(
+            execve.execve_case(
                 id=(
                     "execute_bprm_check_execve_shebang_"
                     f"dmverity_roothash_{algorithm}_plain_denied"

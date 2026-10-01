@@ -8,8 +8,7 @@ from assets import (
     preload_fsverity_digest_policy,
 )
 from model import Case
-
-from .. import execute_preload
+from operations import preload
 
 
 def cases() -> tuple[Case, ...]:
@@ -27,7 +26,7 @@ def cases() -> tuple[Case, ...]:
         # Match: fsverity_signature=TRUE matches the library -> ALLOW; its constructor
         #        prints "preload"; exit 0.
         *(
-            execute_preload.preload_case(
+            preload.preload_case(
                 id=(
                     "execute_mmap_ld_preload_"
                     f"fsverity_signature_true_{algorithm}_signed_ok"
@@ -43,7 +42,7 @@ def cases() -> tuple[Case, ...]:
         # Input: LD_PRELOAD the identical library without fs-verity on the payload disk.
         # Match: the library matches no rule -> default DENY -> the loader cannot map
         #        it, reports that and skips it; no "preload"; exit 0.
-        execute_preload.preload_case(
+        preload.preload_case(
             id="execute_mmap_ld_preload_fsverity_signature_true_plain_denied",
             policy=PRELOAD_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
             library=layout.guest.FSVERITY_PLAIN_PRELOAD_LIBRARY,
@@ -57,7 +56,7 @@ def cases() -> tuple[Case, ...]:
         # Match: the digest rule matches the library -> ALLOW; its constructor prints
         #        "preload"; exit 0.
         *(
-            execute_preload.preload_case(
+            preload.preload_case(
                 id=(
                     "execute_mmap_ld_preload_"
                     f"fsverity_digest_{algorithm}_signed_ok"
@@ -74,7 +73,7 @@ def cases() -> tuple[Case, ...]:
         # Match: the library matches no rule -> default DENY -> the loader cannot map
         #        it, reports that and skips it; no "preload"; exit 0.
         *(
-            execute_preload.preload_case(
+            preload.preload_case(
                 id=(
                     "execute_mmap_ld_preload_"
                     f"fsverity_digest_{algorithm}_plain_denied"

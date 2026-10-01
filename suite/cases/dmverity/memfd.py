@@ -10,8 +10,7 @@ from assets import (
     execute_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import execute_memfd
+from operations import memfd
 
 
 def cases() -> tuple[Case, ...]:
@@ -22,7 +21,7 @@ def cases() -> tuple[Case, ...]:
         # Input: that ELF's bytes copied into a new unsealed memfd.
         # Match: the memfd has no dm-verity signature -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_unsealed_"
                     f"dmverity_signature_true_{algorithm}_denied"
@@ -41,7 +40,7 @@ def cases() -> tuple[Case, ...]:
         # Input: that ELF's bytes copied into a new unsealed memfd.
         # Match: the memfd has no dm-verity root hash -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_unsealed_"
                     f"dmverity_roothash_{algorithm}_denied"
@@ -61,7 +60,7 @@ def cases() -> tuple[Case, ...]:
         # Match: sealing makes the copy immutable, not trusted: it has no dm-verity
         #        signature -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_sealed_"
                     f"dmverity_signature_true_{algorithm}_denied"
@@ -82,7 +81,7 @@ def cases() -> tuple[Case, ...]:
         # Match: sealing makes the copy immutable, not trusted: it has no dm-verity
         #        root hash -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_sealed_"
                     f"dmverity_roothash_{algorithm}_denied"
@@ -102,7 +101,7 @@ def cases() -> tuple[Case, ...]:
         # Input: that ELF's bytes copied into a new unsealed hugetlb memfd.
         # Match: the memfd has no dm-verity signature -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_hugetlb_"
                     f"dmverity_signature_true_{algorithm}_denied"
@@ -122,7 +121,7 @@ def cases() -> tuple[Case, ...]:
         # Input: that ELF's bytes copied into a new unsealed hugetlb memfd.
         # Match: the memfd has no dm-verity root hash -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_hugetlb_"
                     f"dmverity_roothash_{algorithm}_denied"
@@ -143,7 +142,7 @@ def cases() -> tuple[Case, ...]:
         # Match: sealing makes the copy immutable, not trusted: it has no dm-verity
         #        signature -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_hugetlb_sealed_"
                     f"dmverity_signature_true_{algorithm}_denied"
@@ -165,7 +164,7 @@ def cases() -> tuple[Case, ...]:
         # Match: sealing makes the copy immutable, not trusted: it has no dm-verity
         #        root hash -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_hugetlb_sealed_"
                     f"dmverity_roothash_{algorithm}_denied"

@@ -11,8 +11,7 @@ from assets import (
     firmware_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import firmware
+from operations import firmware
 
 
 def cases() -> tuple[Case, ...]:

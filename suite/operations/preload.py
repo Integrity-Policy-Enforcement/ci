@@ -1,10 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""LD_PRELOAD: the trigger, its output check and the case factory."""
 
 import subprocess
+from functools import partial
 from pathlib import Path
 
+import checks
+import ipe
 import layout
-from model import CaseState, Observation
+import steps
+from model import Case, CaseState, Observation
 
 # The constructor's output when the loader mapped the library and ran it.
 CONSTRUCTOR_OUTPUT = "preload\n"
@@ -49,3 +54,35 @@ def check_output(
             f"got (stdout, stderr)={observation.observed!r}"
         )
     return None
+
+
+def preload_case(id: str, policy: ipe.Policy, library: Path, expected_preloaded: bool) -> Case:
+    """Run /usr/bin/true with LD_PRELOAD=<library> under one policy.
+
+    The program exits 0 either way; its output shows what the loader did:
+    - preloaded: stdout is the constructor's line and stderr is empty;
+    - denied: stdout is empty and stderr is the loader's refusal for this
+      library.
+    Any other output, such as the loader's message for a missing file, fails.
+    """
+    if expected_preloaded:
+        stdout, stderr = CONSTRUCTOR_OUTPUT, ""
+    else:
+        stdout, stderr = "", LOADER_REFUSAL.format(library=library)
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(preload, library=library),
+        checks=(
+            partial(checks.returncode_is, expected=0),
+            partial(
+                check_output,
+                expected_stdout=stdout,
+                expected_stderr=stderr,
+            ),
+        ),
+    )

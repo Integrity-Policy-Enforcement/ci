@@ -1,15 +1,21 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""Memfd execution: the trigger, the hugepage scope and the case factory."""
 
-from collections.abc import Generator
-from contextlib import contextmanager
 import fcntl
 import mmap
 import os
 import subprocess
+from collections.abc import Generator
+from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
 
+import checks
+import ipe
 import nodeio
-from model import CaseState, Observation
+import steps
+from model import Case, CaseState, Observation
+from operations import execve
 from triggers import error_observation
 
 # Linux UAPI constants not yet exposed by Python's os/fcntl modules.
@@ -137,3 +143,29 @@ def execute(
     except OSError as failure:
         return error_observation(failure)
     return Observation(errno=0, returncode=result.returncode, message=result.stderr)
+
+
+def memfd_case(
+    id: str,
+    policy: ipe.Policy,
+    binary: Path,
+    expected_errno: int,
+    expected_returncode: int | None,
+    sealed: bool = False,
+    huge: bool = False,
+) -> Case:
+    """Exec a memfd copy, checking exec refusal separately from program exit."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(execute, binary=binary, sealed=sealed, huge=huge),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(execve.check_returncode, expected=expected_returncode),
+        ),
+        extra_scopes=(hugepages_scope,) if huge else (),
+    )

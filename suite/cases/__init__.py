@@ -8,8 +8,8 @@ def build() -> tuple[Batch, ...]:
     from . import (
         boot,
         dmverity,
-        execute_memfd,
         fsverity,
+        memfd_controls,
         policy,
         policy_signature,
         policy_text,
@@ -18,7 +18,7 @@ def build() -> tuple[Batch, ...]:
 
     batches = []
     for module in (
-        securityfs, policy, policy_signature, policy_text, execute_memfd,
+        securityfs, policy, policy_signature, policy_text, memfd_controls,
         dmverity, fsverity, boot,
     ):
         batches.extend(module.build())

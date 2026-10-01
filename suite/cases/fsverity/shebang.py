@@ -10,8 +10,7 @@ from assets import (
     shebang_fsverity_digest_policy,
 )
 from model import Case
-
-from .. import execute
+from operations import execve
 
 
 def cases() -> tuple[Case, ...]:
@@ -27,7 +26,7 @@ def cases() -> tuple[Case, ...]:
         # Input: execve a '#!/bin/sh' script with a verified built-in fs-verity signature.
         # Match: fsverity_signature=TRUE matches the script; the signed-root rule matches /bin/sh -> ALLOW; exit 0.
         *(
-            execute.execve_case(
+            execve.execve_case(
                 id=(
                     "execute_bprm_check_execve_shebang_"
                     f"fsverity_signature_true_{algorithm}_signed_ok"
@@ -43,7 +42,7 @@ def cases() -> tuple[Case, ...]:
         #         signed root; ALLOW fsverity_signature=TRUE.
         # Input: execve the identical script without fs-verity on the payload disk.
         # Match: the script matches no rule -> default DENY -> EACCES; /bin/sh never starts.
-        execute.execve_case(
+        execve.execve_case(
             id="execute_bprm_check_execve_shebang_fsverity_signature_true_plain_denied",
             policy=SHEBANG_FSVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
             binary=layout.guest.FSVERITY_PLAIN_SHEBANG_TEST_SCRIPT,
@@ -57,7 +56,7 @@ def cases() -> tuple[Case, ...]:
         #        digest can allow it.
         # Match: the digest rule matches the script; the signed-root rule matches /bin/sh -> ALLOW; exit 0.
         *(
-            execute.execve_case(
+            execve.execve_case(
                 id=(
                     "execute_bprm_check_execve_shebang_"
                     f"fsverity_digest_{algorithm}_signed_ok"
@@ -74,7 +73,7 @@ def cases() -> tuple[Case, ...]:
         # Input: execve the identical script without fs-verity on the payload disk.
         # Match: the script matches no rule -> default DENY -> EACCES; /bin/sh never starts.
         *(
-            execute.execve_case(
+            execve.execve_case(
                 id=(
                     "execute_bprm_check_execve_shebang_"
                     f"fsverity_digest_{algorithm}_plain_denied"

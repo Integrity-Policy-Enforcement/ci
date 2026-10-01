@@ -11,8 +11,7 @@ from assets import (
     hugetlb_fsverity_digest_policy,
 )
 from model import Case
-
-from .. import execute_memfd
+from operations import memfd
 
 
 def cases() -> tuple[Case, ...]:
@@ -23,7 +22,7 @@ def cases() -> tuple[Case, ...]:
         # Input: that ELF's bytes copied into a new unsealed memfd.
         # Match: the memfd has no fs-verity signature -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_unsealed_"
                     f"fsverity_signature_true_{algorithm}_denied"
@@ -43,7 +42,7 @@ def cases() -> tuple[Case, ...]:
         # Input: that ELF's bytes copied into a new unsealed memfd.
         # Match: the memfd has no fs-verity digest -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_unsealed_"
                     f"fsverity_digest_{algorithm}_denied"
@@ -63,7 +62,7 @@ def cases() -> tuple[Case, ...]:
         # Match: sealing makes the copy immutable, not trusted: it has no fs-verity
         #        signature -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_sealed_"
                     f"fsverity_signature_true_{algorithm}_denied"
@@ -85,7 +84,7 @@ def cases() -> tuple[Case, ...]:
         # Match: sealing makes the copy immutable, not trusted: it has no fs-verity
         #        digest -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_sealed_"
                     f"fsverity_digest_{algorithm}_denied"
@@ -105,7 +104,7 @@ def cases() -> tuple[Case, ...]:
         # Input: that copy's bytes in a new unsealed hugetlb memfd.
         # Match: the memfd has no fs-verity signature -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_hugetlb_"
                     f"fsverity_signature_true_{algorithm}_denied"
@@ -124,7 +123,7 @@ def cases() -> tuple[Case, ...]:
         # Input: that copy's bytes in a new unsealed hugetlb memfd.
         # Match: the memfd has no fs-verity digest -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_hugetlb_"
                     f"fsverity_digest_{algorithm}_denied"
@@ -143,7 +142,7 @@ def cases() -> tuple[Case, ...]:
         # Match: sealing makes the copy immutable, not trusted: it has no fs-verity
         #        signature -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_hugetlb_sealed_"
                     f"fsverity_signature_true_{algorithm}_denied"
@@ -164,7 +163,7 @@ def cases() -> tuple[Case, ...]:
         # Match: sealing makes the copy immutable, not trusted: it has no fs-verity
         #        digest -> default DENY -> EACCES.
         *(
-            execute_memfd.memfd_case(
+            memfd.memfd_case(
                 id=(
                     "execute_bprm_check_execve_memfd_hugetlb_sealed_"
                     f"fsverity_digest_{algorithm}_denied"

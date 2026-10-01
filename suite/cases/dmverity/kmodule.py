@@ -11,8 +11,7 @@ from assets import (
     kmodule_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import kmodule
+from operations import kmodule
 
 
 def roothash_cases(*, algorithm: str) -> tuple[Case, ...]:

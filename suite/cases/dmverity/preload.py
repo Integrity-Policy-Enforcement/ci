@@ -8,8 +8,7 @@ from assets import (
     preload_dmverity_roothash_policy,
 )
 from model import Case
-
-from .. import execute_preload
+from operations import preload
 
 
 def cases() -> tuple[Case, ...]:
@@ -32,7 +31,7 @@ def cases() -> tuple[Case, ...]:
         # Match: dmverity_signature=TRUE matches the library -> ALLOW; its constructor
         #        prints "preload"; exit 0.
         *(
-            execute_preload.preload_case(
+            preload.preload_case(
                 id=(
                     "execute_mmap_ld_preload_"
                     f"dmverity_signature_true_{algorithm}_signed_ok"
@@ -50,7 +49,7 @@ def cases() -> tuple[Case, ...]:
         # Input: LD_PRELOAD the identical library from plain tmpfs, without dm-verity.
         # Match: the library matches no rule -> default DENY -> the loader cannot map
         #        it, reports that and skips it; no "preload"; exit 0.
-        execute_preload.preload_case(
+        preload.preload_case(
             id="execute_mmap_ld_preload_dmverity_signature_true_plain_denied",
             policy=EXECUTE_DMVERITY_SIGNATURE_TRUE_ALLOW_POLICY,
             library=layout.guest.PLAIN_PRELOAD_LIBRARY,
@@ -62,7 +61,7 @@ def cases() -> tuple[Case, ...]:
         # Match: the root-hash rule matches the library -> ALLOW; its constructor
         #        prints "preload"; exit 0.
         *(
-            execute_preload.preload_case(
+            preload.preload_case(
                 id=(
                     "execute_mmap_ld_preload_"
                     f"dmverity_roothash_{algorithm}_unsigned_ok"
@@ -81,7 +80,7 @@ def cases() -> tuple[Case, ...]:
         # Match: the library matches no rule -> default DENY -> the loader cannot map
         #        it, reports that and skips it; no "preload"; exit 0.
         *(
-            execute_preload.preload_case(
+            preload.preload_case(
                 id=(
                     "execute_mmap_ld_preload_"
                     f"dmverity_roothash_{algorithm}_plain_denied"

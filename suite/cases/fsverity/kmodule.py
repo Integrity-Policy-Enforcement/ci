@@ -11,8 +11,7 @@ from assets import (
     kmodule_fsverity_digest_policy,
 )
 from model import Case
-
-from .. import kmodule
+from operations import kmodule
 
 
 def signature_cases(*, algorithm: str) -> tuple[Case, ...]:

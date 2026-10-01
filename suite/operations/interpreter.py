@@ -1,12 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0-only
+"""Script interpreter with AT_EXECVE_CHECK: trigger, output check and case factory."""
 
 import re
 import subprocess
 from contextlib import nullcontext
+from functools import partial
 from pathlib import Path
 
+import checks
+import ipe
 import layout
-from model import CaseState, Observation
+import steps
+from model import Case, CaseState, Observation
 
 
 def interpret(script: Path, from_stdin: bool, state: CaseState) -> Observation:
@@ -35,3 +40,29 @@ def check_output(expected: str, observation: Observation) -> str | None:
     if observation.observed != (expected,):
         return f"interpreter output {observation.observed!r}, expected {(expected,)!r}"
     return None
+
+
+def interpreter_case(
+    id: str,
+    policy: ipe.Policy,
+    script: Path,
+    from_stdin: bool,
+    expected_errno: int,
+    expected_returncode: int,
+    expected_output: str,
+) -> Case:
+    """Check script authorization and whether the interpreter executed its command."""
+    return Case(
+        id=id,
+        setup=(
+            partial(steps.deploy_policy, policy=policy),
+            partial(steps.activate_policy, name=policy.name),
+            partial(steps.set_enforcement, enabled=True),
+        ),
+        trigger=partial(interpret, script=script, from_stdin=from_stdin),
+        checks=(
+            partial(checks.errno_is, expected=expected_errno),
+            partial(checks.returncode_is, expected=expected_returncode),
+            partial(check_output, expected=expected_output),
+        ),
+    )

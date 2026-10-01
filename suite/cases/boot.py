@@ -17,8 +17,7 @@ import checks
 import ipe
 import layout
 from model import Batch, Case
-
-from . import execute, firmware, kexec, kmodule, policy_op, x509
+from operations import execve, firmware, kexec, kmodule, policy_op, x509
 
 KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY = ipe.Policy(
     signed=layout.initrd.KMODULE_BOOT_VERIFIED_TRUE_ALLOW_POLICY_SIGNATURE,
@@ -374,7 +373,7 @@ INITRAMFS_CASES = (
     # Policy: EXECUTE default DENY; ALLOW boot_verified=TRUE.
     # Input: the static ELF from the verified boot initramfs.
     # Match: boot_verified is TRUE -> ALLOW; the program exits zero.
-    execute.execve_case(
+    execve.execve_case(
         id="execute_bprm_check_execve_boot_verified_true_initramfs_ok",
         policy=EXECUTE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
         binary=layout.initrd.EXECUTE_TEST_BINARY,
@@ -384,7 +383,7 @@ INITRAMFS_CASES = (
     # Policy: EXECUTE default DENY; ALLOW boot_verified=TRUE.
     # Input: identical executable ELF bytes copied onto a separate tmpfs.
     # Match: boot_verified is FALSE -> no TRUE match -> default DENY.
-    execute.execve_case(
+    execve.execve_case(
         id="execute_bprm_check_execve_boot_verified_true_tmpfs_denied",
         policy=EXECUTE_BOOT_VERIFIED_TRUE_ALLOW_POLICY,
         binary=layout.initrd.BOOT_TMPFS_EXECUTE_TEST_BINARY,
@@ -394,7 +393,7 @@ INITRAMFS_CASES = (
     # Policy: EXECUTE default ALLOW; DENY boot_verified=FALSE.
     # Input: the original static ELF from the verified boot initramfs.
     # Match: boot_verified is TRUE -> FALSE does not match -> default ALLOW.
-    execute.execve_case(
+    execve.execve_case(
         id="execute_bprm_check_execve_boot_verified_false_initramfs_ok",
         policy=EXECUTE_BOOT_VERIFIED_FALSE_DENY_POLICY,
         binary=layout.initrd.EXECUTE_TEST_BINARY,
@@ -404,7 +403,7 @@ INITRAMFS_CASES = (
     # Policy: EXECUTE default ALLOW; DENY boot_verified=FALSE.
     # Input: the executable ELF copy on a separate tmpfs, not the boot filesystem.
     # Match: boot_verified is FALSE -> explicit DENY.
-    execute.execve_case(
+    execve.execve_case(
         id="execute_bprm_check_execve_boot_verified_false_tmpfs_denied",
         policy=EXECUTE_BOOT_VERIFIED_FALSE_DENY_POLICY,
         binary=layout.initrd.BOOT_TMPFS_EXECUTE_TEST_BINARY,
