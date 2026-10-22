@@ -129,6 +129,7 @@ _FSVERITY_DIR_NAME = "fsverity"
 _POLICIES_DIR_NAME = "policies"
 _SIGNERS_DIR_NAME = "signers"
 _FSVERITY_CERTIFICATE_NAME = "fsverity-cert.der"
+_IPE_CERTIFICATE_NAME = "ipe-cert.der"
 _INTERMEDIATE_CERTIFICATE_NAME = "intermediate.der"
 
 _SECONDARY_POLICY = Path("policy_signature/secondary.pol")
@@ -136,6 +137,7 @@ _PLATFORM_POLICY = Path("policy_signature/platform.pol")
 _REVOKED_POLICY = Path("policy_signature/revoked.pol")
 _UNTRUSTED_POLICY = Path("policy_signature/untrusted.pol")
 _TAMPERED_POLICY = Path("policy_signature/tampered.pol")
+_IPE_POLICY = Path("policy_signature/ipe.pol")
 
 
 def _hash_tree_name(algorithm: str) -> str:
@@ -214,6 +216,7 @@ class source:
     REVOKED_POLICY_TEXT = POLICIES_DIR / _REVOKED_POLICY
     UNTRUSTED_POLICY_TEXT = POLICIES_DIR / _UNTRUSTED_POLICY
     TAMPERED_POLICY_TEXT = POLICIES_DIR / _TAMPERED_POLICY
+    IPE_POLICY_TEXT = POLICIES_DIR / _IPE_POLICY
 
 
 class build:
@@ -221,6 +224,7 @@ class build:
 
     KEYS_DIR = ROOT_DIR / "keys"
     FSVERITY_CERTIFICATE = KEYS_DIR / _FSVERITY_CERTIFICATE_NAME
+    IPE_CERTIFICATE = KEYS_DIR / _IPE_CERTIFICATE_NAME
     # Reuse a real DER fixture; X509_CERT tests read it but never import it.
     X509_TEST_BINARY = FSVERITY_CERTIFICATE
 
@@ -257,6 +261,9 @@ class build:
     )
     TAMPERED_POLICY_TEXT = (
         POLICIES_DIR / source.TAMPERED_POLICY_TEXT.relative_to(source.POLICIES_DIR)
+    )
+    IPE_POLICY_TEXT = (
+        POLICIES_DIR / source.IPE_POLICY_TEXT.relative_to(source.POLICIES_DIR)
     )
     SIGNER_CERTIFICATES_DIR = POLICIES_DIR / _SIGNERS_DIR_NAME
     INTERMEDIATE_CERTIFICATE = SIGNER_CERTIFICATES_DIR / _INTERMEDIATE_CERTIFICATE_NAME

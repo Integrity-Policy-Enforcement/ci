@@ -18,6 +18,9 @@
         fsverity-key.pem      private key that signs fs-verity digests
         fsverity-cert.pem     certificate added to .fs-verity by the initrd
         fsverity-cert.der     DER encoding of fsverity-cert.pem for keyctl
+        ipe-key.pem           private key that signs the .ipe policy case
+        ipe-cert.pem          certificate added to .ipe by the initrd
+        ipe-cert.der          DER encoding of ipe-cert.pem for keyctl
         module-signing.pem    builtin key and certificate joined for the kernel
 
 Every run creates them afresh, so changing them means rebuilding the
@@ -126,6 +129,11 @@ def main() -> int:
         extensions=LEAF_EXTENSIONS,
     )
     generate_certificate(
+        identity=signing.IPE,
+        common_name="IPE policy keyring signing key",
+        extensions=LEAF_EXTENSIONS,
+    )
+    generate_certificate(
         identity=signing.SECUREBOOT,
         common_name="Ephemeral Secure Boot signing key",
         extensions=LEAF_EXTENSIONS,
@@ -133,6 +141,10 @@ def main() -> int:
     openssl(
         "x509", "-in", signing.FSVERITY.certificate, "-outform", "DER",
         "-out", layout.build.FSVERITY_CERTIFICATE,
+    )
+    openssl(
+        "x509", "-in", signing.IPE.certificate, "-outform", "DER",
+        "-out", layout.build.IPE_CERTIFICATE,
     )
     signing.MODULE_SIGNING.write_bytes(
         signing.BUILTIN.key.read_bytes() + signing.BUILTIN.certificate.read_bytes()

@@ -67,6 +67,10 @@ PLATFORM_KEYRING_SIGNATURE_POLICY = policy(
     asset="policy_signature/platform",
     name="ipe_test_signature_platform",
 )
+IPE_KEYRING_SIGNATURE_POLICY = policy(
+    asset="policy_signature/ipe",
+    name="ipe_test_signature_ipe",
+)
 
 
 # policy text corpus: one policy per parser decision point, all under one name
