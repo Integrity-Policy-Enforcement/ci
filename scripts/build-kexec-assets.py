@@ -19,7 +19,7 @@ def main() -> int:
     # An empty archive is sufficient: the tests stage it, but never boot it.
     subprocess.run(
         [
-            layout.build.KERNEL_DIR / "usr/gen_init_cpio",
+            layout.build.KERNEL_DIR / "scripts/gen_init_cpio",
             "-t", "0", "-o", layout.build.KEXEC_INITRAMFS_TEST_BINARY,
             "/dev/null",
         ],
