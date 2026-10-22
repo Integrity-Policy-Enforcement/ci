@@ -27,6 +27,7 @@ REVOKED = Identity("revoked")
 UNTRUSTED = Identity("untrusted")
 SECUREBOOT = Identity("secureboot")
 FSVERITY = Identity("fsverity")
+IPE = Identity("ipe")
 
 # The kernel build wants one file holding both, so this one is not an identity
 # in the sense above.
