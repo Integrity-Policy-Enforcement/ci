@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+[Unit]
+Description=Load the IPE certificate and seal the keyring
+DefaultDependencies=no
+Before=initrd-root-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+StandardInput=file:/usr/lib/ipe/ipe-cert.der
+# The kernel RFC currently assigns -12 to KEY_SPEC_IPE_KEYRING. Use the
+# proposed special ID, rather than a name lookup, while that UAPI is reviewed.
+ExecStart=/usr/bin/keyctl padd asymmetric "" -12
+# Pending review: whether .ipe activation accepts any installed restriction or
+# specifically the reject-all restriction selected by this test setup.
+# With no restriction scheme, restrict_keyring seals .ipe against later links.
+ExecStart=/usr/bin/keyctl restrict_keyring -12
+# The restriction above is sufficient to reject later links. Drop mutation
+# permissions so policy_signature_ipe_keyring_locked can test this extra lockdown.
+ExecStart=/usr/bin/keyctl setperm -12 0x08030000
