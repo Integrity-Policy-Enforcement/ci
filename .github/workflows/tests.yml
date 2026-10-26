@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 name: tests
+run-name: >-
+  ${{ inputs.lore_message_id
+      && format('tests: {0} <{1}>', inputs.series_subject || 'lore series', inputs.lore_message_id)
+      || '' }}
 
 on:
   push:
@@ -20,29 +24,66 @@ on:
         description: lore.kernel.org Message-ID or URL of a patch series to apply with b4 before testing
         required: false
         type: string
+      use_base_commit:
+        description: Apply the lore series on its declared base-commit when the tree has it
+        required: false
+        type: boolean
+        default: false
+      series_subject:
+        description: Subject of the lore series, shown in the run name
+        required: false
+        type: string
+      architectures:
+        description: Architectures to test
+        required: false
+        type: choice
+        options: [all, x86_64]
+        default: all
+      report_issue:
+        description: Issue number that receives the result as a comment
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - architecture: x86_64
-            runner: ubuntu-26.04
-            job-timeout-minutes: 180
+  matrix:
+    runs-on: ubuntu-24.04
+    outputs:
+      include: ${{ steps.select.outputs.include }}
+    steps:
+      - id: select
+        env:
+          ARCHITECTURES: ${{ inputs.architectures || 'all' }}
+        run: |
+          set -euo pipefail
           # The arm64 runner has no KVM, so its VM runs under TCG. Use the full
           # 360-minute GitHub-hosted job limit; run-vm.py stops TCG VMs after
           # 300 minutes, leaving time for setup, build and evidence upload.
-          - architecture: arm64
-            runner: ubuntu-26.04-arm
-            job-timeout-minutes: 360
+          all='[
+            {"architecture": "x86_64", "runner": "ubuntu-26.04", "job-timeout-minutes": 180},
+            {"architecture": "arm64", "runner": "ubuntu-26.04-arm", "job-timeout-minutes": 360}
+          ]'
+          if [[ "$ARCHITECTURES" == all ]]; then
+              selected=$all
+          else
+              selected=$(jq --arg arch "$ARCHITECTURES" '[.[] | select(.architecture == $arch)]' <<<"$all")
+          fi
+          echo "include=$(jq -c . <<<"$selected")" >>"$GITHUB_OUTPUT"
+
+  test:
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.include) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: ${{ matrix.job-timeout-minutes }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Prepare kernel tree
         env:
@@ -95,14 +136,18 @@ jobs:
         if: inputs.lore_message_id != ''
         env:
           LORE_MESSAGE_ID: ${{ inputs.lore_message_id }}
+          USE_BASE_COMMIT: ${{ inputs.use_base_commit }}
+          GIT_COMMITTER_NAME: IPE CI
+          GIT_COMMITTER_EMAIL: ipe-ci@localhost
         run: |
           set -euo pipefail
           sudo python3 -m pip install --break-system-packages b4==0.16.0
-          cd kernel-source
-          base=$(git rev-parse HEAD)
-          GIT_COMMITTER_NAME='IPE CI' GIT_COMMITTER_EMAIL='ipe-ci@localhost' \
-              b4 shazam -- "$LORE_MESSAGE_ID"
-          git log --oneline "$base..HEAD"
+          base_args=()
+          if [[ "$USE_BASE_COMMIT" == true ]]; then
+              base_args+=(--use-base-commit)
+          fi
+          python3 scripts/apply-lore-series.py "${base_args[@]}" \
+              --status out/apply.json kernel-source "$LORE_MESSAGE_ID"
 
       - name: Install arm64 firmware
         if: matrix.architecture == 'arm64'
@@ -116,6 +161,7 @@ jobs:
         with:
           name: test-evidence-${{ matrix.architecture }}
           path: |
+            out/apply.json
             out/console.log
             out/result.log
             out/host.json
@@ -126,3 +172,30 @@ jobs:
             build/kernel/merge.log
           retention-days: ${{ job.status == 'success' && 7 || 30 }}
           if-no-files-found: error
+
+  report:
+    needs: test
+    if: always() && inputs.report_issue != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: test-evidence-*
+          path: evidence
+
+      - name: Report to the series issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REPORT_ISSUE: ${{ inputs.report_issue }}
+          LORE_MESSAGE_ID: ${{ inputs.lore_message_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python3 scripts/lore-report.py evidence

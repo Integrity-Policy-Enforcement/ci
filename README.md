@@ -66,4 +66,27 @@ podman exec ipe-build sh -c 'cd /work && ./run.py /kernel out'                  
 guest falls back to emulation.  Package downloads are cached in
 `build/mkosi-cache` and persist across container restarts.
 
+### Testing patches from the mailing list
+
+The `tests` workflow can be started by hand with `lore_message_id` set to the
+Message-ID (or lore URL) of a patch or series. `scripts/apply-lore-series.py`
+fetches it with b4 and applies it to the kernel tree before the build. With
+`use_base_commit` enabled, the series is applied to its `base-commit:` first
+when the tree has that commit, and to the default tree otherwise. The outcome
+is recorded in `out/apply.json`, so a series that does not apply is reported
+as `apply-failed` rather than as a test failure.
+
+The `lore-scan` workflow runs hourly. `scripts/lore-scan.py` searches the
+linux-security-module archive on lore for patches from the last three days.
+It picks the series that touch IPE, fs-verity, dm-verity, the LSM hook
+definitions or the IPE documentation, or that mention IPE. Each series is
+identified by its cover letter (or its first patch) and gets one issue
+labelled `lore-series`. The Message-ID in the issue body marks the series as
+handled, so each series and each new version of it is tested once. The scan
+waits 30 minutes after the newest patch of a series, starts at most three
+series per run and tests them on x86_64 only. When the run finishes, the
+`report` job comments pass, fail, apply-failed or error, the failing TAP
+cases and the run link on the issue, and sets the matching `ci-*` label.
+Start `lore-scan` by hand with `dry_run` to see what it would test.
+
 This image configuration can also serve as a small reference for building an IPE system with Secure Boot, a signed UKI, a signed dm-verity root, and a restrictive boot policy.

@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+name: lore-scan
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only report which series would be tested
+        required: false
+        type: boolean
+        default: false
+      days:
+        description: Search window in days
+        required: false
+        type: string
+        default: '3'
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/lore-scan.yml
+      - scripts/lore-scan.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lore-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Scan linux-security-module
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DRY_RUN: ${{ github.event_name == 'pull_request' || inputs.dry_run }}
+          DAYS: ${{ inputs.days || '3' }}
+          REF: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          args=(--days "$DAYS" --ref "$REF" --architectures x86_64 --max-series 3)
+          if [[ "$DRY_RUN" == true ]]; then
+              args+=(--dry-run)
+          fi
+          python3 scripts/lore-scan.py "${args[@]}"
