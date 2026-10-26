@@ -16,6 +16,10 @@ on:
         description: Branch in Integrity-Policy-Enforcement/linux; empty uses the daily IPE rebase
         required: false
         type: string
+      lore_message_id:
+        description: lore.kernel.org Message-ID or URL of a patch series to apply with b4 before testing
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -86,6 +90,19 @@ jobs:
               | xargs sudo apt-get "${apt_sources[@]}" install -y --no-install-recommends
           sudo python3 -m pip install --break-system-packages \
               "git+https://github.com/systemd/mkosi@$(cat config/mkosi.version)"
+
+      - name: Apply patches from lore
+        if: inputs.lore_message_id != ''
+        env:
+          LORE_MESSAGE_ID: ${{ inputs.lore_message_id }}
+        run: |
+          set -euo pipefail
+          sudo python3 -m pip install --break-system-packages b4==0.16.0
+          cd kernel-source
+          base=$(git rev-parse HEAD)
+          GIT_COMMITTER_NAME='IPE CI' GIT_COMMITTER_EMAIL='ipe-ci@localhost' \
+              b4 shazam -- "$LORE_MESSAGE_ID"
+          git log --oneline "$base..HEAD"
 
       - name: Install arm64 firmware
         if: matrix.architecture == 'arm64'
