@@ -230,6 +230,12 @@ def main() -> int:
             certificates=(),
             trusted_certificate=signing.REVOKED.certificate,
         ),
+        SigningBatch(
+            policies=(layout.build.IPE_POLICY_TEXT,),
+            signer=signing.IPE,
+            certificates=(),
+            trusted_certificate=signing.IPE.certificate,
+        ),
     )
     for batch in signing_batches:
         for policy in batch.policies:

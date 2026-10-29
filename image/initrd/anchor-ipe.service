@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+[Unit]
+Description=Load the IPE certificate
+DefaultDependencies=no
+Before=initrd-root-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+StandardInput=file:/usr/lib/ipe/ipe-cert.der
+ExecStart=/usr/bin/keyctl padd asymmetric "" -12
