@@ -87,9 +87,29 @@ jobs:
           sudo python3 -m pip install --break-system-packages \
               "git+https://github.com/systemd/mkosi@$(cat config/mkosi.version)"
 
+      - name: Restore arm64 firmware
+        id: arm64-firmware
+        if: matrix.architecture == 'arm64'
+        uses: actions/cache/restore@v6
+        with:
+          path: build/arm64-firmware
+          # The script pins the package URL and SHA-256 digest.
+          key: arm64-firmware-${{ hashFiles('scripts/install-firmware.py') }}
+
+      # Run as the runner user so that build/ is not created as root; the
+      # script uses sudo for dpkg itself.
       - name: Install arm64 firmware
         if: matrix.architecture == 'arm64'
-        run: sudo python3 scripts/install-firmware.py
+        run: python3 scripts/install-firmware.py build/arm64-firmware
+
+      # Save now rather than at the end of the job, so that a failing test
+      # run still keeps the verified package for the next run.
+      - name: Save arm64 firmware
+        if: matrix.architecture == 'arm64' && steps.arm64-firmware.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: build/arm64-firmware
+          key: ${{ steps.arm64-firmware.outputs.cache-primary-key }}
 
       - name: Run tests
         run: ./run.py kernel-source out

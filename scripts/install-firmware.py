@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-2.0-only
 
+import argparse
 import hashlib
 import http.client
+import os
 import subprocess
 import sys
 import tempfile
@@ -27,6 +29,10 @@ def download(url: str, destination: Path) -> None:
         destination.write_bytes(response.read())
 
 
+def digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def fetch(url: str, destination: Path, sha256: str) -> bool:
     for attempt in range(DOWNLOAD_ATTEMPTS):
         if attempt:
@@ -37,24 +43,37 @@ def fetch(url: str, destination: Path, sha256: str) -> bool:
         except (OSError, http.client.HTTPException) as error:
             reason = f"download failed: {error}"
         else:
-            digest = hashlib.sha256(destination.read_bytes()).hexdigest()
-            if digest == sha256:
+            actual = digest(destination)
+            if actual == sha256:
                 return True
-            reason = f"digest {digest} does not match the pinned value"
+            reason = f"digest {actual} does not match the pinned value"
 
         print(reason, file=sys.stderr)
 
     return False
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Install the pinned arm64 UEFI firmware package.")
+    parser.add_argument(
+        "cache",
+        nargs="?",
+        type=Path,
+        help="directory that keeps the verified package for later runs",
+    )
+    args = parser.parse_args(argv)
+
     with tempfile.TemporaryDirectory() as workspace:
-        package = Path(workspace) / "firmware.deb"
-        if not fetch(ARM64_FIRMWARE_URL, package, ARM64_FIRMWARE_SHA256):
+        directory = args.cache or Path(workspace)
+        directory.mkdir(parents=True, exist_ok=True)
+        package = directory / "firmware.deb"
+        cached = package.is_file() and digest(package) == ARM64_FIRMWARE_SHA256
+        if not cached and not fetch(ARM64_FIRMWARE_URL, package, ARM64_FIRMWARE_SHA256):
             print(f"could not download verified firmware from {ARM64_FIRMWARE_URL}", file=sys.stderr)
             return 1
 
-        subprocess.run(["dpkg", "--install", package], check=True)
+        sudo = [] if os.geteuid() == 0 else ["sudo"]
+        subprocess.run(sudo + ["dpkg", "--install", package], check=True)
     return 0
 
 
